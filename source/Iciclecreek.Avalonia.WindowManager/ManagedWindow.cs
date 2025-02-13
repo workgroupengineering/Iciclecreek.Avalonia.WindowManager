@@ -293,7 +293,7 @@ public class ManagedWindow : ContentControl
             partCloseButton.Click += OnCloseClick;
 
         _windowBorder = e.NameScope.Find<Border>(PART_ResizeBorder);
-        SetupResize(_windowBorder );
+        SetupResize(_windowBorder);
 
         SetWindowStatePseudoClasses();
     }
@@ -403,22 +403,26 @@ public class ManagedWindow : ContentControl
         // when there is a box shadow we need to adjust the margin to allow it to be rendered.
         if (border.BoxShadow.Count > 0)
             border.Margin = new Thickness(0, 0, border.BoxShadow[0].OffsetX, border.BoxShadow[0].OffsetY);
-        
+
         WindowEdge? edge = null;
         Point? start = null;
         border.PointerPressed += (i, e) =>
         {
             BringToTop();
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
+            
+            if (WindowState == WindowState.Normal)
             {
-                var point = e.GetPosition(this.Parent as Control);
-                edge = GetEdge(border, point);
-                border.Cursor = new Cursor(GetCursorForEdge(edge));
-                if (edge != null)
+                var properties = e.GetCurrentPoint(this).Properties;
+                if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
                 {
-                    start = point;
-                    e.Pointer.Capture(border);
+                    var point = e.GetPosition(this.Parent as Control);
+                    edge = GetEdge(border, point);
+                    border.Cursor = new Cursor(GetCursorForEdge(edge));
+                    if (edge != null)
+                    {
+                        start = point;
+                        e.Pointer.Capture(border);
+                    }
                 }
             }
         };
@@ -441,70 +445,73 @@ public class ManagedWindow : ContentControl
         };
         border.PointerMoved += (i, e) =>
         {
-            var position = e.GetPosition(this.Parent as Control);
-
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (edge != null &&
-                start != null &&
-                properties.IsLeftButtonPressed)
+            if (WindowState == WindowState.Normal)
             {
-                double top = Canvas.GetTop(this);
-                double left = Canvas.GetLeft(this);
-                double width = this.Width;
-                double height = this.Height;
+                var position = e.GetPosition(this.Parent as Control);
 
-                var deltaX = position.X - start.Value.X;
-                var deltaY = position.Y - start.Value.Y;
-                switch (edge)
+                var properties = e.GetCurrentPoint(this).Properties;
+                if (edge != null &&
+                    start != null &&
+                    properties.IsLeftButtonPressed)
                 {
-                    case WindowEdge.West:
-                        left += deltaX;
-                        width -= deltaX;
-                        break;
-                    case WindowEdge.East:
-                        width += deltaX;
-                        break;
-                    case WindowEdge.North:
-                        top += deltaY;
-                        height -= deltaY;
-                        break;
-                    case WindowEdge.South:
-                        height += deltaY;
-                        break;
-                    case WindowEdge.NorthWest:
-                        top += deltaY;
-                        height -= deltaY;
-                        left += deltaX;
-                        width -= deltaX;
-                        break;
-                    case WindowEdge.NorthEast:
-                        width += deltaX;
-                        top += deltaY;
-                        height -= deltaY;
-                        break;
-                    case WindowEdge.SouthWest:
-                        left += deltaX;
-                        width -= deltaX;
-                        height += deltaY;
-                        break;
-                    case WindowEdge.SouthEast:
-                        height += deltaY;
-                        width += deltaX;
-                        break;
+                    double top = Canvas.GetTop(this);
+                    double left = Canvas.GetLeft(this);
+                    double width = this.Width;
+                    double height = this.Height;
+
+                    var deltaX = position.X - start.Value.X;
+                    var deltaY = position.Y - start.Value.Y;
+                    switch (edge)
+                    {
+                        case WindowEdge.West:
+                            left += deltaX;
+                            width -= deltaX;
+                            break;
+                        case WindowEdge.East:
+                            width += deltaX;
+                            break;
+                        case WindowEdge.North:
+                            top += deltaY;
+                            height -= deltaY;
+                            break;
+                        case WindowEdge.South:
+                            height += deltaY;
+                            break;
+                        case WindowEdge.NorthWest:
+                            top += deltaY;
+                            height -= deltaY;
+                            left += deltaX;
+                            width -= deltaX;
+                            break;
+                        case WindowEdge.NorthEast:
+                            width += deltaX;
+                            top += deltaY;
+                            height -= deltaY;
+                            break;
+                        case WindowEdge.SouthWest:
+                            left += deltaX;
+                            width -= deltaX;
+                            height += deltaY;
+                            break;
+                        case WindowEdge.SouthEast:
+                            height += deltaY;
+                            width += deltaX;
+                            break;
+                    }
+
+                    this.Position = new PixelPoint((int)left, (int)top);
+                    if (width != Width && width >= MinWidth)
+                        Width = width;
+                    if (height != Height && height >= MinHeight)
+                        Height = height;
+
+                    start = position;
                 }
-
-                this.Position = new PixelPoint((int)left, (int)top);
-                if (width != Width && width >= MinWidth)
-                    Width = width;
-                if (height != Height && height >= MinHeight)
-                    Height = height;
-
-                start = position;
-            }
-            else
-            {
-                var edgeTemp = GetEdge(border, position);
-                border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
+                else
+                {
+                    var edgeTemp = GetEdge(border, position);
+                    border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
+                }
             }
         };
     }
