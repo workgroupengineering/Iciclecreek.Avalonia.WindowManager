@@ -492,10 +492,8 @@ public class ManagedWindow : ContentControl
                         width += deltaX;
                         break;
                 }
-                if (left >= 0)
-                    Canvas.SetLeft(this, left);
-                if (top >= 0)
-                    Canvas.SetTop(this, top);
+
+                this.Position = new PixelPoint((int)left, (int)top);
                 if (width != Width && width >= MinWidth)
                     Width = width;
                 if (height != Height && height >= MinHeight)
