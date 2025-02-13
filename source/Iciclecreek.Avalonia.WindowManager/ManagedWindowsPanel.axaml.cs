@@ -1,13 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Metadata;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Media;
-using Avalonia.Platform;
 using System;
-using System.Diagnostics;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -17,7 +11,7 @@ public partial class ManagedWindowsPanel : Canvas
     {
         InitializeComponent();
     }
-    
+
     /// <summary>
     /// Measures the control and its child elements as part of a layout pass.
     /// </summary>
@@ -44,5 +38,22 @@ public partial class ManagedWindowsPanel : Canvas
         }
 
         return new Size(width, height);
+    }
+
+    public void ShowWindow(ManagedWindow window)
+    {
+        switch (window.WindowStartupLocation)
+        {
+            case WindowStartupLocation.CenterOwner:
+            case WindowStartupLocation.CenterScreen:
+                Canvas.SetLeft(window, (Bounds.Width - window.Width) / 2);
+                Canvas.SetTop(window, (Bounds.Height - window.Height) / 2);
+                break;
+            case WindowStartupLocation.Manual:
+                Canvas.SetLeft(window, window.Position.X);
+                Canvas.SetTop(window, window.Position.Y);
+                break;
+        }
+        this.Children.Add(window);
     }
 }

@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -17,15 +18,8 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
 [TemplatePart(PART_RestoreButton, typeof(Button))]
 [TemplatePart(PART_CloseButton, typeof(Button))]
-[TemplatePart(PART_ResizeLeft, typeof(Control))]
-[TemplatePart(PART_ResizeTop, typeof(Control))]
-[TemplatePart(PART_ResizeRight, typeof(Control))]
-[TemplatePart(PART_ResizeBottom, typeof(Control))]
-[TemplatePart(PART_ResizeTopLeft, typeof(Control))]
-[TemplatePart(PART_ResizeTopRight, typeof(Control))]
-[TemplatePart(PART_ResizeBottomRight, typeof(Control))]
-[TemplatePart(PART_ResizeBottomLeft, typeof(Control))]
-[PseudoClasses(":minimized", ":maximized", ":fullscreen", ":dragging")]
+[TemplatePart(PART_ResizeBorder, typeof(Border))]
+[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging")]
 public class ManagedWindow : ContentControl
 {
     public const string PART_TitleBar = "PART_TitleBar";
@@ -33,14 +27,7 @@ public class ManagedWindow : ContentControl
     public const string PART_MaximizeButton = "PART_MaximizeButton";
     public const string PART_RestoreButton = "PART_RestoreButton";
     public const string PART_CloseButton = "PART_CloseButton";
-    public const string PART_ResizeLeft = "PART_ResizeLeft";
-    public const string PART_ResizeTop = "PART_ResizeTop";
-    public const string PART_ResizeRight = "PART_ResizeRight";
-    public const string PART_ResizeBottom = "PART_ResizeBottom";
-    public const string PART_ResizeTopLeft = "PART_ResizeTopLeft";
-    public const string PART_ResizeTopRight = "PART_ResizeTopRight";
-    public const string PART_ResizeBottomRight = "PART_ResizeBottomRight";
-    public const string PART_ResizeBottomLeft = "PART_ResizeBottomLeft";
+    public const string PART_ResizeBorder = "PART_ResizeBorder";
 
     /// <summary>
     /// Defines the <see cref="SizeToContent"/> property.
@@ -81,6 +68,9 @@ public class ManagedWindow : ContentControl
     public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
         AvaloniaProperty.Register<ManagedWindow, WindowStartupLocation>(nameof(WindowStartupLocation));
 
+    public static readonly StyledProperty<PixelPoint> PositionProperty =
+    AvaloniaProperty.Register<ManagedWindow, PixelPoint>(nameof(Position));
+
     public static readonly StyledProperty<bool> CanResizeProperty =
         AvaloniaProperty.Register<ManagedWindow, bool>(nameof(CanResize), true);
 
@@ -106,193 +96,6 @@ public class ManagedWindow : ContentControl
     {
     }
 
-    //    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    //{
-    //    // Call the grandparent's MyMethod
-    //    MethodInfo method = typeof(WindowBase).GetMethod("OnAttachedToVisualTree", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-    //    method.Invoke(this, [e]);
-    //}
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-
-        var partTitleBar = e.NameScope.Find<Control>(PART_TitleBar);
-        if (partTitleBar != null)
-        {
-            partTitleBar.PointerPressed += OnPointerPressed;
-            partTitleBar.PointerMoved += OnPointerMoved;
-            partTitleBar.PointerReleased += OnPointerReleased;
-            partTitleBar.PointerCaptureLost += OnPointerCaptureLost;
-            partTitleBar.DoubleTapped += OnTitleBarDoubleClick;
-        }
-
-        var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
-        if (partMinimizeButton != null)
-            partMinimizeButton.Click += OnMinimizeClick;
-
-        var partMaximizeButton = e.NameScope.Find<Button>(PART_MaximizeButton);
-        if (partMaximizeButton != null)
-            partMaximizeButton.Click += OnMaximizeClick;
-
-        var partRestoreButton = e.NameScope.Find<Button>(PART_RestoreButton);
-        if (partRestoreButton != null)
-            partRestoreButton.Click += OnRestoreClick;
-
-        var partCloseButton = e.NameScope.Find<Button>(PART_CloseButton);
-        if (partCloseButton != null)
-            partCloseButton.Click += OnClose;
-
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeLeft), StandardCursorType.LeftSide, WindowEdge.West);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeRight), StandardCursorType.RightSide, WindowEdge.East);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeTop), StandardCursorType.TopSide, WindowEdge.North);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeBottom), StandardCursorType.BottomSide, WindowEdge.South);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeTopLeft), StandardCursorType.TopLeftCorner, WindowEdge.NorthWest);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeTopRight), StandardCursorType.TopRightCorner, WindowEdge.NorthEast);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeBottomLeft), StandardCursorType.BottomLeftCorner, WindowEdge.SouthWest);
-        SetupSide(e.NameScope.Find<Control>(PART_ResizeBottomRight), StandardCursorType.BottomRightCorner, WindowEdge.SouthEast);
-
-        SetWindowStatePseudoClasses();
-    }
-
-    void SetupSide(Control? control, StandardCursorType cursor, WindowEdge edge)
-    {
-        if (control == null)
-            return;
-        control.Cursor = new Cursor(cursor);
-        Point? start = null;
-        control.PointerPressed += (i, e) =>
-        {
-            BringToTop();
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
-            {
-                start = e.GetPosition(_parent);
-            }
-        };
-        control.PointerReleased += (i, e) =>
-        {
-            if (start != null && e.InitialPressMouseButton == MouseButton.Left)
-            {
-                start = null;
-            }
-        };
-        control.PointerCaptureLost += (i, e) =>
-        {
-            start = null;
-        };
-        control.PointerMoved += (i, e) =>
-        {
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (start != null && properties.IsLeftButtonPressed)
-            {
-                var position = e.GetPosition(_parent);
-                double top = Canvas.GetTop(this);
-                double left = Canvas.GetLeft(this);
-                double width = this.Width;
-                double height = this.Height;
-
-                var deltaX = position.X - start.Value.X;
-                var deltaY = position.Y - start.Value.Y;
-                Debug.WriteLine($"{start.Value.X} {start.Value.Y} => {position.X} {position.Y} ");
-                Debug.WriteLine("deltaX: " + deltaX + " deltaY: " + deltaY);
-                switch (edge)
-                {
-                    case WindowEdge.West:
-                        left += deltaX;
-                        width -= deltaX;
-                        break;
-                    case WindowEdge.East:
-                        width += deltaX;
-                        break;
-                    case WindowEdge.North:
-                        top += deltaY;
-                        height -= deltaY;
-                        break;
-                    case WindowEdge.South:
-                        height += deltaY;
-                        break;
-                    case WindowEdge.NorthWest:
-                        top += deltaY;
-                        height -= deltaY;
-                        left += deltaX;
-                        width -= deltaX;
-                        break;
-                    case WindowEdge.NorthEast:
-                        width += deltaX;
-                        top += deltaY;
-                        height -= deltaY;
-                        break;
-                    case WindowEdge.SouthWest:
-                        left += deltaX;
-                        width -= deltaX;
-                        height += deltaY;
-                        break;
-                    case WindowEdge.SouthEast:
-                        height += deltaY;
-                        width += deltaX;
-                        break;
-                }
-                if (width != Width && width >= MinWidth)
-                    Width = width;
-                if (height != Height && height >= MinHeight)
-                    Height = height;
-                if (left >= 0)
-                    Canvas.SetLeft(this, left);
-                if (top >= 0)
-                    Canvas.SetTop(this, top);
-                start = position;
-            }
-        };
-    }
-
-    private void OnTitleBarDoubleClick(object? sender, TappedEventArgs e)
-    {
-        if (WindowState == WindowState.Minimized)
-            WindowState = WindowState.Normal;
-        else if (WindowState == WindowState.Normal)
-            WindowState = WindowState.Maximized;
-        else if (WindowState == WindowState.Maximized)
-            WindowState = WindowState.Normal;
-        SetWindowStatePseudoClasses();
-        BringToTop();
-    }
-
-    private void OnClose(object? sender, RoutedEventArgs e)
-    {
-        var ctor = typeof(WindowClosingEventArgs).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
-            [typeof(WindowCloseReason), typeof(bool)]);
-        WindowClosingEventArgs args = (WindowClosingEventArgs)ctor.Invoke([WindowCloseReason.WindowClosing, false]);
-        Closing?.Invoke(this, args);
-        if (!args.Cancel)
-        {
-            var windowsPanel = (ManagedWindowsPanel)this.Parent;
-            windowsPanel.Children.Remove(this);
-            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
-        }
-    }
-
-
-    private void OnMinimizeClick(object? sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Minimized;
-        SetWindowStatePseudoClasses();
-    }
-
-
-    private void OnMaximizeClick(object? sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Maximized;
-        SetWindowStatePseudoClasses();
-        BringToTop();
-    }
-
-    private void OnRestoreClick(object? sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Normal;
-        SetWindowStatePseudoClasses();
-        BringToTop();
-    }
 
     /// <summary>
     /// Gets or sets a value indicating how the window will size itself to fit its content.
@@ -376,12 +179,62 @@ public class ManagedWindow : ContentControl
     }
 
     /// <summary>
+    /// Gets or sets the window position in screen coordinates.
+    /// </summary>
+    public PixelPoint Position
+    {
+        get => GetValue(PositionProperty);
+        set => SetValue(PositionProperty, value);
+    }
+
+    /// <summary>
     /// Fired before a window is closed.
     /// </summary>
     public event EventHandler<WindowClosingEventArgs>? Closing;
 
+    //    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    //{
+    //    // Call the grandparent's MyMethod
+    //    MethodInfo method = typeof(WindowBase).GetMethod("OnAttachedToVisualTree", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+    //    method.Invoke(this, [e]);
+    //}
 
-    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        var partTitleBar = e.NameScope.Find<Control>(PART_TitleBar);
+        if (partTitleBar != null)
+        {
+            partTitleBar.PointerPressed += OnTitleBarPointerPressed;
+            partTitleBar.PointerMoved += OnTitleBarPointerMoved;
+            partTitleBar.PointerReleased += OnTitleBarPointerReleased;
+            partTitleBar.PointerCaptureLost += OnTitleBarPointerCaptureLost;
+            partTitleBar.DoubleTapped += OnTitleBarDoubleClick;
+        }
+
+        var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
+        if (partMinimizeButton != null)
+            partMinimizeButton.Click += OnMinimizeClick;
+
+        var partMaximizeButton = e.NameScope.Find<Button>(PART_MaximizeButton);
+        if (partMaximizeButton != null)
+            partMaximizeButton.Click += OnMaximizeClick;
+
+        var partRestoreButton = e.NameScope.Find<Button>(PART_RestoreButton);
+        if (partRestoreButton != null)
+            partRestoreButton.Click += OnRestoreClick;
+
+        var partCloseButton = e.NameScope.Find<Button>(PART_CloseButton);
+        if (partCloseButton != null)
+            partCloseButton.Click += OnCloseClick;
+
+        SetupResize(e.NameScope.Find<Border>(PART_ResizeBorder));
+        SetWindowStatePseudoClasses();
+    }
+
+
+    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var properties = e.GetCurrentPoint(this).Properties;
         if (properties.IsLeftButtonPressed
@@ -401,26 +254,26 @@ public class ManagedWindow : ContentControl
         }
     }
 
-    private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+    private void OnTitleBarPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (_captured)
         {
             if (e.InitialPressMouseButton == MouseButton.Left)
             {
-                Released();
+                OnTitleBarPointerReleased();
             }
 
             _captured = false;
         }
     }
 
-    private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+    private void OnTitleBarPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
-        Released();
+        OnTitleBarPointerReleased();
         _captured = false;
     }
 
-    private void OnPointerMoved(object? sender, PointerEventArgs e)
+    private void OnTitleBarPointerMoved(object? sender, PointerEventArgs e)
     {
         var properties = e.GetCurrentPoint(this).Properties;
         if (_captured
@@ -444,7 +297,7 @@ public class ManagedWindow : ContentControl
 
 
 
-    private void Released()
+    private void OnTitleBarPointerReleased()
     {
         if (_enableDrag)
         {
@@ -489,9 +342,13 @@ public class ManagedWindow : ContentControl
                 break;
             case WindowState.Maximized:
                 classes.Add(":maximized");
+                Canvas.SetLeft(this, 0);
+                Canvas.SetTop(this, 0);
                 break;
             case WindowState.Normal:
                 classes.Add(":normal");
+                Canvas.SetLeft(this, Position.X);
+                Canvas.SetTop(this, Position.Y);
                 break;
         }
     }
@@ -501,6 +358,220 @@ public class ManagedWindow : ContentControl
         this.ZIndex = canvas.Children.Where(child => child is ManagedWindow).Max(child => (child as ManagedWindow).ZIndex) + 1;
     }
 
+    void SetupResize(Border? border)
+    {
+        var borderWidth = 4;
+        if (border == null)
+            return;
+        WindowEdge? edge = null;
+        Point? start = null;
+        border.PointerPressed += (i, e) =>
+        {
+            BringToTop();
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
+            {
+                var point = e.GetPosition(_parent);
+                edge = GetEdge(border, borderWidth, point);
+                border.Cursor = new Cursor(GetCursorForEdge(edge));
+                if (edge != null)
+                {
+                    start = point;
+                    e.Pointer.Capture(border);
+                }
+            }
+        };
+        border.PointerReleased += (i, e) =>
+        {
+            if (e.InitialPressMouseButton == MouseButton.Left)
+            {
+                start = null;
+                edge = null;
+                e.Pointer.Capture(null);
+                border.Cursor = new Cursor(GetCursorForEdge(edge));
+            }
+        };
+        border.PointerCaptureLost += (i, e) =>
+        {
+            start = null;
+            edge = null;
+            e.Pointer.Capture(null);
+            border.Cursor = new Cursor(GetCursorForEdge(edge));
+        };
+        border.PointerMoved += (i, e) =>
+        {
+            var position = e.GetPosition(_parent);
+
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (edge != null &&
+                start != null &&
+                properties.IsLeftButtonPressed)
+            {
+                double top = Canvas.GetTop(this);
+                double left = Canvas.GetLeft(this);
+                double width = this.Width;
+                double height = this.Height;
+
+                var deltaX = position.X - start.Value.X;
+                var deltaY = position.Y - start.Value.Y;
+                Debug.WriteLine($"{(int)start.Value.X} {(int)start.Value.Y} => {(int)position.X} {(int)position.Y} ");
+                Debug.WriteLine("deltaX: " +(int) deltaX + " deltaY: " + (int)deltaY);
+                switch (edge)
+                {
+                    case WindowEdge.West:
+                        left += deltaX;
+                        width -= deltaX;
+                        break;
+                    case WindowEdge.East:
+                        width += deltaX;
+                        break;
+                    case WindowEdge.North:
+                        top += deltaY;
+                        height -= deltaY;
+                        break;
+                    case WindowEdge.South:
+                        height += deltaY;
+                        break;
+                    case WindowEdge.NorthWest:
+                        top += deltaY;
+                        height -= deltaY;
+                        left += deltaX;
+                        width -= deltaX;
+                        break;
+                    case WindowEdge.NorthEast:
+                        width += deltaX;
+                        top += deltaY;
+                        height -= deltaY;
+                        break;
+                    case WindowEdge.SouthWest:
+                        left += deltaX;
+                        width -= deltaX;
+                        height += deltaY;
+                        break;
+                    case WindowEdge.SouthEast:
+                        height += deltaY;
+                        width += deltaX;
+                        break;
+                }
+                if (left >= 0)
+                    Canvas.SetLeft(this, left);
+                if (top >= 0)
+                    Canvas.SetTop(this, top);
+                if (width != Width && width >= MinWidth)
+                    Width = width;
+                if (height != Height && height >= MinHeight)
+                    Height = height;
+
+                start = position;
+            }
+            else
+            {
+                var edgeTemp = GetEdge(border, borderWidth, position);
+                border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
+            }
+        };
+    }
+
+    private WindowEdge? GetEdge(Control control, int borderWidth, Point? start)
+    {
+        if (start == null)
+            return null;
+        double top = Canvas.GetTop(this);
+        double left = Canvas.GetLeft(this);
+        double right= left + this.Width;
+        double bottom = top + this.Height;
+
+        //var top = Position.Y;
+        //var bottom = Position.Y + Height;
+        //var left = Position.X;
+        //var right = Position.X + Width;
+        var leftEdge = start.Value.X >= left &&
+                       start.Value.X <= left + borderWidth;
+        var rightEdge = start.Value.X >= right - borderWidth &&
+                        start.Value.X <= right;
+        var topEdge = start.Value.Y >= top &&
+                        start.Value.Y <= top + borderWidth;
+        var bottomEdge = start.Value.Y >= bottom - borderWidth &&
+                        start.Value.Y <= bottom;
+        if (topEdge && leftEdge)
+            return WindowEdge.NorthWest;
+        else if (topEdge && rightEdge)
+            return WindowEdge.NorthEast;
+        else if (bottomEdge && leftEdge)
+            return WindowEdge.SouthWest;
+        else if (bottomEdge && rightEdge)
+            return WindowEdge.SouthEast;
+        else if (topEdge)
+            return WindowEdge.North;
+        else if (bottomEdge)
+            return WindowEdge.South;
+        else if (leftEdge)
+            return WindowEdge.West;
+        else if (rightEdge)
+            return WindowEdge.East;
+        return null;
+    }
+
+    StandardCursorType GetCursorForEdge(WindowEdge? edge)
+        => edge switch
+        {
+            WindowEdge.North => StandardCursorType.TopSide,
+            WindowEdge.South => StandardCursorType.BottomSide,
+            WindowEdge.West => StandardCursorType.LeftSide,
+            WindowEdge.East => StandardCursorType.RightSide,
+            WindowEdge.NorthWest => StandardCursorType.TopLeftCorner,
+            WindowEdge.NorthEast => StandardCursorType.TopRightCorner,
+            WindowEdge.SouthWest => StandardCursorType.BottomLeftCorner,
+            WindowEdge.SouthEast => StandardCursorType.BottomRightCorner,
+            _ => StandardCursorType.Arrow
+        };
+
+    private void OnTitleBarDoubleClick(object? sender, TappedEventArgs e)
+    {
+        if (WindowState == WindowState.Minimized)
+            WindowState = WindowState.Normal;
+        else if (WindowState == WindowState.Normal)
+            WindowState = WindowState.Maximized;
+        else if (WindowState == WindowState.Maximized)
+            WindowState = WindowState.Normal;
+        SetWindowStatePseudoClasses();
+        BringToTop();
+    }
+
+    private void OnCloseClick(object? sender, RoutedEventArgs e)
+    {
+        var ctor = typeof(WindowClosingEventArgs).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
+            [typeof(WindowCloseReason), typeof(bool)]);
+        WindowClosingEventArgs args = (WindowClosingEventArgs)ctor.Invoke([WindowCloseReason.WindowClosing, false]);
+        Closing?.Invoke(this, args);
+        if (!args.Cancel)
+        {
+            var windowsPanel = (ManagedWindowsPanel)this.Parent;
+            windowsPanel.Children.Remove(this);
+            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
+        }
+    }
 
 
+    private void OnMinimizeClick(object? sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+        SetWindowStatePseudoClasses();
+    }
+
+
+    private void OnMaximizeClick(object? sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine($"{this.Position.X},{this.Position.Y} {Canvas.GetLeft(this)},{Canvas.GetTop(this)}");
+        BringToTop();
+        WindowState = WindowState.Maximized;
+        SetWindowStatePseudoClasses();
+    }
+
+    private void OnRestoreClick(object? sender, RoutedEventArgs e)
+    {
+        BringToTop();
+        WindowState = WindowState.Normal;
+        SetWindowStatePseudoClasses();
+    }
 }

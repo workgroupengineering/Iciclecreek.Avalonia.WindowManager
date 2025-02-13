@@ -16,7 +16,7 @@
       <Setter Property="BorderBrush"
               Value="DarkGray" />
       <Setter Property="BorderThickness"
-              Value="1" />
+              Value="4" />
       <Setter Property="Margin"
               Value="0" />
       <Setter Property="Padding"
@@ -30,93 +30,48 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate>
-              <Grid Background="{TemplateBinding Background}"
-                    RowDefinitions="Auto * Auto" 
-                    ColumnDefinitions="Auto * Auto">
+            <Border Name="PART_ResizeBorder"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}">
 
-                <Grid Grid.ColumnSpan="3" RowDefinitions="Auto *">
-                  <!--Title Bar-->
-                  <Grid Name="PART_TitleBar"
-                        ColumnDefinitions="* Auto Auto Auto"
-                        Background="Gray">
-                    <TextBlock
-                      Padding="10 0"
-                      VerticalAlignment="Center"
-                      Text="Title"/>
-                    <Button Name="PART_MinimizeButton"
-                            Grid.Column="1"
-                            Content="🗕"/>
-                    <Button Name="PART_MaximizeButton"
-                            Grid.Column="2"
-                            Content="🗖"/>
-                    <Button Name="PART_RestoreButton"
-                            Grid.Column="2"
-                            Content="🗗"/>
-                    <Button Name="PART_CloseButton" Grid.Column="3">🗙</Button >
-                  </Grid>
-
-                  <!--Content-->
-                  <Panel Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2"
-                         Background="Transparent">
-                    <ContentPresenter Name="PART_ContentPresenter"
-                                      Background="{TemplateBinding Background}"
-                                      Margin="{DynamicResource ConsoloniaDialogWindowBorderMargin}"
-                                      Padding="{TemplateBinding Padding}"
-                                      BorderThickness="{TemplateBinding BorderThickness}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      Content="{TemplateBinding Content}" />
-                  </Panel>
+              <Grid RowDefinitions="Auto *">
+                <!--Title Bar-->
+                <Grid Name="PART_TitleBar"
+                      ColumnDefinitions="* Auto Auto Auto"
+                      Background="Gray">
+                  <TextBlock
+                    Padding="10 0"
+                    VerticalAlignment="Center"
+                    Text="{TemplateBinding Title}"/>
+                  <Button Name="PART_MinimizeButton"
+                          Grid.Column="1"
+                          Content="🗕"/>
+                  <Button Name="PART_MaximizeButton"
+                          Grid.Column="2"
+                          Content="🗖"/>
+                  <Button Name="PART_RestoreButton"
+                          Grid.Column="2"
+                          Content="🗗"/>
+                  <Button Name="PART_CloseButton"
+                          Grid.Column="3"
+                          Content="🗙"
+                          IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
                 </Grid>
 
-                <Rectangle Name="PART_ResizeTopLeft" 
-                           Grid.Row="0" Grid.Column="0"  
-                           Fill="Transparent"
-                           VerticalAlignment="Top"
-                           HorizontalAlignment="Left"
-                           Width="4"
-                           Height="4"/>
-                <Rectangle Name="PART_ResizeTop" 
-                           Grid.Row="0" Grid.Column="1" 
-                           Fill="Transparent"
-                           VerticalAlignment="Top"
-                           Height="4"/>
-                <Rectangle Name="PART_ResizeTopRight" 
-                           Grid.Row="0" Grid.Column="2" 
-                           Fill="Transparent"
-                           VerticalAlignment="Top"
-                           HorizontalAlignment="Right"
-                           Height="4"
-                           Width="4"/>
-                <Rectangle Name="PART_ResizeLeft" 
-                           Grid.Row="1" Grid.Column="0" 
-                           Fill="Transparent"
-                           HorizontalAlignment="Left"
-                           Width="4"/>
-                <Rectangle Name="PART_ResizeRight" 
-                           Grid.Row="1" Grid.Column="2"  
-                           HorizontalAlignment="Right"
-                           Fill="Transparent"
-                           Width="4"/>
-                <Rectangle Name="PART_ResizeBottomLeft" 
-                           Grid.Row="2" Grid.Column="0" 
-                           Fill="Transparent"
-                           VerticalAlignment="Bottom"
-                           HorizontalAlignment="Left"
-                           Height="4"
-                           Width="4"/>
-                <Rectangle Name="PART_ResizeBottom" 
-                           Grid.Row="2" Grid.Column="1"  
-                           Fill="Transparent"
-                           VerticalAlignment="Bottom"
-                           Height="4"/>
-                <Rectangle Name="PART_ResizeBottomRight" 
-                           Grid.Row="2" Grid.Column="2" 
-                           Fill="Transparent"
-                           VerticalAlignment="Bottom"
-                           HorizontalAlignment="Right"
-                           Height="4"
-                           Width="4"/>
+                <!--Content-->
+                <ContentPresenter Grid.Row="1"
+                                  ClipToBounds="True"
+                                  Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  Margin="{DynamicResource ConsoloniaDialogWindowBorderMargin}"
+                                  Padding="{TemplateBinding Padding}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}" />
               </Grid>
+
+            </Border>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
@@ -148,8 +103,10 @@
       </Style>
 
       <Style Selector="^:maximized">
-        <Setter Property="Background" Value="BurlyWood"/>
+        <Setter Property="Canvas.Left" Value="0"/>
+        <Setter Property="Canvas.Top" Value="0"/>
       </Style>
+
 
       <Style Selector="^:normal /template/ Button#PART_MaximizeButton">
         <Setter Property="IsVisible" Value="True"/>
