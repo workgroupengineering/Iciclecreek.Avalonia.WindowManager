@@ -4,6 +4,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -84,6 +85,12 @@ public class ManagedWindow : ContentControl
     public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
         RoutedEvent.Register<ManagedWindow, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
+    /// <summary>
+    /// Defines the <see cref="BoxShadow"/> property.
+    /// </summary>
+    public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
+        AvaloniaProperty.Register<ManagedWindow, BoxShadows>(nameof(BoxShadow));
+
     private double _normalWidth;
     private double _normalHeight;
 
@@ -120,6 +127,15 @@ public class ManagedWindow : ContentControl
     {
         get => GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the box shadow effect parameters
+    /// </summary>
+    public BoxShadows BoxShadow
+    {
+        get => GetValue(BoxShadowProperty);
+        set => SetValue(BoxShadowProperty, value);
     }
 
     public bool IsCloseButtonVisible
@@ -202,7 +218,7 @@ public class ManagedWindow : ContentControl
     public void MaximizeWindow()
     {
         BringToTop();
-        var parent = Parent as ManagedWindowsPanel;
+        var parent = (ManagedWindowsPanel)Parent!;
         if (WindowState == WindowState.Normal)
         {
             _normalWidth = this.Width;
@@ -230,7 +246,7 @@ public class ManagedWindow : ContentControl
     public void MinimizeWindow()
     {
         BringToTop();
-        var parent = Parent as ManagedWindowsPanel;
+        var parent = (ManagedWindowsPanel)Parent!;
         if (WindowState == WindowState.Normal)
         {
             _normalWidth = this.Width;
@@ -365,8 +381,8 @@ public class ManagedWindow : ContentControl
     }
     private void BringToTop()
     {
-        var canvas = Parent as Canvas;
-        this.ZIndex = canvas.Children.Where(child => child is ManagedWindow).Max(child => (child as ManagedWindow).ZIndex) + 1;
+        var canvas = (Canvas)Parent!;
+        this.ZIndex = canvas.Children.Where(child => child is ManagedWindow).Max(child => ((ManagedWindow)child).ZIndex) + 1;
     }
 
     void SetupResize(Border? border)
@@ -554,7 +570,7 @@ public class ManagedWindow : ContentControl
         Closing?.Invoke(this, args);
         if (!args.Cancel)
         {
-            var windowsPanel = (ManagedWindowsPanel)this.Parent;
+            var windowsPanel = (ManagedWindowsPanel)this.Parent!;
             windowsPanel.Children.Remove(this);
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
         }

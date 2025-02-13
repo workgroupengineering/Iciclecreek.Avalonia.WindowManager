@@ -5,6 +5,7 @@
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Demo.MainWindow"
+        Background="#404040"
         Title="Demo">
   
   <wm:ManagedWindowsPanel Name="WindowsPanel">
