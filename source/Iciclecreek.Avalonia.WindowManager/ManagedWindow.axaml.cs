@@ -1,17 +1,14 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Styling;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -320,7 +317,7 @@ public class ManagedWindow : ContentControl
         partTitleBar.PointerPressed += (object? sender, PointerPressedEventArgs e) =>
         {
             BringToTop();
-            
+
             if (WindowState == WindowState.Normal)
             {
 
@@ -477,8 +474,9 @@ public class ManagedWindow : ContentControl
                     double width = this.Width;
                     double height = this.Height;
 
-                    var deltaX = position.X - start.Value.X;
-                    var deltaY = position.Y - start.Value.Y;
+                    var deltaX = (int)position.X - (int)start.Value.X;
+                    var deltaY = (int)position.Y - (int)start.Value.Y;
+
                     switch (edge)
                     {
                         case WindowEdge.West:
@@ -517,13 +515,16 @@ public class ManagedWindow : ContentControl
                             break;
                     }
 
-                    this.Position = new PixelPoint((int)left, (int)top);
-                    if (width != Width && width >= MinWidth)
-                        Width = width;
-                    if (height != Height && height >= MinHeight)
-                        Height = height;
+                    if (deltaX != 0 || deltaY != 0)
+                    {
+                        this.Position = new PixelPoint((int)left, (int)top);
+                        if (width != Width && width >= MinWidth && width < MaxWidth)
+                            Width = width;
+                        if (height != Height && height >= MinHeight && height < MaxHeight)
+                            Height = height;
 
-                    start = position;
+                        start = position;
+                    }
                 }
                 else
                 {
