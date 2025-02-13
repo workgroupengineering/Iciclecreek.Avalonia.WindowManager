@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -54,6 +56,13 @@ public partial class ManagedWindowsPanel : Canvas
                 Canvas.SetTop(window, window.Position.Y);
                 break;
         }
+        var windows = GetWindows();
+        window.ZIndex = windows.Any() ? windows.Max(child => child.ZIndex) + 1 : 10;
         this.Children.Add(window);
+    }
+
+    public IEnumerable<ManagedWindow> GetWindows()
+    {
+        return this.Children.Where(Children => Children is ManagedWindow).Cast<ManagedWindow>().ToList();
     }
 }

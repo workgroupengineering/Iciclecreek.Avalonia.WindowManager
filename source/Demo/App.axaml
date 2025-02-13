@@ -14,13 +14,13 @@
       <Setter Property="BorderBrush"
               Value="DarkGray" />
       <Setter Property="BorderThickness"
-              Value="2" />
+              Value="4" />
       <Setter Property="BoxShadow"
-              Value="5 5 10 Gray"/>
+              Value="10 10 70 Black"/>
       <Setter Property="CornerRadius"
-              Value="5" />
-      <Setter Property="Margin"
               Value="0" />
+      <Setter Property="Margin"
+              Value="0 0 10 10 " />
       <Setter Property="Padding"
               Value="0" />
       <Setter Property="MinHeight"
@@ -36,6 +36,7 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     BoxShadow="{TemplateBinding BoxShadow}"
+                    Margin="{TemplateBinding Margin}"
                     Background="{TemplateBinding Background}">
               <Grid RowDefinitions="Auto *">
                 <!--Title Bar-->

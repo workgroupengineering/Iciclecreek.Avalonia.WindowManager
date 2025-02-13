@@ -507,17 +507,13 @@ public class ManagedWindow : ContentControl
         double right = left + this.Width;
         double bottom = top + this.Height;
 
-        //var top = Position.Y;
-        //var bottom = Position.Y + Height;
-        //var left = Position.X;
-        //var right = Position.X + Width;
         var leftEdge = start.Value.X >= left &&
-                       start.Value.X <= left + border.BorderThickness.Left;
-        var rightEdge = start.Value.X >= right - border.BorderThickness.Right &&
+                       start.Value.X <= left + border.BorderThickness.Left - border.Margin.Left;
+        var rightEdge = start.Value.X >= right - border.BorderThickness.Right - border.Margin.Right &&
                         start.Value.X <= right;
         var topEdge = start.Value.Y >= top &&
-                        start.Value.Y <= top + border.BorderThickness.Top;
-        var bottomEdge = start.Value.Y >= bottom - border.BorderThickness.Bottom &&
+                        start.Value.Y <= top + border.BorderThickness.Top - this.Margin.Top;
+        var bottomEdge = start.Value.Y >= bottom - border.BorderThickness.Bottom - this.Margin.Bottom &&
                         start.Value.Y <= bottom;
         if (topEdge && leftEdge)
             return WindowEdge.NorthWest;
