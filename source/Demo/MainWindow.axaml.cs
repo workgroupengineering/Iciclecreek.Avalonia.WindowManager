@@ -11,8 +11,6 @@ namespace Demo
     {
         
 
-        private int _counter = 3;
-
         public MainWindow()
         {
             InitializeComponent();
