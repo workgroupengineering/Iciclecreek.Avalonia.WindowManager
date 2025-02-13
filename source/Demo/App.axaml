@@ -16,7 +16,7 @@
       <Setter Property="BorderThickness"
               Value="4" />
       <Setter Property="BoxShadow"
-              Value="20 20 70 Black"/>
+              Value="5 5 50 Black"/>
       <Setter Property="CornerRadius"
               Value="0" />
       <Setter Property="Padding"

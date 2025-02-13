@@ -308,15 +308,18 @@ public class ManagedWindow : ContentControl
 
         partTitleBar.PointerPressed += (object? sender, PointerPressedEventArgs e) =>
         {
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (properties.IsLeftButtonPressed)
+            BringToTop();
+            
+            if (WindowState == WindowState.Normal)
             {
-                var point = e.GetPosition(parent);
-                start = new PixelPoint((int)point.X, (int)point.Y);
-                SetDraggingPseudoClasses(this, true);
 
-                // AddAdorner(_draggedContainer);
-                BringToTop();
+                var properties = e.GetCurrentPoint(this).Properties;
+                if (properties.IsLeftButtonPressed)
+                {
+                    var point = e.GetPosition(parent);
+                    start = new PixelPoint((int)point.X, (int)point.Y);
+                    SetDraggingPseudoClasses(this, true);
+                }
             }
         };
 
@@ -334,14 +337,18 @@ public class ManagedWindow : ContentControl
 
         partTitleBar.PointerMoved += (object? sender, PointerEventArgs e) =>
         {
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (start != null && properties.IsLeftButtonPressed)
+            if (WindowState == WindowState.Normal)
             {
-                var point = e.GetPosition(parent);
-                var position = new PixelPoint((int)point.X, (int)point.Y);
-                var delta = position - start.Value;
-                start = position;
-                this.Position = this.Position + delta;
+
+                var properties = e.GetCurrentPoint(this).Properties;
+                if (start != null && properties.IsLeftButtonPressed)
+                {
+                    var point = e.GetPosition(parent);
+                    var position = new PixelPoint((int)point.X, (int)point.Y);
+                    var delta = position - start.Value;
+                    start = position;
+                    this.Position = this.Position + delta;
+                }
             }
         };
 
@@ -409,7 +416,7 @@ public class ManagedWindow : ContentControl
         border.PointerPressed += (i, e) =>
         {
             BringToTop();
-            
+
             if (WindowState == WindowState.Normal)
             {
                 var properties = e.GetCurrentPoint(this).Properties;
