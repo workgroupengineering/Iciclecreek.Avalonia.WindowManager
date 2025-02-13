@@ -12,24 +12,11 @@
       <TextBlock> Welcome to Avalonia!</TextBlock>
       <Button Content="Add a window" Click="Button_Click" />
     </StackPanel>
-    <wm:ManagedWindow 
-      Title="Pink window" 
-      Width="200" 
-      Height="200" 
-      Background="Pink"
-      Canvas.Top="100" 
-      Canvas.Left="100" >
-      <Panel>
-        <Canvas>
-          <Rectangle Width="150" Height="150" Fill="Blue" Canvas.Top="100" Canvas.Left="100"/>
-        </Canvas>
-      </Panel>
-    </wm:ManagedWindow >
 
     <wm:ManagedWindow 
       Title="Green window" 
-      Background="DarkGreen"
-      Width="300" Height="200" Canvas.Top="200" Canvas.Left="150" >
+      Background="DarkGreen" Position="200,150"
+      Width="300" Height="200" >
       <Panel>
         <Canvas >
           <Rectangle Width="150" Height="150" Fill="Purple" Canvas.Top="100" Canvas.Left="100"/>
