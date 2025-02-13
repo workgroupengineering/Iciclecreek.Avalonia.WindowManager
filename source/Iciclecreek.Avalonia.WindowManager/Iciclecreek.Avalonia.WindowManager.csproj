@@ -11,8 +11,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="ManagedWindowsPanel.axaml.cs">
-      <DependentUpon>ManagedWindowsPanel.axaml</DependentUpon>
-    </Compile>
+    <AvaloniaResource Include="**/*.*xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove="ManagedWindow.axaml" />
+    <AvaloniaXaml Remove="WindowManagerTheme.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Update="WindowManagerTheme.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
+    <AvaloniaResource Update="ManagedWindow.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
   </ItemGroup>
 </Project>

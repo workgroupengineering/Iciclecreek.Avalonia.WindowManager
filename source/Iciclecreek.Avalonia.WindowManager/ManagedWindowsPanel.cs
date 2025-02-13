@@ -7,11 +7,10 @@ using System.Linq;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
-public partial class ManagedWindowsPanel : Canvas
+public class ManagedWindowsPanel : Canvas
 {
     public ManagedWindowsPanel()
     {
-        InitializeComponent();
     }
 
     /// <summary>

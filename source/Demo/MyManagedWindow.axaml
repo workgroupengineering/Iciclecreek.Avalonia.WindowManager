@@ -5,18 +5,17 @@
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
         xmlns:local="using:Demo"
         MinWidth="150"
-        Theme="{StaticResource {x:Type wm:ManagedWindow}}"
         x:Class="Demo.MyManagedWindow"
         x:DataType="local:MyManagedWindowViewModel"
         Title="{Binding Title}">
   <StackPanel>
     <TextBlock Text="{Binding Counter}"/>
     <Button
-        HorizontalAlignment="Left" 
+        HorizontalAlignment="Left"
         Click="OnIncrement">Increment</Button>
 
     <Button
-        HorizontalAlignment="Left" 
+        HorizontalAlignment="Left"
         Click="OnSpin">Spin</Button>
   </StackPanel>
 </wm:ManagedWindow>

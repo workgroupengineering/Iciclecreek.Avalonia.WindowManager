@@ -6,10 +6,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -96,7 +98,13 @@ public class ManagedWindow : ContentControl
     private double _normalHeight;
     private BoxShadows _normalBoxShadow;
     private Thickness _normalMargin;
-    private Border _windowBorder;
+    private Border? _windowBorder;
+
+    static ManagedWindow()
+    {
+        //var theme = new ManagedWindowControlTheme() { TargetType = typeof(ManagedWindow) };
+        //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
+    }
 
     public ManagedWindow()
     {
@@ -227,7 +235,7 @@ public class ManagedWindow : ContentControl
         {
             _normalWidth = this.Width;
             _normalHeight = this.Height;
-            _normalBoxShadow = _windowBorder.BoxShadow;
+            _normalBoxShadow = _windowBorder.BoxShadow!;
             _normalMargin = _windowBorder.Margin;
         }
         Canvas.SetLeft(this, 0);
@@ -269,6 +277,9 @@ public class ManagedWindow : ContentControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        //if (this.Theme == null)
+        //    this.Theme = (ControlTheme)this.FindResource("ManagedWindow");
 
         var partTitleBar = e.NameScope.Find<Control>(PART_TitleBar);
         if (partTitleBar != null)

@@ -1,0 +1,18 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+        x:Class="Iciclecreek.Avalonia.WindowManager.WindowManagerTheme">
+
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/ManagedWindow.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+  
+  <!-- set a style to default to ManagedWindow template-->
+  <Style Selector=":is(wm|ManagedWindow)">
+    <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
+  </Style>
+</Styles>
