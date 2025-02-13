@@ -371,7 +371,6 @@ public class ManagedWindow : ContentControl
 
     void SetupResize(Border? border)
     {
-        var borderWidth = 4;
         if (border == null)
             return;
         WindowEdge? edge = null;
@@ -383,7 +382,7 @@ public class ManagedWindow : ContentControl
             if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
             {
                 var point = e.GetPosition(this.Parent as Control);
-                edge = GetEdge(border, borderWidth, point);
+                edge = GetEdge(border, point);
                 border.Cursor = new Cursor(GetCursorForEdge(edge));
                 if (edge != null)
                 {
@@ -477,13 +476,13 @@ public class ManagedWindow : ContentControl
             }
             else
             {
-                var edgeTemp = GetEdge(border, borderWidth, position);
+                var edgeTemp = GetEdge(border, position);
                 border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
             }
         };
     }
 
-    private WindowEdge? GetEdge(Control control, int borderWidth, Point? start)
+    private WindowEdge? GetEdge(Border border, Point? start)
     {
         if (start == null)
             return null;
@@ -497,12 +496,12 @@ public class ManagedWindow : ContentControl
         //var left = Position.X;
         //var right = Position.X + Width;
         var leftEdge = start.Value.X >= left &&
-                       start.Value.X <= left + borderWidth;
-        var rightEdge = start.Value.X >= right - borderWidth &&
+                       start.Value.X <= left + border.BorderThickness.Left;
+        var rightEdge = start.Value.X >= right - border.BorderThickness.Right &&
                         start.Value.X <= right;
         var topEdge = start.Value.Y >= top &&
-                        start.Value.Y <= top + borderWidth;
-        var bottomEdge = start.Value.Y >= bottom - borderWidth &&
+                        start.Value.Y <= top + border.BorderThickness.Top;
+        var bottomEdge = start.Value.Y >= bottom - border.BorderThickness.Bottom &&
                         start.Value.Y <= bottom;
         if (topEdge && leftEdge)
             return WindowEdge.NorthWest;

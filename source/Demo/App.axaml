@@ -7,8 +7,6 @@
   <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
   <Application.Resources>
-    <sys:Int64 x:Key="ManagedWindowBorderMargin">5</sys:Int64>
-
     <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                       TargetType="wm:ManagedWindow">
       <Setter Property="Background"
@@ -16,7 +14,7 @@
       <Setter Property="BorderBrush"
               Value="DarkGray" />
       <Setter Property="BorderThickness"
-              Value="4" />
+              Value="2" />
       <Setter Property="Margin"
               Value="0" />
       <Setter Property="Padding"
