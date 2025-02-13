@@ -16,11 +16,9 @@
       <Setter Property="BorderThickness"
               Value="4" />
       <Setter Property="BoxShadow"
-              Value="10 10 70 Black"/>
+              Value="20 20 70 Black"/>
       <Setter Property="CornerRadius"
               Value="0" />
-      <Setter Property="Margin"
-              Value="0 0 10 10 " />
       <Setter Property="Padding"
               Value="0" />
       <Setter Property="MinHeight"
@@ -36,7 +34,6 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     BoxShadow="{TemplateBinding BoxShadow}"
-                    Margin="{TemplateBinding Margin}"
                     Background="{TemplateBinding Background}">
               <Grid RowDefinitions="Auto *">
                 <!--Title Bar-->
@@ -107,6 +104,7 @@
 
       <Style Selector="^:maximized /template/ Border#PART_ResizeBorder">
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
       </Style>
 
 

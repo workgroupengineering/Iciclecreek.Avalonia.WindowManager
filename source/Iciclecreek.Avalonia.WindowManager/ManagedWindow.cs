@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -93,6 +94,9 @@ public class ManagedWindow : ContentControl
 
     private double _normalWidth;
     private double _normalHeight;
+    private BoxShadows _normalBoxShadow;
+    private Thickness _normalMargin;
+    private Border _windowBorder;
 
     public ManagedWindow()
     {
@@ -223,11 +227,15 @@ public class ManagedWindow : ContentControl
         {
             _normalWidth = this.Width;
             _normalHeight = this.Height;
+            _normalBoxShadow = _windowBorder.BoxShadow;
+            _normalMargin = _windowBorder.Margin;
         }
         Canvas.SetLeft(this, 0);
         Canvas.SetTop(this, 0);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
+        _windowBorder.Margin = new Thickness(0);
+        _windowBorder.BoxShadow = new BoxShadows();
         WindowState = WindowState.Maximized;
         SetWindowStatePseudoClasses();
     }
@@ -240,6 +248,8 @@ public class ManagedWindow : ContentControl
         Canvas.SetTop(this, (int)this.Position.Y);
         this.Width = _normalWidth;
         this.Height = _normalHeight;
+        _windowBorder.Margin = _normalMargin;
+        _windowBorder.BoxShadow = _normalBoxShadow;
         SetWindowStatePseudoClasses();
     }
 
@@ -282,7 +292,8 @@ public class ManagedWindow : ContentControl
         if (partCloseButton != null)
             partCloseButton.Click += OnCloseClick;
 
-        SetupResize(e.NameScope.Find<Border>(PART_ResizeBorder));
+        _windowBorder = e.NameScope.Find<Border>(PART_ResizeBorder);
+        SetupResize(_windowBorder );
 
         SetWindowStatePseudoClasses();
     }
@@ -302,7 +313,6 @@ public class ManagedWindow : ContentControl
             {
                 var point = e.GetPosition(parent);
                 start = new PixelPoint((int)point.X, (int)point.Y);
-                Debug.WriteLine($"start: {start.Value.X},{start.Value.Y} {Position.X},{Position.Y}");
                 SetDraggingPseudoClasses(this, true);
 
                 // AddAdorner(_draggedContainer);
@@ -389,6 +399,11 @@ public class ManagedWindow : ContentControl
     {
         if (border == null)
             return;
+
+        // when there is a box shadow we need to adjust the margin to allow it to be rendered.
+        if (border.BoxShadow.Count > 0)
+            border.Margin = new Thickness(0, 0, border.BoxShadow[0].OffsetX, border.BoxShadow[0].OffsetY);
+        
         WindowEdge? edge = null;
         Point? start = null;
         border.PointerPressed += (i, e) =>
@@ -440,8 +455,6 @@ public class ManagedWindow : ContentControl
 
                 var deltaX = position.X - start.Value.X;
                 var deltaY = position.Y - start.Value.Y;
-                Debug.WriteLine($"{(int)start.Value.X} {(int)start.Value.Y} => {(int)position.X} {(int)position.Y} ");
-                Debug.WriteLine("deltaX: " + (int)deltaX + " deltaY: " + (int)deltaY);
                 switch (edge)
                 {
                     case WindowEdge.West:
@@ -512,8 +525,8 @@ public class ManagedWindow : ContentControl
         var rightEdge = start.Value.X >= right - border.BorderThickness.Right - border.Margin.Right &&
                         start.Value.X <= right;
         var topEdge = start.Value.Y >= top &&
-                        start.Value.Y <= top + border.BorderThickness.Top - this.Margin.Top;
-        var bottomEdge = start.Value.Y >= bottom - border.BorderThickness.Bottom - this.Margin.Bottom &&
+                        start.Value.Y <= top + border.BorderThickness.Top - border.Margin.Top;
+        var bottomEdge = start.Value.Y >= bottom - border.BorderThickness.Bottom - border.Margin.Bottom &&
                         start.Value.Y <= bottom;
         if (topEdge && leftEdge)
             return WindowEdge.NorthWest;
