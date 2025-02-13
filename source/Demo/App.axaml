@@ -34,7 +34,6 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     Background="{TemplateBinding Background}">
-
               <Grid RowDefinitions="Auto *">
                 <!--Title Bar-->
                 <Grid Name="PART_TitleBar"
@@ -102,9 +101,8 @@
         <Setter Property="IsVisible" Value="false"/>
       </Style>
 
-      <Style Selector="^:maximized">
-        <Setter Property="Canvas.Left" Value="0"/>
-        <Setter Property="Canvas.Top" Value="0"/>
+      <Style Selector="^:maximized /template/ Border#PART_ResizeBorder">
+        <Setter Property="BorderThickness" Value="0"/>
       </Style>
 
 

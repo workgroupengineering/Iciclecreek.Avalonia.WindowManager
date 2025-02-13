@@ -4,12 +4,10 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Platform;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -86,11 +84,8 @@ public class ManagedWindow : ContentControl
     public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
         RoutedEvent.Register<ManagedWindow, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
-    private bool _enableDrag;
-    private Point _start;
-    private Control? _parent;
-    private Control? _draggedContainer;
-    private bool _captured;
+    private double _normalWidth;
+    private double _normalHeight;
 
     public ManagedWindow()
     {
@@ -184,7 +179,12 @@ public class ManagedWindow : ContentControl
     public PixelPoint Position
     {
         get => GetValue(PositionProperty);
-        set => SetValue(PositionProperty, value);
+        set
+        {
+            SetValue(PositionProperty, value);
+            Canvas.SetLeft(this, value.X);
+            Canvas.SetTop(this, value.Y);
+        }
     }
 
     /// <summary>
@@ -199,6 +199,47 @@ public class ManagedWindow : ContentControl
     //    method.Invoke(this, [e]);
     //}
 
+    public void MaximizeWindow()
+    {
+        BringToTop();
+        var parent = Parent as ManagedWindowsPanel;
+        if (WindowState == WindowState.Normal)
+        {
+            _normalWidth = this.Width;
+            _normalHeight = this.Height;
+        }
+        Canvas.SetLeft(this, 0);
+        Canvas.SetTop(this, 0);
+        this.Width = parent.Bounds.Width;
+        this.Height = parent.Bounds.Height;
+        WindowState = WindowState.Maximized;
+        SetWindowStatePseudoClasses();
+    }
+
+    public void RestoreWindow()
+    {
+        BringToTop();
+        WindowState = WindowState.Normal;
+        Canvas.SetLeft(this, (int)this.Position.X);
+        Canvas.SetTop(this, (int)this.Position.Y);
+        this.Width = _normalWidth;
+        this.Height = _normalHeight;
+        SetWindowStatePseudoClasses();
+    }
+
+    public void MinimizeWindow()
+    {
+        BringToTop();
+        var parent = Parent as ManagedWindowsPanel;
+        if (WindowState == WindowState.Normal)
+        {
+            _normalWidth = this.Width;
+            _normalHeight = this.Height;
+        }
+        WindowState = WindowState.Minimized;
+        SetWindowStatePseudoClasses();
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -206,11 +247,7 @@ public class ManagedWindow : ContentControl
         var partTitleBar = e.NameScope.Find<Control>(PART_TitleBar);
         if (partTitleBar != null)
         {
-            partTitleBar.PointerPressed += OnTitleBarPointerPressed;
-            partTitleBar.PointerMoved += OnTitleBarPointerMoved;
-            partTitleBar.PointerReleased += OnTitleBarPointerReleased;
-            partTitleBar.PointerCaptureLost += OnTitleBarPointerCaptureLost;
-            partTitleBar.DoubleTapped += OnTitleBarDoubleClick;
+            SetupTitleBar(partTitleBar);
         }
 
         var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
@@ -230,91 +267,65 @@ public class ManagedWindow : ContentControl
             partCloseButton.Click += OnCloseClick;
 
         SetupResize(e.NameScope.Find<Border>(PART_ResizeBorder));
+
         SetWindowStatePseudoClasses();
     }
 
-
-    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    private void SetupTitleBar(Control? partTitleBar)
     {
-        var properties = e.GetCurrentPoint(this).Properties;
-        if (properties.IsLeftButtonPressed
-            && this?.Parent is Control parent)
+        if (partTitleBar == null)
+            return;
+
+        PixelPoint? start = null;
+        var parent = this.Parent as Control;
+
+        partTitleBar.PointerPressed += (object? sender, PointerPressedEventArgs e) =>
         {
-            _enableDrag = true;
-            _start = e.GetPosition(parent);
-            _parent = parent;
-            _draggedContainer = this;
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (properties.IsLeftButtonPressed)
+            {
+                var point = e.GetPosition(parent);
+                start = new PixelPoint((int)point.X, (int)point.Y);
+                Debug.WriteLine($"start: {start.Value.X},{start.Value.Y} {Position.X},{Position.Y}");
+                SetDraggingPseudoClasses(this, true);
 
-            SetDraggingPseudoClasses(_draggedContainer, true);
+                // AddAdorner(_draggedContainer);
+                BringToTop();
+            }
+        };
 
-            // AddAdorner(_draggedContainer);
-            BringToTop();
-
-            _captured = true;
-        }
-    }
-
-    private void OnTitleBarPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (_captured)
+        partTitleBar.PointerReleased += (object? sender, PointerReleasedEventArgs e) =>
         {
-            if (e.InitialPressMouseButton == MouseButton.Left)
+            if (start != null)
             {
-                OnTitleBarPointerReleased();
+                if (e.InitialPressMouseButton == MouseButton.Left)
+                {
+                    SetDraggingPseudoClasses(this, false);
+                    start = null;
+                }
             }
+        };
 
-            _captured = false;
-        }
-    }
-
-    private void OnTitleBarPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
-    {
-        OnTitleBarPointerReleased();
-        _captured = false;
-    }
-
-    private void OnTitleBarPointerMoved(object? sender, PointerEventArgs e)
-    {
-        var properties = e.GetCurrentPoint(this).Properties;
-        if (_captured
-            && properties.IsLeftButtonPressed)
+        partTitleBar.PointerMoved += (object? sender, PointerEventArgs e) =>
         {
-            if (_parent is null || _draggedContainer is null || !_enableDrag)
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (start != null && properties.IsLeftButtonPressed)
             {
-                return;
+                var point = e.GetPosition(parent);
+                var position = new PixelPoint((int)point.X, (int)point.Y);
+                var delta = position - start.Value;
+                start = position;
+                this.Position = this.Position + delta;
             }
+        };
 
-            var position = e.GetPosition(_parent);
-            var deltaX = position.X - _start.X;
-            var deltaY = position.Y - _start.Y;
-            _start = position;
-            var left = Canvas.GetLeft(_draggedContainer);
-            var top = Canvas.GetTop(_draggedContainer);
-            Canvas.SetLeft(_draggedContainer, left + deltaX);
-            Canvas.SetTop(_draggedContainer, top + deltaY);
-        }
-    }
-
-
-
-    private void OnTitleBarPointerReleased()
-    {
-        if (_enableDrag)
+        partTitleBar.PointerCaptureLost += (object? sender, PointerCaptureLostEventArgs e) =>
         {
-            if (_parent is not null && _draggedContainer is not null)
-            {
-                // RemoveAdorner(_draggedContainer);
-            }
+            SetDraggingPseudoClasses(this, false);
+            start = null;
+        };
 
-            if (_draggedContainer is not null)
-            {
-                SetDraggingPseudoClasses(_draggedContainer, false);
-            }
-
-            _enableDrag = false;
-            _parent = null;
-            _draggedContainer = null;
-        }
+        partTitleBar.DoubleTapped += OnTitleBarDoubleClick;
     }
 
     private void SetDraggingPseudoClasses(Control control, bool isDragging)
@@ -371,7 +382,7 @@ public class ManagedWindow : ContentControl
             var properties = e.GetCurrentPoint(this).Properties;
             if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
             {
-                var point = e.GetPosition(_parent);
+                var point = e.GetPosition(this.Parent as Control);
                 edge = GetEdge(border, borderWidth, point);
                 border.Cursor = new Cursor(GetCursorForEdge(edge));
                 if (edge != null)
@@ -400,7 +411,7 @@ public class ManagedWindow : ContentControl
         };
         border.PointerMoved += (i, e) =>
         {
-            var position = e.GetPosition(_parent);
+            var position = e.GetPosition(this.Parent as Control);
 
             var properties = e.GetCurrentPoint(this).Properties;
             if (edge != null &&
@@ -415,7 +426,7 @@ public class ManagedWindow : ContentControl
                 var deltaX = position.X - start.Value.X;
                 var deltaY = position.Y - start.Value.Y;
                 Debug.WriteLine($"{(int)start.Value.X} {(int)start.Value.Y} => {(int)position.X} {(int)position.Y} ");
-                Debug.WriteLine("deltaX: " +(int) deltaX + " deltaY: " + (int)deltaY);
+                Debug.WriteLine("deltaX: " + (int)deltaX + " deltaY: " + (int)deltaY);
                 switch (edge)
                 {
                     case WindowEdge.West:
@@ -478,7 +489,7 @@ public class ManagedWindow : ContentControl
             return null;
         double top = Canvas.GetTop(this);
         double left = Canvas.GetLeft(this);
-        double right= left + this.Width;
+        double right = left + this.Width;
         double bottom = top + this.Height;
 
         //var top = Position.Y;
@@ -529,13 +540,11 @@ public class ManagedWindow : ContentControl
     private void OnTitleBarDoubleClick(object? sender, TappedEventArgs e)
     {
         if (WindowState == WindowState.Minimized)
-            WindowState = WindowState.Normal;
+            RestoreWindow();
         else if (WindowState == WindowState.Normal)
-            WindowState = WindowState.Maximized;
+            MaximizeWindow();
         else if (WindowState == WindowState.Maximized)
-            WindowState = WindowState.Normal;
-        SetWindowStatePseudoClasses();
-        BringToTop();
+            RestoreWindow();
     }
 
     private void OnCloseClick(object? sender, RoutedEventArgs e)
@@ -555,23 +564,18 @@ public class ManagedWindow : ContentControl
 
     private void OnMinimizeClick(object? sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Minimized;
-        SetWindowStatePseudoClasses();
+        MinimizeWindow();
     }
 
 
     private void OnMaximizeClick(object? sender, RoutedEventArgs e)
     {
-        Debug.WriteLine($"{this.Position.X},{this.Position.Y} {Canvas.GetLeft(this)},{Canvas.GetTop(this)}");
-        BringToTop();
-        WindowState = WindowState.Maximized;
-        SetWindowStatePseudoClasses();
+        MaximizeWindow();
     }
 
     private void OnRestoreClick(object? sender, RoutedEventArgs e)
     {
-        BringToTop();
-        WindowState = WindowState.Normal;
-        SetWindowStatePseudoClasses();
+        RestoreWindow();
     }
+
 }
