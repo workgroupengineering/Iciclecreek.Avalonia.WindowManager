@@ -1,14 +1,23 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -18,7 +27,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_RestoreButton, typeof(Button))]
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_ResizeBorder, typeof(Border))]
-[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging")]
+[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active")]
 public class ManagedWindow : ContentControl
 {
     public const string PART_TitleBar = "PART_TitleBar";
@@ -27,6 +36,32 @@ public class ManagedWindow : ContentControl
     public const string PART_RestoreButton = "PART_RestoreButton";
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_ResizeBorder = "PART_ResizeBorder";
+
+    private double _normalWidth;
+    private double _normalHeight;
+    private BoxShadows _normalBoxShadow;
+    private Thickness _normalMargin;
+    private Border? _windowBorder;
+    private ManagedWindow? _owner;
+    private bool _isActive;
+    private bool _showingAsDialog;
+    private object? _dialogResult;
+    private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
+
+    /// <summary>
+    /// Defines the <see cref="IsActive"/> property.
+    /// </summary>
+    public static readonly DirectProperty<ManagedWindow, bool> IsActiveProperty =
+        AvaloniaProperty.RegisterDirect<ManagedWindow, bool>(nameof(IsActive), o => o.IsActive);
+
+    /// <summary>
+    /// Defines the <see cref="Owner"/> property.
+    /// </summary>
+    public static readonly DirectProperty<ManagedWindow, ManagedWindow?> OwnerProperty =
+        AvaloniaProperty.RegisterDirect<ManagedWindow, ManagedWindow?>(nameof(Owner), o => o.Owner);
+
+    public static readonly StyledProperty<bool> TopmostProperty =
+        AvaloniaProperty.Register<ManagedWindow, bool>(nameof(Topmost));
 
     /// <summary>
     /// Defines the <see cref="SizeToContent"/> property.
@@ -48,6 +83,12 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public static readonly StyledProperty<WindowState> WindowStateProperty =
         AvaloniaProperty.Register<ManagedWindow, WindowState>(nameof(WindowState));
+
+    /// <summary>
+    /// Defines the <see cref="ClosingBehavior"/> property.
+    /// </summary>
+    public static readonly StyledProperty<WindowClosingBehavior> ClosingBehaviorProperty =
+        AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
     /// <summary>
     /// Defines the <see cref="Title"/> property.
@@ -91,11 +132,6 @@ public class ManagedWindow : ContentControl
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         AvaloniaProperty.Register<ManagedWindow, BoxShadows>(nameof(BoxShadow));
 
-    private double _normalWidth;
-    private double _normalHeight;
-    private BoxShadows _normalBoxShadow;
-    private Thickness _normalMargin;
-    private Border? _windowBorder;
 
     static ManagedWindow()
     {
@@ -146,6 +182,17 @@ public class ManagedWindow : ContentControl
         get => GetValue(BoxShadowProperty);
         set => SetValue(BoxShadowProperty, value);
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating how the <see cref="Closing"/> event behaves in the presence
+    /// of child windows.
+    /// </summary>
+    public WindowClosingBehavior ClosingBehavior
+    {
+        get => GetValue(ClosingBehaviorProperty);
+        set => SetValue(ClosingBehaviorProperty, value);
+    }
+
 
     public bool IsCloseButtonVisible
     {
@@ -213,16 +260,103 @@ public class ManagedWindow : ContentControl
     }
 
     /// <summary>
+    /// Gets or sets the owner of the window.
+    /// </summary>
+    public ManagedWindow? Owner
+    {
+        get => _owner;
+        protected set => SetAndRaise(OwnerProperty, ref _owner, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether this window appears on top of all other windows
+    /// </summary>
+    public bool Topmost
+    {
+        get => GetValue(TopmostProperty);
+        set => SetValue(TopmostProperty, value);
+    }
+
+    /// <summary>
+    /// Gets a value that indicates whether the window is active.
+    /// </summary>
+    public bool IsActive
+    {
+        get => _isActive;
+        private set => SetAndRaise(IsActiveProperty, ref _isActive, value);
+    }
+
+    public ITopLevelImpl PlatformImpl => TopLevel.GetTopLevel(this)!.PlatformImpl!;
+
+    /// <summary>
+    /// File System storage service used for file pickers and bookmarks.
+    /// </summary>
+    public IStorageProvider StorageProvider => TopLevel.GetTopLevel(this)!.StorageProvider;
+
+    public IInsetsManager? InsetsManager => TopLevel.GetTopLevel(this)!.PlatformImpl!.TryGetFeature<IInsetsManager>();
+    public IInputPane? InputPane => PlatformImpl!.TryGetFeature<IInputPane>();
+    public ILauncher Launcher => PlatformImpl!.TryGetFeature<ILauncher>();
+
+    /// <summary>
+    /// Gets the platform's clipboard implementation
+    /// </summary>
+    public IClipboard? Clipboard => PlatformImpl!.TryGetFeature<IClipboard>();
+
+    /// <inheritdoc />
+    public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
+
+    /// <summary>
+    /// Gets a collection of child windows owned by this window.
+    /// </summary>
+    public IReadOnlyList<ManagedWindow> OwnedWindows => _children.Select(x => x.Child).ToArray();
+
+    /// <summary>
+    /// Fired when the window is activated.
+    /// </summary>
+    public event EventHandler? Activated;
+
+    /// <summary>
+    /// Fired when the window is deactivated.
+    /// </summary>
+    public event EventHandler? Deactivated;
+
+    /// <summary>
+    /// Fired when the window is opened.
+    /// </summary>
+    public event EventHandler? Opened;
+
+    /// <summary>
+    /// Fired when the window is closed.
+    /// </summary>
+    public event EventHandler? Closed;
+
+    /// <summary>
+    /// Fired when the window position is changed.
+    /// </summary>
+    public event EventHandler<PixelPointEventArgs>? PositionChanged;
+
+    /// <summary>
+    /// Occurs when the window is resized.
+    /// </summary>
+    /// <remarks>
+    /// Although this event is similar to the <see cref="Control.SizeChanged"/> event, they are
+    /// conceptually different:
+    /// 
+    /// - <see cref="Resized"/> is a window-level event, fired when a resize notification arrives
+    ///   from the platform windowing subsystem. The event args contain details of the source of
+    ///   the resize event in the <see cref="WindowResizedEventArgs.Reason"/> property. This
+    ///   event is raised before layout has been run on the window's content.
+    /// - <see cref="Control.SizeChanged"/> is a layout-level event, fired when a layout pass
+    ///   completes on a control. <see cref="Control.SizeChanged"/> is present on all controls
+    ///   and is fired when the control's size changes for any reason, including a
+    ///   <see cref="Resized"/> event in the case of a Window.
+    /// </remarks>
+    public event EventHandler<WindowResizedEventArgs>? Resized;
+
+    /// <summary>
     /// Fired before a window is closed.
     /// </summary>
     public event EventHandler<WindowClosingEventArgs>? Closing;
-
-    //    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    //{
-    //    // Call the grandparent's MyMethod
-    //    MethodInfo method = typeof(WindowBase).GetMethod("OnAttachedToVisualTree", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-    //    method.Invoke(this, [e]);
-    //}
 
     public void MaximizeWindow()
     {
@@ -232,17 +366,23 @@ public class ManagedWindow : ContentControl
         {
             _normalWidth = this.Width;
             _normalHeight = this.Height;
-            _normalBoxShadow = _windowBorder.BoxShadow!;
-            _normalMargin = _windowBorder.Margin;
+            if (_windowBorder != null)
+            {
+                _normalBoxShadow = _windowBorder.BoxShadow!;
+                _normalMargin = _windowBorder.Margin;
+            }
         }
         Canvas.SetLeft(this, 0);
         Canvas.SetTop(this, 0);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
-        _windowBorder.Margin = new Thickness(0);
-        _windowBorder.BoxShadow = new BoxShadows();
+        if (_windowBorder != null)
+        {
+            _windowBorder.Margin = new Thickness(0);
+            _windowBorder.BoxShadow = new BoxShadows();
+        }
         WindowState = WindowState.Maximized;
-        SetWindowStatePseudoClasses();
+        SetPsuedoClasses();
     }
 
     public void RestoreWindow()
@@ -253,27 +393,317 @@ public class ManagedWindow : ContentControl
         Canvas.SetTop(this, (int)this.Position.Y);
         this.Width = _normalWidth;
         this.Height = _normalHeight;
-        _windowBorder.Margin = _normalMargin;
-        _windowBorder.BoxShadow = _normalBoxShadow;
-        SetWindowStatePseudoClasses();
+        if (_windowBorder != null)
+        {
+
+            _windowBorder.Margin = _normalMargin;
+            _windowBorder.BoxShadow = _normalBoxShadow;
+        }
+        SetPsuedoClasses();
     }
 
     public void MinimizeWindow()
     {
         BringToTop();
-        var parent = (ManagedWindowsPanel)Parent!;
         if (WindowState == WindowState.Normal)
         {
             _normalWidth = this.Width;
             _normalHeight = this.Height;
         }
         WindowState = WindowState.Minimized;
-        SetWindowStatePseudoClasses();
+        SetPsuedoClasses();
     }
+
+    /// <summary>
+    /// Activates the window.
+    /// </summary>
+    public void Activate()
+    {
+        if (!IsActive)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                RestoreWindow();
+            }
+
+            OnActivated();
+            IsActive = true;
+
+            var windowsManager = this.FindAncestorOfType<ManagedWindowsPanel>();
+            if (windowsManager != null)
+            {
+                foreach (var win in windowsManager.Windows.Where(win => win != this))
+                {
+                    win.Deactivate();
+                }
+            }
+            BringToTop();
+            SetPsuedoClasses();
+        }
+    }
+
+    /// <summary>
+    /// Deactivates the window
+    /// </summary>
+    public void Deactivate()
+    {
+        if (IsActive)
+        {
+            IsActive = false;
+            OnDeactivated();
+            SetPsuedoClasses();
+        }
+    }
+
+    /// <summary>
+    /// Hides the popup.
+    /// </summary>
+    public virtual void Hide()
+    {
+        IsVisible = false;
+    }
+
+    /// <summary>
+    /// Shows the window.
+    /// </summary>
+    public virtual void Show()
+    {
+        IsVisible = true;
+
+        OnOpened(EventArgs.Empty);
+        if (ShowActivated)
+        {
+            Activate();
+        }
+    }
+
+    /// <summary>
+    /// Shows the window as a dialog.
+    /// </summary>
+    /// <param name="owner">The dialog's owner window.</param>
+    /// <exception cref="InvalidOperationException">
+    /// The window has already been closed.
+    /// </exception>
+    /// <returns>
+    /// A task that can be used to track the lifetime of the dialog.
+    /// </returns>
+    public Task ShowDialog(ManagedWindow owner)
+    {
+        return ShowDialog<object>(owner);
+    }
+
+    /// <summary>
+    /// Shows the window as a dialog.
+    /// </summary>
+    /// <typeparam name="TResult">
+    /// The type of the result produced by the dialog.
+    /// </typeparam>
+    /// <param name="owner">The dialog's owner window.</param>
+    /// <returns>.
+    /// A task that can be used to retrieve the result of the dialog when it closes.
+    /// </returns>
+    public Task<TResult> ShowDialog<TResult>(ManagedWindow owner)
+    {
+        if (owner == null)
+        {
+            throw new ArgumentNullException(nameof(owner));
+        }
+
+        RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+        // EnsureInitialized();
+        ApplyStyling();
+        // _shown = true;
+        _showingAsDialog = true;
+        IsVisible = true;
+
+        // SetWindowStartupLocation(owner);
+
+        // _canHandleResized = true;
+
+        //var initialSize = new Size(
+        //    double.IsNaN(Width) ? ClientSize.Width : Width,
+        //    double.IsNaN(Height) ? ClientSize.Height : Height);
+
+        //if (initialSize != ClientSize)
+        //{
+        //    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
+        //}
+
+        //LayoutManager.ExecuteInitialLayoutPass();
+
+        var result = new TaskCompletionSource<TResult>();
+
+        Owner = owner;
+
+        // Second call will calculate correct position because both current and owner windows have correct scaling.
+        //            SetWindowStartupLocation(owner);
+
+        //StartRendering();
+        //PlatformImpl?.Show(ShowActivated, true);
+        this.Closed += (sender, e) =>
+        {
+            owner.Activate();
+            result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
+        };
+
+        OnOpened(EventArgs.Empty);
+        return result.Task;
+    }
+
+    /// <summary>
+    /// Closes the window.
+    /// </summary>
+    public void Close()
+    {
+        CloseCore(WindowCloseReason.WindowClosing, true, false);
+    }
+
+    /// <summary>
+    /// Closes a dialog window with the specified result.
+    /// </summary>
+    /// <param name="dialogResult">The dialog result.</param>
+    /// <remarks>
+    /// When the window is shown with the <see cref="ShowDialog{TResult}(Window)"/>
+    /// or <see cref="ShowDialog{TResult}(Window)"/> method, the
+    /// resulting task will produce the <see cref="_dialogResult"/> value when the window
+    /// is closed.
+    /// </remarks>
+    public void Close(object? dialogResult)
+    {
+        _dialogResult = dialogResult;
+        CloseCore(WindowCloseReason.WindowClosing, true, false);
+    }
+
+    internal void CloseCore(WindowCloseReason reason, bool isProgrammatic, bool ignoreCancel)
+    {
+        bool close = true;
+
+        try
+        {
+            var args = ActivatorEx.CreateInstance<WindowClosingEventArgs>(reason, isProgrammatic);
+            if (ShouldCancelClose(args))
+            {
+                close = false;
+            }
+        }
+        finally
+        {
+            if (close || ignoreCancel)
+            {
+                CloseInternal();
+            }
+        }
+    }
+
+    private void CloseInternal()
+    {
+        foreach (var (child, _) in _children.ToArray())
+        {
+            child.CloseInternal();
+        }
+
+
+        _showingAsDialog = false;
+
+        Owner = null;
+    }
+
+    private bool ShouldCancelClose(WindowClosingEventArgs args)
+    {
+        switch (ClosingBehavior)
+        {
+            case WindowClosingBehavior.OwnerAndChildWindows:
+                bool canClose = true;
+
+                if (_children.Count > 0)
+                {
+                    var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
+                        ActivatorEx.CreateInstance<WindowClosingEventArgs>(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
+                        args;
+
+                    foreach (var (child, _) in _children.ToArray())
+                    {
+                        if (child.ShouldCancelClose(childArgs))
+                        {
+                            canClose = false;
+                        }
+                    }
+                }
+
+                if (canClose)
+                {
+                    OnClosing(args);
+
+                    return args.Cancel;
+                }
+
+                return true;
+            case WindowClosingBehavior.OwnerWindowOnly:
+                OnClosing(args);
+
+                return args.Cancel;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Raies the <see cref="Activated"/> event.
+    /// </summary>
+    protected virtual void OnActivated()
+    {
+        Dispatcher.UIThread.Post(() => Activated?.Invoke(this, EventArgs.Empty));
+    }
+
+    /// <summary>
+    /// Raises the <see cref="Deactivated"/> event.
+    /// </summary>
+    protected virtual void OnDeactivated()
+    {
+        Dispatcher.UIThread.Post(() => Deactivated?.Invoke(this, EventArgs.Empty));
+    }
+
+    /// <summary>
+    /// Raises the <see cref="Opened"/> event.
+    /// </summary>
+    /// <param name="e">The event args.</param>
+    protected virtual void OnOpened(EventArgs e)
+    {
+        Dispatcher.UIThread.Post(() => Opened?.Invoke(this, e));
+    }
+
+
+    /// <summary>
+    /// Raises the <see cref="Closing"/> event.
+    /// </summary>
+    /// <param name="e">The event args.</param>
+    /// <remarks>
+    /// A type that derives from <see cref="Window"/>  may override <see cref="OnClosing"/>. The
+    /// overridden method must call <see cref="OnClosing"/> on the base class if the
+    /// <see cref="Closing"/> event needs to be raised.
+    /// </remarks>
+    protected virtual void OnClosing(WindowClosingEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() => Closing?.Invoke(this, e));
+    }
+
+    /// <summary>
+    /// Raises the <see cref="Closed"/> event.
+    /// </summary>
+    /// <param name="e">The event args.</param>
+    protected virtual void OnClosed(EventArgs e)
+    {
+        Dispatcher.UIThread.Post(() => Closed?.Invoke(this, e));
+    }
+
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        this.GotFocus += (s, e) => Activate();
+        this.LostFocus += (s, e) => Deactivate();
 
         //if (this.Theme == null)
         //    this.Theme = (ControlTheme)this.FindResource("ManagedWindow");
@@ -303,7 +733,16 @@ public class ManagedWindow : ContentControl
         _windowBorder = e.NameScope.Find<Border>(PART_ResizeBorder);
         SetupResize(_windowBorder);
 
-        SetWindowStatePseudoClasses();
+        this.Tapped += ManagedWindow_Tapped;
+        SetPsuedoClasses();
+    }
+
+    private void ManagedWindow_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (!IsActive)
+        {
+            Activate();
+        }
     }
 
     private void SetupTitleBar(Control? partTitleBar)
@@ -316,7 +755,8 @@ public class ManagedWindow : ContentControl
 
         partTitleBar.PointerPressed += (object? sender, PointerPressedEventArgs e) =>
         {
-            BringToTop();
+            if (!IsActive)
+                Activate();
 
             if (WindowState == WindowState.Normal)
             {
@@ -326,7 +766,7 @@ public class ManagedWindow : ContentControl
                 {
                     var point = e.GetPosition(parent);
                     start = new PixelPoint((int)point.X, (int)point.Y);
-                    SetDraggingPseudoClasses(this, true);
+                    SetPsuedoClasses(true);
                 }
             }
         };
@@ -337,7 +777,7 @@ public class ManagedWindow : ContentControl
             {
                 if (e.InitialPressMouseButton == MouseButton.Left)
                 {
-                    SetDraggingPseudoClasses(this, false);
+                    SetPsuedoClasses(false);
                     start = null;
                 }
             }
@@ -362,28 +802,32 @@ public class ManagedWindow : ContentControl
 
         partTitleBar.PointerCaptureLost += (object? sender, PointerCaptureLostEventArgs e) =>
         {
-            SetDraggingPseudoClasses(this, false);
+            SetPsuedoClasses(false);
             start = null;
         };
 
         partTitleBar.DoubleTapped += OnTitleBarDoubleClick;
     }
 
-    private void SetDraggingPseudoClasses(Control control, bool isDragging)
+    private void SetPsuedoClasses(bool isDragging = false)
     {
+        var classes = ((IPseudoClasses)this.Classes);
         if (isDragging)
         {
-            ((IPseudoClasses)control.Classes).Add(":dragging");
+            classes.Add(":dragging");
         }
         else
         {
-            ((IPseudoClasses)control.Classes).Remove(":dragging");
+            classes.Remove(":dragging");
         }
-    }
-
-    private void SetWindowStatePseudoClasses()
-    {
-        var classes = ((IPseudoClasses)this.Classes);
+        if (IsActive)
+        {
+            classes.Add(":active");
+        }
+        else
+        {
+            classes.Remove(":active");
+        }
         classes.Remove(":minimized");
         classes.Remove(":normal");
         classes.Remove(":maximized");
@@ -404,10 +848,10 @@ public class ManagedWindow : ContentControl
                 break;
         }
     }
-    private void BringToTop()
+    public void BringToTop()
     {
-        var canvas = (Canvas)Parent!;
-        this.ZIndex = canvas.Children.Where(child => child is ManagedWindow).Max(child => ((ManagedWindow)child).ZIndex) + 1;
+        var windowsPanel = this.FindAncestorOfType<ManagedWindowsPanel>()!;
+        windowsPanel.BringToTop(this);
     }
 
     void SetupResize(Border? border)
@@ -423,9 +867,10 @@ public class ManagedWindow : ContentControl
         Point? start = null;
         border.PointerPressed += (i, e) =>
         {
-            BringToTop();
+            if (!IsActive)
+                Activate();
 
-            if (WindowState == WindowState.Normal)
+            if (CanResize && WindowState == WindowState.Normal)
             {
                 var properties = e.GetCurrentPoint(this).Properties;
                 if (properties.IsLeftButtonPressed && this?.Parent is Control parent)
@@ -443,7 +888,7 @@ public class ManagedWindow : ContentControl
         };
         border.PointerReleased += (i, e) =>
         {
-            if (e.InitialPressMouseButton == MouseButton.Left)
+            if (CanResize && e.InitialPressMouseButton == MouseButton.Left)
             {
                 start = null;
                 edge = null;
@@ -453,14 +898,18 @@ public class ManagedWindow : ContentControl
         };
         border.PointerCaptureLost += (i, e) =>
         {
+
             start = null;
             edge = null;
             e.Pointer.Capture(null);
-            border.Cursor = new Cursor(GetCursorForEdge(edge));
+            if (CanResize)
+            {
+                border.Cursor = new Cursor(GetCursorForEdge(edge));
+            }
         };
         border.PointerMoved += (i, e) =>
         {
-            if (WindowState == WindowState.Normal)
+            if (CanResize && WindowState == WindowState.Normal)
             {
                 var position = e.GetPosition(this.Parent as Control);
 
@@ -595,16 +1044,14 @@ public class ManagedWindow : ContentControl
             RestoreWindow();
     }
 
+
     private void OnCloseClick(object? sender, RoutedEventArgs e)
     {
-        var ctor = typeof(WindowClosingEventArgs).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
-            [typeof(WindowCloseReason), typeof(bool)]);
-        WindowClosingEventArgs args = (WindowClosingEventArgs)ctor.Invoke([WindowCloseReason.WindowClosing, false]);
+        WindowClosingEventArgs? args = ActivatorEx.CreateInstance<WindowClosingEventArgs>(WindowCloseReason.WindowClosing, false);
         Closing?.Invoke(this, args);
         if (!args.Cancel)
         {
-            var windowsPanel = (ManagedWindowsPanel)this.Parent!;
-            windowsPanel.Children.Remove(this);
+            Closed?.Invoke(this, new EventArgs());
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
         }
     }

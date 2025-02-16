@@ -20,7 +20,7 @@ namespace Demo
         {
             var width = Random.Shared.Next(100, 400);
             var height = Random.Shared.Next(100, 400);
-            var position = new PixelPoint(Random.Shared.Next(0, (int)Bounds.Width - width),
+            var position = new PixelPoint(Random.Shared.Next(150, (int)Bounds.Width - width),
                                           Random.Shared.Next(0, (int)Bounds.Height - height));
             var window = new MyManagedWindow()
             {

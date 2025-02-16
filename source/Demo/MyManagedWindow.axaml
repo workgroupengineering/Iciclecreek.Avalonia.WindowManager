@@ -17,5 +17,7 @@
     <Button
         HorizontalAlignment="Left"
         Click="OnSpin">Spin</Button>
+
+    <ToggleSwitch Content="CanResize" IsChecked="{Binding CanResize, RelativeSource={RelativeSource AncestorType={x:Type wm:ManagedWindow}}}"/>
   </StackPanel>
 </wm:ManagedWindow>

@@ -46,8 +46,11 @@ public partial class MyManagedWindow : ManagedWindow
 
     private void OnIncrement(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var vm = (MyManagedWindowViewModel)this.DataContext;
-        vm.Counter++;
+        var vm = (MyManagedWindowViewModel?)this.DataContext;
+        if (vm != null)
+        {
+            vm.Counter++;
+        }
     }
 
     private void OnSpin(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
