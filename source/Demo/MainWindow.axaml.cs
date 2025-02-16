@@ -9,7 +9,7 @@ namespace Demo
 {
     public partial class MainWindow : Window
     {
-        
+
 
         public MainWindow()
         {
@@ -29,7 +29,7 @@ namespace Demo
                 Position = position,
             };
 
-            WindowsPanel.ShowWindow(window);
+            WindowManager.ShowWindow(window);
         }
     }
 

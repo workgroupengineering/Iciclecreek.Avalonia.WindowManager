@@ -361,7 +361,7 @@ public class ManagedWindow : ContentControl
     public void MaximizeWindow()
     {
         BringToTop();
-        var parent = (ManagedWindowsPanel)Parent!;
+        var parent = (WindowManagerPanel)Parent!;
         if (WindowState == WindowState.Normal)
         {
             _normalWidth = this.Width;
@@ -429,7 +429,7 @@ public class ManagedWindow : ContentControl
             OnActivated();
             IsActive = true;
 
-            var windowsManager = this.FindAncestorOfType<ManagedWindowsPanel>();
+            var windowsManager = this.FindAncestorOfType<WindowManagerPanel>();
             if (windowsManager != null)
             {
                 foreach (var win in windowsManager.Windows.Where(win => win != this))
@@ -850,7 +850,7 @@ public class ManagedWindow : ContentControl
     }
     public void BringToTop()
     {
-        var windowsPanel = this.FindAncestorOfType<ManagedWindowsPanel>()!;
+        var windowsPanel = this.FindAncestorOfType<WindowManagerPanel>()!;
         windowsPanel.BringToTop(this);
     }
 

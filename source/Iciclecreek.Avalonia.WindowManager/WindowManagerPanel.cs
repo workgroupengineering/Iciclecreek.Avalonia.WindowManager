@@ -8,9 +8,9 @@ using System.Linq;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
-public class ManagedWindowsPanel : Canvas
+public class WindowManagerPanel : Canvas
 {
-    public ManagedWindowsPanel()
+    public WindowManagerPanel()
     {
         ManagedWindow.WindowClosedEvent.AddClassHandler(typeof(ManagedWindow), (sender, _) =>
         {
