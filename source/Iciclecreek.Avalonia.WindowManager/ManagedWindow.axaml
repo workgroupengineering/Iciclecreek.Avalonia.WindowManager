@@ -29,7 +29,7 @@
     <Setter Property="BorderThickness"
             Value="4" />
     <Setter Property="BoxShadow"
-            Value="5 5 50 Black"/>
+            Value="5 5 10 2 #33000000" />
     <Setter Property="CornerRadius"
             Value="0" />
     <Setter Property="Padding"
@@ -45,55 +45,56 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border Name="PART_WindowBorder"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  BoxShadow="{TemplateBinding BoxShadow}"
-                  Background="{TemplateBinding Background}">
-            <Grid RowDefinitions="Auto *">
-              <!--Title Bar-->
-              <Grid Name="PART_TitleBar"
-                    ColumnDefinitions="* Auto Auto Auto"
-                    Background="Gray">
-                <TextBlock
-                  Padding="10 0"
-                  VerticalAlignment="Center"
-                  Text="{TemplateBinding Title}"/>
-                <Button Name="PART_MinimizeButton"
-                        Grid.Column="1"
-                        Content="🗕"/>
-                <Button Name="PART_MaximizeButton"
-                        Grid.Column="2"
-                        Content="🗖"/>
-                <Button Name="PART_RestoreButton"
-                        Grid.Column="2"
-                        Content="🗗"/>
-                <Button Name="PART_CloseButton"
-                        Grid.Column="3"
-                        Content="🗙"
-                        IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
+            <Border Name="PART_WindowBorder"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    BoxShadow="{TemplateBinding BoxShadow}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Background="{TemplateBinding Background}">
+              <Grid RowDefinitions="Auto *">
+                <!--Title Bar-->
+                <Grid Name="PART_TitleBar"
+                      ColumnDefinitions="* Auto Auto Auto"
+                      Background="Gray">
+                  <TextBlock
+                    Padding="10 0"
+                    VerticalAlignment="Center"
+                    Text="{TemplateBinding Title}"/>
+                  <Button Name="PART_MinimizeButton"
+                          Grid.Column="1"
+                          Content="🗕"/>
+                  <Button Name="PART_MaximizeButton"
+                          Grid.Column="2"
+                          Content="🗖"/>
+                  <Button Name="PART_RestoreButton"
+                          Grid.Column="2"
+                          Content="🗗"/>
+                  <Button Name="PART_CloseButton"
+                          Grid.Column="3"
+                          Content="🗙"
+                          IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
+                </Grid>
+
+                <!--Content-->
+                <ContentPresenter Grid.Row="1"
+                                  ClipToBounds="True"
+                                  Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  Margin="{TemplateBinding Margin}"
+                                  Padding="{TemplateBinding Padding}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}" />
+
+                <Panel Name="PART_ModalOverlay"
+                       Grid.RowSpan="2"
+                       Opacity=".5"
+                       Background="Black"
+                       IsVisible="false">
+                </Panel>
               </Grid>
 
-              <!--Content-->
-              <ContentPresenter Grid.Row="1"
-                                ClipToBounds="True"
-                                Name="PART_ContentPresenter"
-                                Background="{TemplateBinding Background}"
-                                Margin="{DynamicResource ConsoloniaDialogWindowBorderMargin}"
-                                Padding="{TemplateBinding Padding}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}" />
-
-              <Panel Name="PART_ModalOverlay"
-                     Grid.RowSpan="2"
-                     Opacity=".5"
-                     Background="Black"
-                     IsVisible="false">
-              </Panel>
-            </Grid>
-
-          </Border>
+            </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -144,11 +145,11 @@
       <Setter Property="IsVisible" Value="True"/>
     </Style>
     <Style Selector="^:active /template/ Border#PART_WindowBorder">
-      <Setter Property="BorderBrush" Value="Pink"/>
+      <Setter Property="BorderBrush" Value="#FFd0d0d0"/>
     </Style>
 
     <Style Selector="^:isdialog /template/ Border#PART_WindowBorder">
-      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <Style Selector="^:hasdialog /template/ Panel#PART_ModalOverlay">

@@ -939,7 +939,7 @@ public class ManagedWindow : ContentControl
 
         // when there is a box shadow we need to adjust the margin to allow it to be rendered.
         if (border.BoxShadow.Count > 0)
-            border.Margin = new Thickness(0, 0, border.BoxShadow[0].OffsetX, border.BoxShadow[0].OffsetY);
+            border.Margin = new Thickness(0, 0, border.BoxShadow[0].OffsetX * 2, border.BoxShadow[0].OffsetY * 2);
 
         WindowEdge? edge = null;
         Point? start = null;
