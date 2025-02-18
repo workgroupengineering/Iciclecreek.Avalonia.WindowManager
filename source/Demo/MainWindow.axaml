@@ -5,18 +5,34 @@
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Demo.MainWindow"
-        Background="#404040"
         Title="Demo">
 
   <wm:WindowManagerPanel Name="WindowManager">
     <StackPanel>
-      <TextBlock> Welcome to Avalonia!</TextBlock>
-      <Button Content="Add a window" Click="Button_Click" />
+      <StackPanel Orientation="Horizontal">
+        <Label>SizeToContent</Label>
+        <ComboBox Name="SizeToContentCombo" SelectedIndex="0">
+          <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
+          <ComboBoxItem Tag="Width">Width</ComboBoxItem>
+          <ComboBoxItem Tag="Height">Height</ComboBoxItem>
+          <ComboBoxItem Tag="WidthAndHeight">WidthAndHeight</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <Label>StartupLocation</Label>
+        <ComboBox Name="StartupLocationCombo" SelectedIndex="0">
+          <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
+          <ComboBoxItem Tag="CenterOwner">CenterOwner</ComboBoxItem>
+          <ComboBoxItem Tag="CenterScreen">CenterScreen</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
+      <Button Content="Add a window" Click="OnAddWindowClick" />
     </StackPanel>
 
-    <wm:ManagedWindow 
-      Title="Green window" 
-      Background="DarkGreen" Position="200,150"
+    <wm:ManagedWindow
+      Title="Green window"
+      Background="DarkGreen"
+      Position="200,150"
       Width="300" Height="200" >
       <Panel>
         <Canvas >

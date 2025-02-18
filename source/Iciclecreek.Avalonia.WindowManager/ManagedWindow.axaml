@@ -9,19 +9,21 @@
     Using Theme Variants:
          https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
   -->
-  
+
   <Design.PreviewWith>
     <StackPanel Width="400" Height="400">
-      <wm:ManagedWindowsPanel Background="{DynamicResource SystemRegionBrush}">
+      <wm:WindowsManagerPanel Background="{DynamicResource SystemRegionBrush}">
         <wm:ManagedWindow  />
-      </wm:ManagedWindowsPanel>
+      </wm:WindowsManagerPanel>
     </StackPanel>
   </Design.PreviewWith>
- 
+
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
     <Setter Property="Background"
-            Value="AliceBlue" />
+            Value="LightGray" />
+    <Setter Property="Foreground"
+            Value="Black" />
     <Setter Property="BorderBrush"
             Value="DarkGray" />
     <Setter Property="BorderThickness"
@@ -38,10 +40,12 @@
             Value="100"/>
     <Setter Property="IsCloseButtonVisible"
             Value="True" />
+    <Setter Property="ZIndex"
+            Value="10000" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border Name="PART_ResizeBorder"
+          <Border Name="PART_WindowBorder"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   BoxShadow="{TemplateBinding BoxShadow}"
@@ -80,13 +84,20 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}" />
+
+              <Panel Name="PART_ModalOverlay"
+                     Grid.RowSpan="2"
+                     Opacity=".5"
+                     Background="Black"
+                     IsVisible="false">
+              </Panel>
             </Grid>
 
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    
+
     <Style Selector="^:minimized">
       <Setter Property="Background" Value="Aqua"/>
       <Setter Property="Template">
@@ -113,7 +124,7 @@
       <Setter Property="IsVisible" Value="false"/>
     </Style>
 
-    <Style Selector="^:maximized /template/ Border#PART_ResizeBorder">
+    <Style Selector="^:maximized /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
     </Style>
@@ -132,10 +143,19 @@
     <Style Selector="^:maximized /template/ Button#PART_RestoreButton">
       <Setter Property="IsVisible" Value="True"/>
     </Style>
-    <Style Selector="^:active /template/ Border#PART_ResizeBorder">
+    <Style Selector="^:active /template/ Border#PART_WindowBorder">
       <Setter Property="BorderBrush" Value="Pink"/>
     </Style>
+
+    <Style Selector="^:isdialog /template/ Border#PART_WindowBorder">
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <Style Selector="^:hasdialog /template/ Panel#PART_ModalOverlay">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+
   </ControlTheme>
-         
+
 </ResourceDictionary>
 

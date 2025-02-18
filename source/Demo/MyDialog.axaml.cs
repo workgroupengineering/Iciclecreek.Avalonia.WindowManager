@@ -6,54 +6,52 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Iciclecreek.Avalonia.WindowManager;
 using System;
+using Avalonia;
+using Avalonia.Interactivity;
 
 namespace Demo;
 
-public partial class MyManagedWindow : ManagedWindow
+public partial class MyDialog : ManagedWindow
 {
-    private static int _windowCount = 0;
+    private static int _dialogCount = 0;
     private static IImmutableSolidColorBrush[] brushes =
-        [
-            Brushes.DarkBlue,
-            Brushes.DarkGreen,
-            Brushes.DarkCyan,
-            Brushes.DarkGoldenrod,
-            Brushes.DarkOrchid,
-            Brushes.DarkOrange,
-            Brushes.DarkGray,
-            Brushes.DarkSalmon,
-            Brushes.DarkSeaGreen,
-            Brushes.DarkSlateGray,
-            Brushes.DarkSlateBlue,
-            Brushes.DarkTurquoise,
-            Brushes.DarkViolet,
-            Brushes.DarkKhaki,
-            Brushes.DarkOliveGreen,
-        ];
+         [
+             Brushes.LightBlue,
+            Brushes.LightGreen,
+            Brushes.LightCyan,
+            Brushes.LightSalmon,
+            Brushes.LightSeaGreen,
+            Brushes.LightSlateGray,
+            Brushes.LightCoral,
+            Brushes.LightGoldenrodYellow,
+            Brushes.LightPink
+         ];
 
-    public MyManagedWindow()
+    public MyDialog()
     {
         InitializeComponent();
 
-        this.Background = brushes[_windowCount % brushes.Length];
+        this.Background = brushes[_dialogCount % brushes.Length];
 
-        this.DataContext = new MyManagedWindowViewModel()
+        this.DataContext = new MyDialogViewModel()
         {
-            Counter = 0,
-            Title = $"New Window {++_windowCount}"
+            Title = $"New Dialog {++_dialogCount}"
         };
     }
 
-    private void OnIncrement(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public MyDialogViewModel ViewModel => (MyDialogViewModel)DataContext;
+
+    private void OnOK(object? sender, RoutedEventArgs args)
     {
-        var vm = (MyManagedWindowViewModel?)this.DataContext;
-        if (vm != null)
-        {
-            vm.Counter++;
-        }
+        this.Close(ViewModel.Text);
     }
 
-    private void OnSpin(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void OnCancel(object? sender, RoutedEventArgs args)
+    {
+        this.Close(null);
+    }
+
+    private void OnSpin(object? sender, RoutedEventArgs args)
     {
         // Create a rotate transform and apply it to the control
 
@@ -87,11 +85,11 @@ public partial class MyManagedWindow : ManagedWindow
 
 }
 
-public partial class MyManagedWindowViewModel : ObservableObject
+public partial class MyDialogViewModel : ObservableObject
 {
     [ObservableProperty]
-    private int _counter = 0;
+    private string _text = "";
 
     [ObservableProperty]
-    private string _title = "New Window";
+    private string _title = "New Dialog";
 }

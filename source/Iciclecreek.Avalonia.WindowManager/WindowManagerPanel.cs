@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Iciclecreek.Avalonia.WindowManager;
@@ -16,7 +17,7 @@ public class WindowManagerPanel : Canvas
         {
             var window = (ManagedWindow)sender!;
             Children.Remove(window);
-            
+
             if (window.Owner != null)
             {
                 window.Owner.Activate();
@@ -35,39 +36,128 @@ public class WindowManagerPanel : Canvas
 
     public void ShowWindow(ManagedWindow window)
     {
-        switch (window.WindowStartupLocation)
-        {
-            case WindowStartupLocation.CenterOwner:
-            case WindowStartupLocation.CenterScreen:
-                Canvas.SetLeft(window, (Bounds.Width - window.Width) / 2);
-                Canvas.SetTop(window, (Bounds.Height - window.Height) / 2);
-                break;
-            case WindowStartupLocation.Manual:
-                Canvas.SetLeft(window, window.Position.X);
-                Canvas.SetTop(window, window.Position.Y);
-                break;
-        }
-
-        window.ZIndex = GetTopZIndex() + 1;
         this.Children.Add(window);
+
+        // Force a layout pass
+        window.Measure(Size.Infinity);
+        window.Arrange(new Rect(window.DesiredSize));
+
+        SetWindowStartupLocation(window);
+
+        window.Show();
+
+        if (window.ShowActivated)
+        {
+            window.Activate();
+        }
     }
+
+    //private WindowStartupLocation GetEffectiveWindowStartupLocation(ManagedWindow? owner)
+    //{
+    //    var startupLocation = thisWindowStartupLocation;
+
+    //    if (startupLocation == WindowStartupLocation.CenterOwner &&
+    //        (owner is null ||
+    //         (owner is ManagedWindow ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+    //       )
+    //    {
+    //        // If startup location is CenterOwner, but owner is null or minimized then fall back
+    //        // to CenterScreen. This behavior is consistent with WPF.
+    //        startupLocation = WindowStartupLocation.CenterScreen;
+    //    }
+
+    //    return startupLocation;
+    //}
+
 
 
     public void ShowWindow(ManagedWindow window, double x, double y)
     {
         Canvas.SetLeft(window, x);
         Canvas.SetTop(window, y);
-        BringToTop(window);
 
         this.Children.Add(window);
 
         window.Show();
-        window.Activate();
     }
 
     public void BringToTop(ManagedWindow window)
     {
-        window.ZIndex = GetTopZIndex() + 1;
+        var windows = Windows.Where(win => win != window).OrderBy(win => win.ZIndex);
+        int i = 10000;
+        foreach (var win in windows)
+        {
+            win.ZIndex = i++;
+            Debug.WriteLine($"{win} ZIndex: {win.ZIndex}");
+        }
+        window.ZIndex = i;
+        Debug.WriteLine($"{window} ZIndex: {window.ZIndex}");
+
+    }
+
+    private void SetWindowStartupLocation(ManagedWindow window)
+    {
+        var startupLocation = GetEffectiveWindowStartupLocation(window);
+
+        PixelRect size;
+        switch (window.SizeToContent)
+        {
+            case SizeToContent.Manual:
+                size = new PixelRect(0, 0, (int)window.Width, (int)window.Height);
+                break;
+            case SizeToContent.WidthAndHeight:
+                size = new PixelRect(0, 0, (int)window.DesiredSize.Width, (int)window.DesiredSize.Height);
+                break;
+
+            case SizeToContent.Width:
+                size = new PixelRect(0, 0, (int)window.DesiredSize.Width, (int)window.Height);
+                break;
+            case SizeToContent.Height:
+                size = new PixelRect(0, 0, (int)window.Width, (int)window.DesiredSize.Height);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        var screenSize = new PixelRect(0, 0, (int)this.Bounds.Width, (int)this.Bounds.Height);
+
+        if (startupLocation == WindowStartupLocation.CenterOwner)
+        {
+            if (window.Owner != null)
+            {
+                var ownerRect = new PixelRect(
+                    window.Owner.Position,
+                    new PixelSize((int)window.Owner.Bounds.Width, (int)window.Owner.Bounds.Height));
+                var childRect = ownerRect.CenterRect(size);
+                window.Position = childRect.Position;
+                return;
+            }
+            else
+            {
+                var childRect = screenSize.CenterRect(size);
+                window.Position = childRect.Position;
+            }
+        }
+        else if (startupLocation == WindowStartupLocation.CenterScreen)
+        {
+            var childRect = screenSize.CenterRect(size);
+            window.Position = childRect.Position;
+        }
+
+    }
+
+    private WindowStartupLocation GetEffectiveWindowStartupLocation(ManagedWindow window)
+    {
+        if (window.WindowStartupLocation == WindowStartupLocation.CenterOwner &&
+            (window.Owner is null ||
+             (window.Owner != null && window.Owner.WindowState == WindowState.Minimized)))
+        {
+            // If startup location is CenterOwner, but owner is null or minimized then fall back
+            // to CenterScreen. This behavior is consistent with WPF.
+            return WindowStartupLocation.CenterScreen;
+        }
+
+        return window.WindowStartupLocation;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -107,6 +197,4 @@ public class WindowManagerPanel : Canvas
     }
 
 
-    private int GetTopZIndex()
-        => Windows.Count > 0 ? Windows.Max(child => child.ZIndex) : 100;
 }

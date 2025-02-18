@@ -6,18 +6,16 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Controls.Presenters;
+using Avalonia.Dialogs.Internal;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -26,25 +24,27 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
 [TemplatePart(PART_RestoreButton, typeof(Button))]
 [TemplatePart(PART_CloseButton, typeof(Button))]
-[TemplatePart(PART_ResizeBorder, typeof(Border))]
-[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active")]
+[TemplatePart(PART_WindowBorder, typeof(Border))]
+[TemplatePart(PART_ContentPresenter, typeof(Control))]
+[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal")]
 public class ManagedWindow : ContentControl
 {
+    public const string PART_ContentPresenter = "PART_ContentPresenter";
     public const string PART_TitleBar = "PART_TitleBar";
     public const string PART_MinimizeButton = "PART_MinimizeButton";
     public const string PART_MaximizeButton = "PART_MaximizeButton";
     public const string PART_RestoreButton = "PART_RestoreButton";
     public const string PART_CloseButton = "PART_CloseButton";
-    public const string PART_ResizeBorder = "PART_ResizeBorder";
+    public const string PART_WindowBorder = "PART_WindowBorder";
 
     private double _normalWidth;
     private double _normalHeight;
     private BoxShadows _normalBoxShadow;
     private Thickness _normalMargin;
+    private ContentPresenter? _content;
     private Border? _windowBorder;
     private ManagedWindow? _owner;
     private bool _isActive;
-    private bool _showingAsDialog;
     private object? _dialogResult;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
@@ -246,6 +246,19 @@ public class ManagedWindow : ContentControl
     }
 
     /// <summary>
+    /// Gets or sets the client size of the window.
+    /// </summary>
+    public Size ClientSize
+    {
+        get => new Size(this._content.Width, this._content.Height);
+        protected set
+        {
+            this._content.Width = value.Width;
+            this._content.Height = value.Height;
+        } // TODO ? (this._content.DesiredSize, value);
+    }
+
+    /// <summary>
     /// Gets or sets the window position in screen coordinates.
     /// </summary>
     public PixelPoint Position
@@ -293,6 +306,8 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public IStorageProvider StorageProvider => TopLevel.GetTopLevel(this)!.StorageProvider;
 
+    public Screens Screens => TopLevel.GetTopLevel(this)!.Screens!;
+
     public IInsetsManager? InsetsManager => TopLevel.GetTopLevel(this)!.PlatformImpl!.TryGetFeature<IInsetsManager>();
     public IInputPane? InputPane => PlatformImpl!.TryGetFeature<IInputPane>();
     public ILauncher Launcher => PlatformImpl!.TryGetFeature<ILauncher>();
@@ -305,10 +320,31 @@ public class ManagedWindow : ContentControl
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    /// <summary>
-    /// Gets a collection of child windows owned by this window.
-    /// </summary>
-    public IReadOnlyList<ManagedWindow> OwnedWindows => _children.Select(x => x.Child).ToArray();
+    public WindowManagerPanel WindowManager => (WindowManagerPanel)Parent;
+
+    private ManagedWindow? _modalDialog;
+    public ManagedWindow? ModalDialog
+    {
+        get => _modalDialog;
+        set
+        {
+            if (_modalDialog != null)
+                throw new NotSupportedException("Already showing a modal dialog for this window");
+
+            _modalDialog = value;
+            if (_modalDialog != null)
+            {
+                _modalDialog.Closed += (sender, e) =>
+                {
+                    // when dialog closes change focus back to owner.
+                    _modalDialog = null;
+                    Activate();
+                };
+            }
+
+            SetPsuedoClasses();
+        }
+    }
 
     /// <summary>
     /// Fired when the window is activated.
@@ -385,6 +421,32 @@ public class ManagedWindow : ContentControl
         SetPsuedoClasses();
     }
 
+    public void FullscreenWindow()
+    {
+        BringToTop();
+        var parent = (WindowManagerPanel)Parent!;
+        if (WindowState == WindowState.Normal)
+        {
+            _normalWidth = this.Width;
+            _normalHeight = this.Height;
+            if (_windowBorder != null)
+            {
+                _normalBoxShadow = _windowBorder.BoxShadow!;
+                _normalMargin = _windowBorder.Margin;
+            }
+        }
+        Canvas.SetLeft(this, 0);
+        Canvas.SetTop(this, 0);
+        this.Width = parent.Bounds.Width;
+        this.Height = parent.Bounds.Height;
+        if (_windowBorder != null)
+        {
+            _windowBorder.Margin = new Thickness(0);
+            _windowBorder.BoxShadow = new BoxShadows();
+        }
+        WindowState = WindowState.FullScreen;
+        SetPsuedoClasses();
+    }
     public void RestoreWindow()
     {
         BringToTop();
@@ -419,7 +481,7 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public void Activate()
     {
-        if (!IsActive)
+        if (!IsActive && ModalDialog == null)
         {
             if (WindowState == WindowState.Minimized)
             {
@@ -429,13 +491,9 @@ public class ManagedWindow : ContentControl
             OnActivated();
             IsActive = true;
 
-            var windowsManager = this.FindAncestorOfType<WindowManagerPanel>();
-            if (windowsManager != null)
+            foreach (var win in WindowManager.Windows.Where(win => win != this))
             {
-                foreach (var win in windowsManager.Windows.Where(win => win != this))
-                {
-                    win.Deactivate();
-                }
+                win.Deactivate();
             }
             BringToTop();
             SetPsuedoClasses();
@@ -463,6 +521,8 @@ public class ManagedWindow : ContentControl
         IsVisible = false;
     }
 
+    private bool _shown;
+
     /// <summary>
     /// Shows the window.
     /// </summary>
@@ -470,11 +530,27 @@ public class ManagedWindow : ContentControl
     {
         IsVisible = true;
 
-        OnOpened(EventArgs.Empty);
-        if (ShowActivated)
+
+        if (!_shown)
         {
-            Activate();
+            _shown = true;
+            switch (WindowState)
+            {
+                case WindowState.Normal:
+                    break;
+                case WindowState.Maximized:
+                    MaximizeWindow();
+                    break;
+                case WindowState.Minimized:
+                    MinimizeWindow();
+                    break;
+                case WindowState.FullScreen:
+                    FullscreenWindow();
+                    break;
+            }
+            OnOpened(EventArgs.Empty);
         }
+
     }
 
     /// <summary>
@@ -504,50 +580,28 @@ public class ManagedWindow : ContentControl
     /// </returns>
     public Task<TResult> ShowDialog<TResult>(ManagedWindow owner)
     {
+        if (ModalDialog != null)
+            throw new NotSupportedException("Already showing a modal dialog for this window");
+
         if (owner == null)
         {
             throw new ArgumentNullException(nameof(owner));
         }
 
-        RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+        this.Owner = owner;
 
-        // EnsureInitialized();
-        ApplyStyling();
-        // _shown = true;
-        _showingAsDialog = true;
-        IsVisible = true;
-
-        // SetWindowStartupLocation(owner);
-
-        // _canHandleResized = true;
-
-        //var initialSize = new Size(
-        //    double.IsNaN(Width) ? ClientSize.Width : Width,
-        //    double.IsNaN(Height) ? ClientSize.Height : Height);
-
-        //if (initialSize != ClientSize)
-        //{
-        //    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
-        //}
-
-        //LayoutManager.ExecuteInitialLayoutPass();
+        owner.ModalDialog = this;
 
         var result = new TaskCompletionSource<TResult>();
 
-        Owner = owner;
-
-        // Second call will calculate correct position because both current and owner windows have correct scaling.
-        //            SetWindowStartupLocation(owner);
-
-        //StartRendering();
-        //PlatformImpl?.Show(ShowActivated, true);
         this.Closed += (sender, e) =>
         {
-            owner.Activate();
+            this.ModalDialog = null;
             result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
         };
 
-        OnOpened(EventArgs.Empty);
+        owner.WindowManager.ShowWindow(this);
+
         return result.Task;
     }
 
@@ -604,9 +658,9 @@ public class ManagedWindow : ContentControl
         }
 
 
-        _showingAsDialog = false;
-
         Owner = null;
+        Closed?.Invoke(this, new EventArgs());
+        RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
     }
 
     private bool ShouldCancelClose(WindowClosingEventArgs args)
@@ -639,6 +693,7 @@ public class ManagedWindow : ContentControl
                 }
 
                 return true;
+
             case WindowClosingBehavior.OwnerWindowOnly:
                 OnClosing(args);
 
@@ -716,21 +771,35 @@ public class ManagedWindow : ContentControl
 
         var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
         if (partMinimizeButton != null)
+        {
+            partMinimizeButton.IsVisible = CanResize;
             partMinimizeButton.Click += OnMinimizeClick;
+        }
 
         var partMaximizeButton = e.NameScope.Find<Button>(PART_MaximizeButton);
         if (partMaximizeButton != null)
+        {
+            partMaximizeButton.IsVisible = CanResize;
             partMaximizeButton.Click += OnMaximizeClick;
+        }
 
         var partRestoreButton = e.NameScope.Find<Button>(PART_RestoreButton);
         if (partRestoreButton != null)
+        {
+            partRestoreButton.IsVisible = CanResize;
             partRestoreButton.Click += OnRestoreClick;
+        }
 
         var partCloseButton = e.NameScope.Find<Button>(PART_CloseButton);
         if (partCloseButton != null)
+        {
+            partCloseButton.IsVisible = IsCloseButtonVisible;
             partCloseButton.Click += OnCloseClick;
+        }
 
-        _windowBorder = e.NameScope.Find<Border>(PART_ResizeBorder);
+        _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
+
+        _windowBorder = e.NameScope.Find<Border>(PART_WindowBorder);
         SetupResize(_windowBorder);
 
         this.Tapped += ManagedWindow_Tapped;
@@ -813,24 +882,29 @@ public class ManagedWindow : ContentControl
     {
         var classes = ((IPseudoClasses)this.Classes);
         if (isDragging)
-        {
             classes.Add(":dragging");
-        }
         else
-        {
             classes.Remove(":dragging");
-        }
+
         if (IsActive)
-        {
             classes.Add(":active");
-        }
         else
-        {
             classes.Remove(":active");
-        }
+
+        if (ModalDialog != null)
+            classes.Add(":hasdialog");
+        else
+            classes.Remove(":hasdialog");
+
+        if (Owner != null)
+            classes.Add(":isdialog");
+        else
+            classes.Remove(":isdialog");
+
         classes.Remove(":minimized");
         classes.Remove(":normal");
         classes.Remove(":maximized");
+        classes.Remove(":fullscreen");
         switch (WindowState)
         {
             case WindowState.Minimized:
@@ -846,12 +920,16 @@ public class ManagedWindow : ContentControl
                 Canvas.SetLeft(this, Position.X);
                 Canvas.SetTop(this, Position.Y);
                 break;
+            case WindowState.FullScreen:
+                classes.Add(":fullscreen");
+                Canvas.SetLeft(this, 0);
+                Canvas.SetTop(this, 0);
+                break;
         }
     }
     public void BringToTop()
     {
-        var windowsPanel = this.FindAncestorOfType<WindowManagerPanel>()!;
-        windowsPanel.BringToTop(this);
+        WindowManager.BringToTop(this);
     }
 
     void SetupResize(Border? border)
@@ -867,6 +945,9 @@ public class ManagedWindow : ContentControl
         Point? start = null;
         border.PointerPressed += (i, e) =>
         {
+            if (ModalDialog != null)
+                return;
+
             if (!IsActive)
                 Activate();
 
@@ -977,8 +1058,11 @@ public class ManagedWindow : ContentControl
                 }
                 else
                 {
-                    var edgeTemp = GetEdge(border, position);
-                    border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
+                    if (ModalDialog == null)
+                    {
+                        var edgeTemp = GetEdge(border, position);
+                        border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
+                    }
                 }
             }
         };
@@ -1036,24 +1120,21 @@ public class ManagedWindow : ContentControl
 
     private void OnTitleBarDoubleClick(object? sender, TappedEventArgs e)
     {
-        if (WindowState == WindowState.Minimized)
-            RestoreWindow();
-        else if (WindowState == WindowState.Normal)
-            MaximizeWindow();
-        else if (WindowState == WindowState.Maximized)
-            RestoreWindow();
+        if (CanResize)
+        {
+            if (WindowState == WindowState.Minimized)
+                RestoreWindow();
+            else if (WindowState == WindowState.Normal)
+                MaximizeWindow();
+            else if (WindowState == WindowState.Maximized)
+                RestoreWindow();
+        }
     }
 
 
     private void OnCloseClick(object? sender, RoutedEventArgs e)
     {
-        WindowClosingEventArgs? args = ActivatorEx.CreateInstance<WindowClosingEventArgs>(WindowCloseReason.WindowClosing, false);
-        Closing?.Invoke(this, args);
-        if (!args.Cancel)
-        {
-            Closed?.Invoke(this, new EventArgs());
-            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
-        }
+        this.Close();
     }
 
 

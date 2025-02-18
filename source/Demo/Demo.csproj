@@ -24,4 +24,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Iciclecreek.Avalonia.WindowManager\Iciclecreek.Avalonia.WindowManager.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="MyDialog.axaml.cs">
+      <DependentUpon>MyDialog.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="MyWindow.axaml.cs">
+      <DependentUpon>MyWindow.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
