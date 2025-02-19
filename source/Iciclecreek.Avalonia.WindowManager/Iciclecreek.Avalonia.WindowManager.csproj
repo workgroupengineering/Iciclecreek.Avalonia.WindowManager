@@ -14,7 +14,4 @@
     <AvaloniaResource Include="**/*.*xaml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AvaloniaXaml Remove="WindowManagerTheme.axaml" />
-  </ItemGroup>
 </Project>
