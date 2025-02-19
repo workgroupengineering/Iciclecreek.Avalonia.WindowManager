@@ -533,7 +533,11 @@ public class ManagedWindow : ContentControl
 
         if (!_shown)
         {
+            if (!(Parent is WindowManagerPanel))
+                throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
+
             _shown = true;
+
             switch (WindowState)
             {
                 case WindowState.Normal:
