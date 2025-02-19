@@ -483,7 +483,7 @@ public class ManagedWindow : ContentControl
         {
             if (WindowState == WindowState.Minimized)
             {
-                RestoreWindow();
+                return;
             }
 
             OnActivated();
@@ -774,21 +774,18 @@ public class ManagedWindow : ContentControl
         var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
         if (partMinimizeButton != null)
         {
-            partMinimizeButton.IsVisible = CanResize;
             partMinimizeButton.Click += OnMinimizeClick;
         }
 
         var partMaximizeRestoreButton = e.NameScope.Find<Button>(PART_MaximizeRestoreButton);
         if (partMaximizeRestoreButton != null)
         {
-            partMaximizeRestoreButton.IsVisible = CanResize;
             partMaximizeRestoreButton.Click += OnMaximizeRestoreClick;
         }
 
         var partCloseButton = e.NameScope.Find<Button>(PART_CloseButton);
         if (partCloseButton != null)
         {
-            partCloseButton.IsVisible = IsCloseButtonVisible;
             partCloseButton.Click += OnCloseClick;
         }
 

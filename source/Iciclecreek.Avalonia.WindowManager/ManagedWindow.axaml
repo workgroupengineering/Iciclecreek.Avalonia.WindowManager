@@ -36,7 +36,7 @@
                   BoxShadow="{TemplateBinding BoxShadow}"
                   CornerRadius="{TemplateBinding CornerRadius}"
                   Background="{TemplateBinding Background}">
-            
+
             <Grid RowDefinitions="Auto *">
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
@@ -93,33 +93,20 @@
     <!-- window state styles -->
 
     <!--minimized -->
-    <Style Selector="^:minimized">
-      <Setter Property="Background" Value="Aqua"/>
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate>
-            <Border BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    Background="Transparent">
-              <Grid RowDefinitions="Auto *">
-                <!--Centered layout-->
-                <Grid Name="PART_TitleBar"
-                      ColumnDefinitions="* Auto Auto Auto"
-                      Background="Gray">
-                  <TextBlock>Title</TextBlock>
-                </Grid>
-              </Grid>
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
-    
     <Style Selector="^:minimized /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="IsVisible" Value="false"/>
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:minimized /template/ Button#PART_MinimizeButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:minimized /template/ Button#PART_MaximizeRestoreButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:minimized /template/ Button#PART_CloseButton">
+      <Setter Property="IsVisible" Value="False"/>
     </Style>
 
-    <!--maximimzed-->
+    <!--maximized-->
     <Style Selector="^:maximized /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
@@ -133,12 +120,12 @@
     <Style Selector="^:normal /template/ Button#PART_MaximizeRestoreButton">
       <Setter Property="Content" Value="🗖"/>
     </Style>
-    
+
     <!-- activated -->
     <Style Selector="^:active /template/ Border#PART_WindowBorder">
       <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindow_Active_BorderBrush}"/>
     </Style>
-    
+
     <Style Selector="^:active /template/ Grid#PART_TitleBar">
       <Setter Property="Background" Value="{DynamicResource ManagedWindow_Active_TitleBarBackgroundBrush}"/>
     </Style>
