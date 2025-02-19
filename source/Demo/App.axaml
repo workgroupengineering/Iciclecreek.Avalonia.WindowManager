@@ -3,7 +3,7 @@
              xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
              xmlns:sys="using:System"
              x:Class="Demo.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
   <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
   <Application.Styles>

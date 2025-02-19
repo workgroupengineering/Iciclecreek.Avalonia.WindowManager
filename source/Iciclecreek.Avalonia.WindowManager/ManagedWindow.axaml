@@ -2,25 +2,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
 
-  <!--
-    Additional resources 
-    Using Control Themes:
-         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
-    Using Theme Variants:
-         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
-  -->
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
     <Setter Property="Background"
-            Value="{DynamicResource ManagedWindowBackgroundBrush}" />
+            Value="{DynamicResource ManagedWindow_BackgroundBrush}" />
     <Setter Property="Foreground"
-            Value="{DynamicResource ManagedWindowForegroundBrush}" />
+            Value="{DynamicResource ManagedWindow_ForegroundBrush}" />
     <Setter Property="BorderBrush"
-            Value="{DynamicResource ManagedWindowBorderBrush}" />
+            Value="{DynamicResource ManagedWindow_BorderBrush}" />
     <Setter Property="BorderThickness"
-            Value="{DynamicResource ManagedWindowBorderThickness}" />
+            Value="{DynamicResource ManagedWindow_BorderThickness}" />
     <Setter Property="BoxShadow"
-            Value="{DynamicResource ManagedWindowBoxShadows}" />
+            Value="{DynamicResource ManagedWindow_BoxShadows}" />
     <Setter Property="CornerRadius"
             Value="0" />
     <Setter Property="Padding"
@@ -36,47 +29,49 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
+          <!--window border used for resizing -->
           <Border Name="PART_WindowBorder"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   BoxShadow="{TemplateBinding BoxShadow}"
                   CornerRadius="{TemplateBinding CornerRadius}"
                   Background="{TemplateBinding Background}">
+            
             <Grid RowDefinitions="Auto *">
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="* Auto Auto Auto"
-                    Background="{DynamicResource ManagedWindowTitleBarBackgroundBrush}">
+                    Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
                 <Grid.Styles>
                   <Style Selector="Button">
                     <Setter Property="Background" Value="Transparent"/>
                   </Style>
                 </Grid.Styles>
                 <TextBlock
-                  Padding="10 0"
-                  Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
+                  Padding="8 0"
+                  Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                   VerticalAlignment="Center"
                   Text="{TemplateBinding Title}"/>
                 <Button Name="PART_MinimizeButton"
                         Grid.Column="1"
-                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                         Content="🗕"/>
                 <Button Name="PART_MaximizeButton"
                         Grid.Column="2"
-                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                         Content="🗖"/>
                 <Button Name="PART_RestoreButton"
                         Grid.Column="2"
-                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                         Content="🗗"/>
                 <Button Name="PART_CloseButton"
                         Grid.Column="3"
-                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                         Content="🗙"
                         IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
               </Grid>
 
-              <!--Content-->
+              <!-- window content-->
               <ContentPresenter Grid.Row="1"
                                 ClipToBounds="True"
                                 Name="PART_ContentPresenter"
@@ -89,8 +84,8 @@
 
               <Panel Name="PART_ModalOverlay"
                      Grid.RowSpan="2"
-                     Opacity=".5"
-                     Background="Black"
+                     Opacity="{DynamicResource ManagedWindow_ModalOpacity}"
+                     Background="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
                      IsVisible="false">
               </Panel>
             </Grid>
@@ -100,6 +95,9 @@
       </Setter.Value>
     </Setter>
 
+    <!-- window state styles -->
+
+    <!--minimized -->
     <Style Selector="^:minimized">
       <Setter Property="Background" Value="Aqua"/>
       <Setter Property="Template">
@@ -121,38 +119,59 @@
         </Setter.Value>
       </Setter>
     </Style>
-
+    
     <Style Selector="^:minimized /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="IsVisible" Value="false"/>
     </Style>
 
+    <!--maximimzed-->
     <Style Selector="^:maximized /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
     </Style>
 
+    <Style Selector="^:maximized /template/ Button#PART_MaximizeButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
 
+    <Style Selector="^:maximized /template/ Button#PART_RestoreButton">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+
+    <!--normal-->
     <Style Selector="^:normal /template/ Button#PART_MaximizeButton">
       <Setter Property="IsVisible" Value="True"/>
     </Style>
+    
     <Style Selector="^:normal /template/ Button#PART_RestoreButton">
       <Setter Property="IsVisible" Value="False"/>
     </Style>
 
-    <Style Selector="^:maximized /template/ Button#PART_MaximizeButton">
-      <Setter Property="IsVisible" Value="False"/>
-    </Style>
-    <Style Selector="^:maximized /template/ Button#PART_RestoreButton">
-      <Setter Property="IsVisible" Value="True"/>
-    </Style>
+    <!-- activated -->
     <Style Selector="^:active /template/ Border#PART_WindowBorder">
-      <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindowActiveBorderBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindow_Active_BorderBrush}"/>
+    </Style>
+    
+    <Style Selector="^:active /template/ Grid#PART_TitleBar">
+      <Setter Property="Background" Value="{DynamicResource ManagedWindow_Active_TitleBarBackgroundBrush}"/>
     </Style>
 
+    <Style Selector="^:active /template/ Grid#PART_TitleBar > TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource ManagedWindow_Active_TitleBarForegroundBrush}"/>
+    </Style>
+
+    <Style Selector="^:active /template/ Grid#PART_TitleBar > Button">
+      <Setter Property="Foreground" Value="{DynamicResource ManagedWindow_Active_TitleBarForegroundBrush}"/>
+    </Style>
+
+    <!-- dialog state styles -->
+
+    <!-- window is a dialog -->
     <Style Selector="^:isdialog /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
+    <!-- window has a dialog -->
     <Style Selector="^:hasdialog /template/ Panel#PART_ModalOverlay">
       <Setter Property="IsVisible" Value="True"/>
     </Style>
