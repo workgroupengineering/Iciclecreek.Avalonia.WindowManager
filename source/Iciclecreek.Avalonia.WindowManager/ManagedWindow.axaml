@@ -56,14 +56,9 @@
                         Grid.Column="1"
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                         Content="🗕"/>
-                <Button Name="PART_MaximizeButton"
+                <Button Name="PART_MaximizeRestoreButton"
                         Grid.Column="2"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                        Content="🗖"/>
-                <Button Name="PART_RestoreButton"
-                        Grid.Column="2"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                        Content="🗗"/>
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"/>
                 <Button Name="PART_CloseButton"
                         Grid.Column="3"
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
@@ -130,23 +125,15 @@
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
     </Style>
 
-    <Style Selector="^:maximized /template/ Button#PART_MaximizeButton">
-      <Setter Property="IsVisible" Value="False"/>
-    </Style>
-
-    <Style Selector="^:maximized /template/ Button#PART_RestoreButton">
-      <Setter Property="IsVisible" Value="True"/>
+    <Style Selector="^:maximized /template/ Button#PART_MaximizeRestoreButton">
+      <Setter Property="Content" Value="🗗"/>
     </Style>
 
     <!--normal-->
-    <Style Selector="^:normal /template/ Button#PART_MaximizeButton">
-      <Setter Property="IsVisible" Value="True"/>
+    <Style Selector="^:normal /template/ Button#PART_MaximizeRestoreButton">
+      <Setter Property="Content" Value="🗖"/>
     </Style>
     
-    <Style Selector="^:normal /template/ Button#PART_RestoreButton">
-      <Setter Property="IsVisible" Value="False"/>
-    </Style>
-
     <!-- activated -->
     <Style Selector="^:active /template/ Border#PART_WindowBorder">
       <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindow_Active_BorderBrush}"/>
