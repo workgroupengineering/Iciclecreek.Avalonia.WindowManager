@@ -15,16 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaXaml Remove="ManagedWindow.axaml" />
     <AvaloniaXaml Remove="WindowManagerTheme.axaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaResource Update="WindowManagerTheme.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Update="ManagedWindow.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
   </ItemGroup>
 </Project>
