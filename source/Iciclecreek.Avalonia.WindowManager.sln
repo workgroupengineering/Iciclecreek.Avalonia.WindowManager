@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iciclecreek.Avalonia.WindowManager", "Iciclecreek.Avalonia.WindowManager\Iciclecreek.Avalonia.WindowManager.csproj", "{4CC46104-EBB6-4EB8-A8BD-0AFDF604E58A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", "{D159A6AF-C30A-4E14-9370-22D00E1CE124}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4CC46104-EBB6-4EB8-A8BD-0AFDF604E58A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CC46104-EBB6-4EB8-A8BD-0AFDF604E58A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CC46104-EBB6-4EB8-A8BD-0AFDF604E58A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CC46104-EBB6-4EB8-A8BD-0AFDF604E58A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D159A6AF-C30A-4E14-9370-22D00E1CE124}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D159A6AF-C30A-4E14-9370-22D00E1CE124}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D159A6AF-C30A-4E14-9370-22D00E1CE124}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D159A6AF-C30A-4E14-9370-22D00E1CE124}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

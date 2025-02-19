@@ -9,27 +9,25 @@
     Using Theme Variants:
          https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
   -->
-
-  <Design.PreviewWith>
-    <StackPanel Width="400" Height="400">
-      <wm:WindowsManagerPanel Background="{DynamicResource SystemRegionBrush}">
-        <wm:ManagedWindow  />
-      </wm:WindowsManagerPanel>
-    </StackPanel>
-  </Design.PreviewWith>
-
+  <SolidColorBrush x:Key='ManagedWindowActiveBorderBrush'>#FFDDDDDD</SolidColorBrush>
+  <SolidColorBrush x:Key='ManagedWindowBackgroundBrush'>LightGray</SolidColorBrush>
+  <SolidColorBrush x:Key='ManagedWindowBorderBrush'>Gray</SolidColorBrush>
+  <Thickness x:Key='ManagedWindowBorderThickness'>4</Thickness>
+  <BoxShadows x:Key='ManagedWindowBoxShadows'>5 5 10 2 #33000000</BoxShadows >
+  <SolidColorBrush x:Key='ManagedWindowTitleBarForegroundBrush'>White</SolidColorBrush>
+  <SolidColorBrush x:Key='ManagedWindowTitleBarBackgroundBrush'>Gray</SolidColorBrush>
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
     <Setter Property="Background"
-            Value="LightGray" />
+            Value="{DynamicResource ManagedWindowBackgroundBrush}" />
     <Setter Property="Foreground"
-            Value="Black" />
+            Value="{DynamicResource ManagedWindowForegroundBrush}" />
     <Setter Property="BorderBrush"
-            Value="DarkGray" />
+            Value="{DynamicResource ManagedWindowBorderBrush}" />
     <Setter Property="BorderThickness"
-            Value="4" />
+            Value="{DynamicResource ManagedWindowBorderThickness}" />
     <Setter Property="BoxShadow"
-            Value="5 5 10 2 #33000000" />
+            Value="{DynamicResource ManagedWindowBoxShadows}" />
     <Setter Property="CornerRadius"
             Value="0" />
     <Setter Property="Padding"
@@ -45,56 +43,56 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-            <Border Name="PART_WindowBorder"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    BoxShadow="{TemplateBinding BoxShadow}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    Background="{TemplateBinding Background}">
-              <Grid RowDefinitions="Auto *">
-                <!--Title Bar-->
-                <Grid Name="PART_TitleBar"
-                      ColumnDefinitions="* Auto Auto Auto"
-                      Background="Gray">
-                  <TextBlock
-                    Padding="10 0"
-                    VerticalAlignment="Center"
-                    Text="{TemplateBinding Title}"/>
-                  <Button Name="PART_MinimizeButton"
-                          Grid.Column="1"
-                          Content="🗕"/>
-                  <Button Name="PART_MaximizeButton"
-                          Grid.Column="2"
-                          Content="🗖"/>
-                  <Button Name="PART_RestoreButton"
-                          Grid.Column="2"
-                          Content="🗗"/>
-                  <Button Name="PART_CloseButton"
-                          Grid.Column="3"
-                          Content="🗙"
-                          IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
-                </Grid>
-
-                <!--Content-->
-                <ContentPresenter Grid.Row="1"
-                                  ClipToBounds="True"
-                                  Name="PART_ContentPresenter"
-                                  Background="{TemplateBinding Background}"
-                                  Margin="{TemplateBinding Margin}"
-                                  Padding="{TemplateBinding Padding}"
-                                  BorderThickness="{TemplateBinding BorderThickness}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  Content="{TemplateBinding Content}" />
-
-                <Panel Name="PART_ModalOverlay"
-                       Grid.RowSpan="2"
-                       Opacity=".5"
-                       Background="Black"
-                       IsVisible="false">
-                </Panel>
+          <Border Name="PART_WindowBorder"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  BoxShadow="{TemplateBinding BoxShadow}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Background="{TemplateBinding Background}">
+            <Grid RowDefinitions="Auto *">
+              <!--Title Bar-->
+              <Grid Name="PART_TitleBar"
+                    ColumnDefinitions="* Auto Auto Auto"
+                    Background="Gray">
+                <TextBlock
+                  Padding="10 0"
+                  VerticalAlignment="Center"
+                  Text="{TemplateBinding Title}"/>
+                <Button Name="PART_MinimizeButton"
+                        Grid.Column="1"
+                        Content="🗕"/>
+                <Button Name="PART_MaximizeButton"
+                        Grid.Column="2"
+                        Content="🗖"/>
+                <Button Name="PART_RestoreButton"
+                        Grid.Column="2"
+                        Content="🗗"/>
+                <Button Name="PART_CloseButton"
+                        Grid.Column="3"
+                        Content="🗙"
+                        IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
               </Grid>
 
-            </Border>
+              <!--Content-->
+              <ContentPresenter Grid.Row="1"
+                                ClipToBounds="True"
+                                Name="PART_ContentPresenter"
+                                Background="{TemplateBinding Background}"
+                                Margin="{TemplateBinding Margin}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}" />
+
+              <Panel Name="PART_ModalOverlay"
+                     Grid.RowSpan="2"
+                     Opacity=".5"
+                     Background="Black"
+                     IsVisible="false">
+              </Panel>
+            </Grid>
+
+          </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -145,7 +143,7 @@
       <Setter Property="IsVisible" Value="True"/>
     </Style>
     <Style Selector="^:active /template/ Border#PART_WindowBorder">
-      <Setter Property="BorderBrush" Value="#FFd0d0d0"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindowActiveBorderBrush}"/>
     </Style>
 
     <Style Selector="^:isdialog /template/ Border#PART_WindowBorder">
