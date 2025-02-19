@@ -9,13 +9,6 @@
     Using Theme Variants:
          https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
   -->
-  <SolidColorBrush x:Key='ManagedWindowActiveBorderBrush'>#FFDDDDDD</SolidColorBrush>
-  <SolidColorBrush x:Key='ManagedWindowBackgroundBrush'>LightGray</SolidColorBrush>
-  <SolidColorBrush x:Key='ManagedWindowBorderBrush'>Gray</SolidColorBrush>
-  <Thickness x:Key='ManagedWindowBorderThickness'>4</Thickness>
-  <BoxShadows x:Key='ManagedWindowBoxShadows'>5 5 10 2 #33000000</BoxShadows >
-  <SolidColorBrush x:Key='ManagedWindowTitleBarForegroundBrush'>White</SolidColorBrush>
-  <SolidColorBrush x:Key='ManagedWindowTitleBarBackgroundBrush'>Gray</SolidColorBrush>
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
     <Setter Property="Background"
@@ -53,22 +46,32 @@
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="* Auto Auto Auto"
-                    Background="Gray">
+                    Background="{DynamicResource ManagedWindowTitleBarBackgroundBrush}">
+                <Grid.Styles>
+                  <Style Selector="Button">
+                    <Setter Property="Background" Value="Transparent"/>
+                  </Style>
+                </Grid.Styles>
                 <TextBlock
                   Padding="10 0"
+                  Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
                   VerticalAlignment="Center"
                   Text="{TemplateBinding Title}"/>
                 <Button Name="PART_MinimizeButton"
                         Grid.Column="1"
+                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
                         Content="🗕"/>
                 <Button Name="PART_MaximizeButton"
                         Grid.Column="2"
+                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
                         Content="🗖"/>
                 <Button Name="PART_RestoreButton"
                         Grid.Column="2"
+                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
                         Content="🗗"/>
                 <Button Name="PART_CloseButton"
                         Grid.Column="3"
+                        Foreground="{DynamicResource ManagedWindowTitleBarForegroundBrush}"
                         Content="🗙"
                         IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
               </Grid>

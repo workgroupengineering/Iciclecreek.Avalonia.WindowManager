@@ -8,6 +8,7 @@ using Iciclecreek.Avalonia.WindowManager;
 using System;
 using Avalonia;
 using Avalonia.Interactivity;
+using System.Linq;
 
 namespace Demo;
 
@@ -31,7 +32,6 @@ public partial class MyWindow : ManagedWindow
     {
         InitializeComponent();
 
-        this.Background = brushes[_windowCount % brushes.Length];
 
         this.DataContext = new MyWindowViewModel()
         {
@@ -49,6 +49,11 @@ public partial class MyWindow : ManagedWindow
         {
             vm.Counter++;
         }
+    }
+
+    private void OnColor(object? sender, RoutedEventArgs args)
+    {
+        this.Background = brushes[Random.Shared.Next(0, brushes.Length)];
     }
 
     private void OnSpin(object? sender, RoutedEventArgs args)

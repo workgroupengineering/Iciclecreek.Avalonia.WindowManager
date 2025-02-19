@@ -8,7 +8,26 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/ManagedWindow.axaml" />
       </ResourceDictionary.MergedDictionaries>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <BoxShadows x:Key='ManagedWindowBoxShadows'>5 5 10 2 #989898</BoxShadows >
+          <SolidColorBrush x:Key='ManagedWindowBorderBrush' Color='#989898'/>
+          <SolidColorBrush x:Key='ManagedWindowActiveBorderBrush' Color='#d4d4d4'/>
+          <SolidColorBrush x:Key='ManagedWindowBackgroundBrush' Color='#FFFFFF'/>
+          <SolidColorBrush x:Key='ManagedWindowTitleBarBackgroundBrush' Color='#CCCCCC'/>
+          <SolidColorBrush x:Key='ManagedWindowTitleBarForegroundBrush' Color='#282828'/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key='Dark'>
+          <BoxShadows x:Key='ManagedWindowBoxShadows'>5 5 10 2 #585858</BoxShadows >
+          <SolidColorBrush x:Key='ManagedWindowBorderBrush' Color='#585858'/>
+          <SolidColorBrush x:Key='ManagedWindowActiveBorderBrush' Color='#989898'/>
+          <SolidColorBrush x:Key='ManagedWindowBackgroundBrush' Color='#000000'/>
+          <SolidColorBrush x:Key='ManagedWindowTitleBarBackgroundBrush' Color='#202020'/>
+          <SolidColorBrush x:Key='ManagedWindowTitleBarForegroundBrush' Color='#F6F6F6'/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
+    <Thickness x:Key='ManagedWindowBorderThickness'>4</Thickness>
   </Styles.Resources>
   
   <!-- set a style to default to ManagedWindow template-->

@@ -19,6 +19,7 @@
     <Button
     HorizontalAlignment="Left"
     Click="OnSpin">Spin</Button>
+    <Button  HorizontalAlignment="Left" Click="OnColor">Background</Button>
 
     <StackPanel Orientation="Horizontal" Spacing="10">
       <Button

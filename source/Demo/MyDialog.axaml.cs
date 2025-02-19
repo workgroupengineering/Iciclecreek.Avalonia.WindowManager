@@ -31,8 +31,6 @@ public partial class MyDialog : ManagedWindow
     {
         InitializeComponent();
 
-        this.Background = brushes[_dialogCount % brushes.Length];
-
         this.DataContext = new MyDialogViewModel()
         {
             Title = $"New Dialog {++_dialogCount}"
@@ -50,6 +48,12 @@ public partial class MyDialog : ManagedWindow
     {
         this.Close(null);
     }
+
+    private void OnColor(object? sender, RoutedEventArgs args)
+    {
+        this.Background = brushes[Random.Shared.Next(0, brushes.Length)];
+    }
+
 
     private void OnSpin(object? sender, RoutedEventArgs args)
     {

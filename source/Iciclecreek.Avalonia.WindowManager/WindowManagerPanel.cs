@@ -52,35 +52,6 @@ public class WindowManagerPanel : Canvas
         }
     }
 
-    //private WindowStartupLocation GetEffectiveWindowStartupLocation(ManagedWindow? owner)
-    //{
-    //    var startupLocation = thisWindowStartupLocation;
-
-    //    if (startupLocation == WindowStartupLocation.CenterOwner &&
-    //        (owner is null ||
-    //         (owner is ManagedWindow ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
-    //       )
-    //    {
-    //        // If startup location is CenterOwner, but owner is null or minimized then fall back
-    //        // to CenterScreen. This behavior is consistent with WPF.
-    //        startupLocation = WindowStartupLocation.CenterScreen;
-    //    }
-
-    //    return startupLocation;
-    //}
-
-
-
-    public void ShowWindow(ManagedWindow window, double x, double y)
-    {
-        Canvas.SetLeft(window, x);
-        Canvas.SetTop(window, y);
-
-        this.Children.Add(window);
-
-        window.Show();
-    }
-
     public void BringToTop(ManagedWindow window)
     {
         var windows = Windows.Where(win => win != window).OrderBy(win => win.ZIndex);
