@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
-using Avalonia.Dialogs.Internal;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -35,8 +34,8 @@ public class ManagedWindow : ContentControl
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_WindowBorder = "PART_WindowBorder";
 
-    private double _normalWidth;
-    private double _normalHeight;
+    private PixelPoint _minimizedPosition = new PixelPoint(int.MinValue,int.MinValue);
+    private Rect _normalRect;
     private BoxShadows _normalBoxShadow;
     private Thickness _normalMargin;
     private ContentPresenter? _content;
@@ -398,14 +397,19 @@ public class ManagedWindow : ContentControl
         var parent = (WindowManagerPanel)Parent!;
         if (WindowState == WindowState.Normal)
         {
-            _normalWidth = this.Width;
-            _normalHeight = this.Height;
+            _normalRect  = new Rect((int)this.Position.X, (int)this.Position.Y, (int)this.Width, (int)this.Height);
+
             if (_windowBorder != null)
             {
                 _normalBoxShadow = _windowBorder.BoxShadow!;
                 _normalMargin = _windowBorder.Margin;
             }
         }
+        else if (WindowState == WindowState.Minimized)
+        {
+            _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
+        }
+
         Canvas.SetLeft(this, 0);
         Canvas.SetTop(this, 0);
         this.Width = parent.Bounds.Width;
@@ -421,38 +425,27 @@ public class ManagedWindow : ContentControl
 
     public void FullscreenWindow()
     {
-        BringToTop();
-        var parent = (WindowManagerPanel)Parent!;
-        if (WindowState == WindowState.Normal)
-        {
-            _normalWidth = this.Width;
-            _normalHeight = this.Height;
-            if (_windowBorder != null)
-            {
-                _normalBoxShadow = _windowBorder.BoxShadow!;
-                _normalMargin = _windowBorder.Margin;
-            }
-        }
-        Canvas.SetLeft(this, 0);
-        Canvas.SetTop(this, 0);
-        this.Width = parent.Bounds.Width;
-        this.Height = parent.Bounds.Height;
-        if (_windowBorder != null)
-        {
-            _windowBorder.Margin = new Thickness(0);
-            _windowBorder.BoxShadow = new BoxShadows();
-        }
-        WindowState = WindowState.FullScreen;
-        SetPsuedoClasses();
+        throw new NotSupportedException();
     }
+
     public void RestoreWindow()
     {
         BringToTop();
+
+        if (WindowState == WindowState.Minimized)
+        {
+            _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
+        }
+
+        this.Position = new PixelPoint((int)_normalRect.Position.X, (int)_normalRect.Position.Y);
+        this.Width = _normalRect.Width;
+        this.Height = _normalRect.Height;
+
         WindowState = WindowState.Normal;
+
         Canvas.SetLeft(this, (int)this.Position.X);
         Canvas.SetTop(this, (int)this.Position.Y);
-        this.Width = _normalWidth;
-        this.Height = _normalHeight;
+
         if (_windowBorder != null)
         {
 
@@ -467,9 +460,17 @@ public class ManagedWindow : ContentControl
         BringToTop();
         if (WindowState == WindowState.Normal)
         {
-            _normalWidth = this.Width;
-            _normalHeight = this.Height;
+            _normalRect = new Rect((int)this.Position.X, (int)this.Position.Y, (int)this.Width, (int)this.Height);
         }
+        
+        if (_minimizedPosition.X == int.MinValue)
+        {
+            _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
+        }
+        this.Position = _minimizedPosition;
+        this.Width = double.NaN;
+        this.Height = double.NaN;
+
         WindowState = WindowState.Minimized;
         SetPsuedoClasses();
     }
@@ -819,9 +820,8 @@ public class ManagedWindow : ContentControl
             if (!IsActive)
                 Activate();
 
-            if (WindowState == WindowState.Normal)
+            if (WindowState != WindowState.Maximized)
             {
-
                 var properties = e.GetCurrentPoint(this).Properties;
                 if (properties.IsLeftButtonPressed)
                 {
@@ -846,7 +846,7 @@ public class ManagedWindow : ContentControl
 
         partTitleBar.PointerMoved += (object? sender, PointerEventArgs e) =>
         {
-            if (WindowState == WindowState.Normal)
+            if (WindowState != WindowState.Maximized)
             {
 
                 var properties = e.GetCurrentPoint(this).Properties;
