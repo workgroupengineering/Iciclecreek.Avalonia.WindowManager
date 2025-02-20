@@ -53,6 +53,22 @@ public class WindowManagerPanel : Canvas
         }
     }
 
+    public void MinimizeAllWindows()
+    {
+        foreach (var win in Windows)
+        {
+            win.MinimizeWindow();
+        }
+    }
+
+    public void ShowAllWindows()
+    {
+        foreach(var win in Windows)
+        {
+            win.RestoreWindow();
+        }
+    }
+
     public void BringToTop(ManagedWindow window)
     {
         if (window.Owner != null)
