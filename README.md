@@ -2,7 +2,7 @@
 This library implements a window manager for Avalonia with windows defined using Avalonia instead of native windows.
 This gives you the ability to create MDI style user interfaces in Avalonia, even in environments which don't support windowing like Android and iOS.
 
-![windows](https://github.com/user-attachments/assets/3d38f431-5451-4d34-b88d-9656ba5ab5ab)
+![windows](https://raw.githubusercontent.com/tomlm/Iciclecreek.Avalonia.WindowManager/refs/heads/main/windows.gif)
 
 # Installation
 To install you need to add a reference to the nuget package **Iciclecreek.Avalonia.WindowManager**
