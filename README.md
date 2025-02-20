@@ -29,15 +29,57 @@ App.axaml
 
 # Usage
 This library defines 2 classes:
-* WindowManagerPanel
-* ManagedWindow
+* **WindowManagerPanel** - panel which hosts any content you want and also manages overlapping ManagedWindow instances 
+* **ManagedWindow** - a Window implementation which isn't native but instead 100% avalonia 
  
-## WindowManagerPanel
-The **WindowManagerPanel** is the host control for ManagedWindows.
+## WindowManagerPanel control
+The **WindowManagerPanel** is a **Canvas** control which manages overlapping windows.
 
-It has the following properties
-* **Content** property which is any content you want to have in the background of the window.
-* **Windows** property which is enumeration of all of the windows the WindowManagerPanel owns.
+It has the following properties:
+* **Children** - which is any children you want to have in the background of the window.
+* **Windows** - which is enumeration of all of the windows the WindowManagerPanel owns.
 
-And the following methods:
-* **ShowWindow** - Show a window in the Windows Manager Panel
+And the following window oriented methods:
+* **ShowWindow(window)** - Adds a window to the panel
+* **ShowAllWindows()** - restores all windows
+* **MinimizeAllWindows()** - Minimizes all windows.
+
+## ManagedWindow control
+The **ManagedWindow** control is a clone of the **Window** control. It has standard Window properties like **Title**, **WindowState**, **WindowStartupLocation**, **Position**, etc.
+Instead of being hosted using Native windows, a ManagedWindow control is hosted by the **WindowManagerPanel**
+
+### Showing a window
+To show a window you need to get an instance of the WindowManagerPanel and call **ShowWindow()**.
+
+For example:
+```xaml
+  <wm:WindowMangerPanel Name="WindowManager"/>
+```
+And code behind
+```cs
+   var window = new ManagedWindow()
+   {
+       Title = "My window",
+       WindowStartupLocation=WindowStartupLocation.CenterScreen,
+       Width=300, Height=300
+   };
+    WindowManager.ShowWindow(window);
+```
+
+To close a window you simple call **Close()**.
+
+### Showing a Dialog
+To show a dialog is exactly the same as Avalonia, you instantiate a ManagedWindow and call ShowDialog on it.
+```cs
+   var dialogWindow = new ManagedWindow()
+   {
+       Title = "My window",
+       WindowStartupLocation=WindowStartupLocation.CenterScreen,
+       Width=300, Height=300
+   };
+    var result = await dialogWindow.ShowDialog<string>(this);
+```
+
+To close a dialog you call **Close(result)**;
+
+
