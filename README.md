@@ -69,7 +69,7 @@ And code behind
 To close a window you simple call **Close()**.
 
 ### Showing a Dialog
-To show a dialog is exactly the same as Avalonia, you instantiate a ManagedWindow and call ShowDialog on it.
+To show a dialog is exactly the same as Avalonia, you instantiate a ManagedWindow and call **.ShowDialog() **passing in the parent window.
 ```cs
    var dialogWindow = new ManagedWindow()
    {
