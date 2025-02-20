@@ -1,4 +1,4 @@
-# WindowManager for Avalonia
+# Iciclecreek.Avalonia.WindowManager
 This library implements a window manager for Avalonia with 100% Avalonia defined windows allowing you to create MDI style user interfaces in Avalonia.
 
 ![windows](https://github.com/user-attachments/assets/3d38f431-5451-4d34-b88d-9656ba5ab5ab)
