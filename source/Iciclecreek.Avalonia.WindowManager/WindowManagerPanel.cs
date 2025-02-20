@@ -4,13 +4,14 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
 public class WindowManagerPanel : Canvas
 {
+    private const int WINDOWLAYER = 10000;
+
     public WindowManagerPanel()
     {
         ManagedWindow.WindowClosedEvent.AddClassHandler(typeof(ManagedWindow), (sender, _) =>
@@ -54,16 +55,23 @@ public class WindowManagerPanel : Canvas
 
     public void BringToTop(ManagedWindow window)
     {
-        var windows = Windows.Where(win => win != window).OrderBy(win => win.ZIndex);
-        int i = 10000;
+        if (window.Owner != null)
+        {
+            BringToTop(window.Owner);
+        }
+
+        foreach (var win in Windows.Where(win => window != win && win.WindowState == WindowState.Minimized))
+        {
+            win.ZIndex = WINDOWLAYER;
+        }
+
+        var windows = Windows.Where(win => win != window && win.WindowState != WindowState.Minimized).OrderBy(win => win.ZIndex);
+        int i = WINDOWLAYER + 1;
         foreach (var win in windows)
         {
             win.ZIndex = i++;
-            Debug.WriteLine($"{win} ZIndex: {win.ZIndex}");
         }
         window.ZIndex = i;
-        Debug.WriteLine($"{window} ZIndex: {window.ZIndex}");
-
     }
 
     private void SetWindowStartupLocation(ManagedWindow window)

@@ -397,7 +397,7 @@ public class ManagedWindow : ContentControl
         var parent = (WindowManagerPanel)Parent!;
         if (WindowState == WindowState.Normal)
         {
-            _normalRect  = new Rect((int)this.Position.X, (int)this.Position.Y, (int)this.Width, (int)this.Height);
+            _normalRect  = new Rect((int)this.Position.X, (int)this.Position.Y, (int)this.Bounds.Width, (int)this.Bounds.Height);
 
             if (_windowBorder != null)
             {

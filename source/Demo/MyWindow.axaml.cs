@@ -32,6 +32,7 @@ public partial class MyWindow : ManagedWindow
     {
         InitializeComponent();
 
+        this.Background = brushes[Random.Shared.Next(0, brushes.Length)];
 
         this.DataContext = new MyWindowViewModel()
         {
