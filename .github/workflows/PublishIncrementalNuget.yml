@@ -23,9 +23,15 @@ jobs:
             "**/Iciclecreek.Avalonia.WindowManager.csproj"
           version: bump-build
   
+      - name: Restore dependencies
+        run: dotnet restore source/Iciclecreek.Avalonia.WindowManager/Iciclecreek.Avalonia.WindowManager.csproj 
+ 
+      - name: Build
+        run: dotnet build --no-restore source/Iciclecreek.Avalonia.WindowManager/Iciclecreek.Avalonia.WindowManager.csproj -c Release --property WarningLevel=0
+
       - name: dotnet pack 
         run: |
-          dotnet pack source/Iciclecreek.Avalonia.WindowManager/Iciclecreek.Avalonia.WindowManager.csproj -c Release -o packages --include-symbols --property WarningLevel=0
+          dotnet pack --no-build source/Iciclecreek.Avalonia.WindowManager/Iciclecreek.Avalonia.WindowManager.csproj -c Release -o packages --include-symbols --property WarningLevel=0
 
       - name: Publish NuGet and symbols
         id: nuget-push
