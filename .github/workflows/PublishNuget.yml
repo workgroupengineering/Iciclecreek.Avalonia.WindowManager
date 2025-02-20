@@ -21,9 +21,10 @@ jobs:
 
       - name: Publish NuGet and symbols
         id: nuget-push
-        uses: edumserrano/nuget-push@v1
+        uses: edumserrano/nuget-push@v1.2.2
         with:
           api-key: '${{ secrets.NUGET_KEY }}' 
           working-directory: 'packages'
           fail-if-exists: false
-        
+
+      
