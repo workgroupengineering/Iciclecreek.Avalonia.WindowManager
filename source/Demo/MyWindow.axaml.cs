@@ -9,6 +9,7 @@ using System;
 using Avalonia;
 using Avalonia.Interactivity;
 using System.Linq;
+using Avalonia.Threading;
 
 namespace Demo;
 
@@ -98,27 +99,7 @@ public partial class MyWindow : ManagedWindow
         };
         dialog.ViewModel.Text = ViewModel.Text;
 
-        if (dialog.WindowStartupLocation == WindowStartupLocation.Manual)
-        {
-            dialog.Position = new PixelPoint(Random.Shared.Next(150, (int)Bounds.Width - 100),
-                                          Random.Shared.Next(0, (int)Bounds.Height - 100));
-        }
-
-        switch (dialog.SizeToContent)
-        {
-            case SizeToContent.Manual:
-                dialog.Width = Random.Shared.Next(300, 500);
-                dialog.Height = Random.Shared.Next(300, 500);
-                break;
-            case SizeToContent.Width:
-                dialog.Height = Random.Shared.Next(300, 500);
-                break;
-            case SizeToContent.Height:
-                dialog.Width = Random.Shared.Next(300, 500);
-                break;
-            case SizeToContent.WidthAndHeight:
-                break;
-        }
+        dialog.AdjustWindowSize(this.Bounds);
 
         var result = await dialog.ShowDialog<string?>(this);
         if (result != null)
