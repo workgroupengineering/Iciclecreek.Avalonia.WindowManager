@@ -1,0 +1,54 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:console="https://github.com/jinek/consolonia"
+             xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+             x:Class="ConsoleDemo.App"
+             RequestedThemeVariant="Default">
+  <Application.Resources>
+  </Application.Resources>
+
+  <Application.Styles>
+    <console:MaterialTheme />
+
+    <wm:WindowManagerTheme />
+
+    <Styles>
+      <Styles.Resources>
+        <ResourceDictionary>
+          <console:LineBrush x:Key="normalWindowEdgeBrush" Brush="{DynamicResource ManagedWindow_BorderBrush}" LineStyle="Edge"/>
+          <console:LineBrush x:Key="activeWindowEdgeBrush" Brush="{DynamicResource ManagedWindow_Active_BorderBrush}" LineStyle="Edge"/>
+
+          <!-- control styles -->
+          <ControlTheme x:Key="ConsoleManagedWindowTheme"
+                        BasedOn="{StaticResource {x:Type wm:ManagedWindow}}"
+                        TargetType="wm:ManagedWindow">
+            <Setter Property="BorderBrush" Value="{DynamicResource normalWindowEdgeBrush}"/>
+            <Setter Property="BoxShadow" Value="none" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="1"/>
+            <Setter Property="MinWidth" Value="5"/>
+
+            <Style Selector="^ /template/ TextBlock#PART_Title">
+              <Setter Property="Margin" Value="1 0 0 0"/>
+            </Style>
+
+            <!-- activated -->
+            <Style Selector="^:active">
+              <Setter Property="BorderBrush" Value="{DynamicResource activeWindowEdgeBrush}"/>
+            </Style>
+          </ControlTheme>
+
+          <!-- shared resources-->
+          <!--<x:Double x:Key='ManagedWindow_ModalOpacity'>0.4</x:Double>-->
+          <Thickness x:Key='ManagedWindow_BorderThickness'>1</Thickness>
+        </ResourceDictionary>
+      </Styles.Resources>
+
+      <!-- set default style for the ManagedWindow type -->
+      <Style Selector=":is(wm|ManagedWindow)">
+        <Setter Property="Theme" Value="{StaticResource ConsoleManagedWindowTheme}"/>
+      </Style>
+
+    </Styles>
+  </Application.Styles>
+</Application>

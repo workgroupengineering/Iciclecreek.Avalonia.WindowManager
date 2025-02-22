@@ -33,7 +33,7 @@ public class WindowManagerPanel : Canvas
     /// <summary>
     /// Gets a collection of child windows owned by this window.
     /// </summary>
-    public IReadOnlyList<ManagedWindow> Windows => this.Children.Where(Children => Children is ManagedWindow).Cast<ManagedWindow>().ToArray();
+    public IReadOnlyList<ManagedWindow> Windows => this.Children?.Where(Children => Children is ManagedWindow).Cast<ManagedWindow>().ToArray() ?? Array.Empty<ManagedWindow>();
 
     public void ShowWindow(ManagedWindow window)
     {

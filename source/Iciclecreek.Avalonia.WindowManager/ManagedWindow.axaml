@@ -8,7 +8,7 @@
             Value="{DynamicResource ManagedWindow_BackgroundBrush}" />
     <Setter Property="Foreground"
             Value="{DynamicResource ManagedWindow_ForegroundBrush}" />
-    <Setter Property="BorderBrush"
+    <Setter Property="BorderBrush" 
             Value="{DynamicResource ManagedWindow_BorderBrush}" />
     <Setter Property="BorderThickness"
             Value="{DynamicResource ManagedWindow_BorderThickness}" />
@@ -17,11 +17,11 @@
     <Setter Property="CornerRadius"
             Value="0" />
     <Setter Property="Padding"
-            Value="0" />
-    <Setter Property="MinHeight"
-            Value="50"/>
+            Value="1" />
+    <!--<Setter Property="MinHeight"
+            Value="20"/>
     <Setter Property="MinWidth"
-            Value="100"/>
+            Value="80"/>-->
     <Setter Property="IsCloseButtonVisible"
             Value="True" />
     <Setter Property="ZIndex"
@@ -34,10 +34,10 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   BoxShadow="{TemplateBinding BoxShadow}"
-                  CornerRadius="{TemplateBinding CornerRadius}"
-                  Background="{TemplateBinding Background}">
+                  CornerRadius="{TemplateBinding CornerRadius}">
 
-            <Grid RowDefinitions="Auto *">
+            <Grid RowDefinitions="Auto *"
+                  Background="{TemplateBinding Background}">
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="* Auto Auto Auto"
@@ -47,8 +47,7 @@
                     <Setter Property="Background" Value="Transparent"/>
                   </Style>
                 </Grid.Styles>
-                <TextBlock
-                  Padding="8 0"
+                <TextBlock Name="PART_Title"
                   Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                   VerticalAlignment="Center"
                   Text="{TemplateBinding Title}"/>
@@ -70,10 +69,8 @@
               <ContentPresenter Grid.Row="1"
                                 ClipToBounds="True"
                                 Name="PART_ContentPresenter"
-                                Background="{TemplateBinding Background}"
                                 Margin="{TemplateBinding Margin}"
                                 Padding="{TemplateBinding Padding}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}" />
 
@@ -89,6 +86,10 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+
+    <Style Selector="^ /template/ TextBlock#PART_Title">
+      <Setter Property="Margin" Value="8 0 0 0"/>
+    </Style>
 
     <!-- window state styles -->
 
@@ -122,7 +123,7 @@
     </Style>
 
     <!-- activated -->
-    <Style Selector="^:active /template/ Border#PART_WindowBorder">
+    <Style Selector="^:active">
       <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindow_Active_BorderBrush}"/>
     </Style>
 

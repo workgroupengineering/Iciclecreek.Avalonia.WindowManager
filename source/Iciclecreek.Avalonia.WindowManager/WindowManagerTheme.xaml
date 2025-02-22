@@ -10,33 +10,41 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/ManagedWindow.axaml" />
       </ResourceDictionary.MergedDictionaries>
-      
+
       <!-- themed resources -->
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
           <BoxShadows x:Key='ManagedWindow_BoxShadows'>5 5 10 2 #80CCCCCC</BoxShadows >
-          <SolidColorBrush x:Key='ManagedWindow_BorderBrush' Color='#CCCCCC'/>
+
           <SolidColorBrush x:Key='ManagedWindow_BackgroundBrush' Color='#FFFFFF'/>
+
           <SolidColorBrush x:Key='ManagedWindow_TitleBarBackgroundBrush' Color='#CCCCCC'/>
           <SolidColorBrush x:Key='ManagedWindow_TitleBarForegroundBrush' Color='#282828'/>
-          <SolidColorBrush x:Key='ManagedWindow_Active_BorderBrush' Color='#EEEEEE'/>
           <SolidColorBrush x:Key='ManagedWindow_Active_TitleBarBackgroundBrush' Color='#EEEEEE'/>
           <SolidColorBrush x:Key='ManagedWindow_Active_TitleBarForegroundBrush' Color='#000000'/>
+
+          <SolidColorBrush x:Key='ManagedWindow_BorderBrush' Color='#CCCCCC'/>
+          <SolidColorBrush x:Key='ManagedWindow_Active_BorderBrush' Color='#EEEEEE'/>
+
           <SolidColorBrush x:Key='ManagedWindow_ModalBackgroundBrush' Color='#CCCCCC'/>
         </ResourceDictionary>
-        
+
         <ResourceDictionary x:Key='Dark'>
           <BoxShadows x:Key='ManagedWindow_BoxShadows'>5 5 10 2 #80333333</BoxShadows>
-          <SolidColorBrush x:Key='ManagedWindow_BorderBrush' Color='#111111'/>
+
           <SolidColorBrush x:Key='ManagedWindow_BackgroundBrush' Color='#000000'/>
+
           <SolidColorBrush x:Key='ManagedWindow_TitleBarBackgroundBrush' Color='#111111'/>
           <SolidColorBrush x:Key='ManagedWindow_TitleBarForegroundBrush' Color='#D7D7D7'/>
-          <SolidColorBrush x:Key='ManagedWindow_Active_BorderBrush' Color='#333333'/>
           <SolidColorBrush x:Key='ManagedWindow_Active_TitleBarBackgroundBrush' Color='#333333'/>
           <SolidColorBrush x:Key='ManagedWindow_Active_TitleBarForegroundBrush' Color='#FFFFFF'/>
+
+          <SolidColorBrush x:Key='ManagedWindow_BorderBrush' Color='#111111'/>
+          <SolidColorBrush x:Key='ManagedWindow_Active_BorderBrush' Color='#333333'/>
+
           <SolidColorBrush x:Key='ManagedWindow_ModalBackgroundBrush' Color='#333333'/>
         </ResourceDictionary>
-      
+
       </ResourceDictionary.ThemeDictionaries>
 
       <!-- shared resources-->
@@ -44,7 +52,7 @@
       <Thickness x:Key='ManagedWindow_BorderThickness'>4</Thickness>
     </ResourceDictionary>
   </Styles.Resources>
-  
+
   <!-- set default style for the ManagedWindow type -->
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>

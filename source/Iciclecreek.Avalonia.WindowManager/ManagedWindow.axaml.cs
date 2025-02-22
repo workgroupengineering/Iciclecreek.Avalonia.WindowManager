@@ -19,6 +19,7 @@ using Avalonia.Controls.Presenters;
 namespace Iciclecreek.Avalonia.WindowManager;
 
 [TemplatePart(PART_TitleBar, typeof(Control))]
+[TemplatePart(PART_Title, typeof(TextBlock))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeRestoreButton, typeof(Button))]
 [TemplatePart(PART_CloseButton, typeof(Button))]
@@ -29,6 +30,7 @@ public class ManagedWindow : ContentControl
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
     public const string PART_TitleBar = "PART_TitleBar";
+    public const string PART_Title = "PART_Title";
     public const string PART_MinimizeButton = "PART_MinimizeButton";
     public const string PART_MaximizeRestoreButton = "PART_MaximizeRestoreButton";
     public const string PART_CloseButton = "PART_CloseButton";
@@ -132,6 +134,13 @@ public class ManagedWindow : ContentControl
 
     static ManagedWindow()
     {
+            //AffectsRender<ManagedWindow>(
+            //    BackgroundProperty,
+            //    BorderBrushProperty,
+            //    BorderThicknessProperty,
+            //    CornerRadiusProperty,
+            //    BoxShadowProperty);
+            //AffectsMeasure<ManagedWindow>(BorderThicknessProperty);
         //var theme = new ManagedWindowControlTheme() { TargetType = typeof(ManagedWindow) };
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
@@ -480,7 +489,7 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public void Activate()
     {
-        if (!IsActive && ModalDialog == null)
+        if (!IsActive && ModalDialog == null && Parent != null)
         {
             if (WindowState == WindowState.Minimized)
             {
@@ -1070,13 +1079,13 @@ public class ManagedWindow : ContentControl
         double bottom = top + this.Height;
 
         var leftEdge = start.Value.X >= left &&
-                       start.Value.X <= left + border.BorderThickness.Left - border.Margin.Left;
+                       start.Value.X < left + border.BorderThickness.Left - border.Margin.Left;
         var rightEdge = start.Value.X >= right - border.BorderThickness.Right - border.Margin.Right &&
-                        start.Value.X <= right;
+                        start.Value.X < right;
         var topEdge = start.Value.Y >= top &&
-                        start.Value.Y <= top + border.BorderThickness.Top - border.Margin.Top;
+                        start.Value.Y < top + border.BorderThickness.Top - border.Margin.Top;
         var bottomEdge = start.Value.Y >= bottom - border.BorderThickness.Bottom - border.Margin.Bottom &&
-                        start.Value.Y <= bottom;
+                        start.Value.Y < bottom;
         if (topEdge && leftEdge)
             return WindowEdge.NorthWest;
         else if (topEdge && rightEdge)

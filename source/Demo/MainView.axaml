@@ -1,0 +1,28 @@
+<wm:WindowManagerPanel xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+        x:Class="Demo.MainView">
+  <StackPanel>
+    <StackPanel Orientation="Horizontal">
+      <Label>SizeToContent</Label>
+      <ComboBox Name="SizeToContentCombo" SelectedIndex="0">
+        <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
+        <ComboBoxItem Tag="Width">Width</ComboBoxItem>
+        <ComboBoxItem Tag="Height">Height</ComboBoxItem>
+        <ComboBoxItem Tag="WidthAndHeight">WidthAndHeight</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal">
+      <Label>StartupLocation</Label>
+      <ComboBox Name="StartupLocationCombo" SelectedIndex="0">
+        <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
+        <ComboBoxItem Tag="CenterOwner">CenterOwner</ComboBoxItem>
+        <ComboBoxItem Tag="CenterScreen">CenterScreen</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+    <Button Content="Add a window" Click="OnAddWindowClick" />
+  </StackPanel>
+
+</wm:WindowManagerPanel>
