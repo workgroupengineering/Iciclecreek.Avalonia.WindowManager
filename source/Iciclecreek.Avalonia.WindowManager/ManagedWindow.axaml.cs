@@ -21,7 +21,8 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_TitleBar, typeof(Control))]
 [TemplatePart(PART_Title, typeof(TextBlock))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
-[TemplatePart(PART_MaximizeRestoreButton, typeof(Button))]
+[TemplatePart(PART_MaximizeButton, typeof(Button))]
+[TemplatePart(PART_RestoreButton, typeof(Button))]
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
@@ -32,7 +33,8 @@ public class ManagedWindow : ContentControl
     public const string PART_TitleBar = "PART_TitleBar";
     public const string PART_Title = "PART_Title";
     public const string PART_MinimizeButton = "PART_MinimizeButton";
-    public const string PART_MaximizeRestoreButton = "PART_MaximizeRestoreButton";
+    public const string PART_MaximizeButton = "PART_MaximizeButton";
+    public const string PART_RestoreButton = "PART_RestoreButton";
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_WindowBorder = "PART_WindowBorder";
 
@@ -787,10 +789,15 @@ public class ManagedWindow : ContentControl
             partMinimizeButton.Click += OnMinimizeClick;
         }
 
-        var partMaximizeRestoreButton = e.NameScope.Find<Button>(PART_MaximizeRestoreButton);
-        if (partMaximizeRestoreButton != null)
+        var partMaximizeButton = e.NameScope.Find<Button>(PART_MaximizeButton);
+        if (partMaximizeButton != null)
         {
-            partMaximizeRestoreButton.Click += OnMaximizeRestoreClick;
+            partMaximizeButton.Click += OnMaximizeClick;
+        }
+        var partRestoreButton = e.NameScope.Find<Button>(PART_RestoreButton);
+        if (partRestoreButton != null)
+        {
+            partRestoreButton.Click += OnRestoreClick;
         }
 
         var partCloseButton = e.NameScope.Find<Button>(PART_CloseButton);
@@ -1145,11 +1152,13 @@ public class ManagedWindow : ContentControl
     }
 
 
-    private void OnMaximizeRestoreClick(object? sender, RoutedEventArgs e)
+    private void OnMaximizeClick(object? sender, RoutedEventArgs e)
     {
-        if (WindowState == WindowState.Normal)
-            MaximizeWindow();
-        else
-            RestoreWindow();
+        MaximizeWindow();
+    }
+
+    private void OnRestoreClick(object? sender, RoutedEventArgs e)
+    {
+        RestoreWindow();
     }
 }

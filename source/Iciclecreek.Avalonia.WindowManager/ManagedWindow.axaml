@@ -8,7 +8,7 @@
             Value="{DynamicResource ManagedWindow_BackgroundBrush}" />
     <Setter Property="Foreground"
             Value="{DynamicResource ManagedWindow_ForegroundBrush}" />
-    <Setter Property="BorderBrush" 
+    <Setter Property="BorderBrush"
             Value="{DynamicResource ManagedWindow_BorderBrush}" />
     <Setter Property="BorderThickness"
             Value="{DynamicResource ManagedWindow_BorderThickness}" />
@@ -55,9 +55,16 @@
                         Grid.Column="1"
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                         Content="🗕"/>
-                <Button Name="PART_MaximizeRestoreButton"
+                <Button Name="PART_MaximizeButton"
                         Grid.Column="2"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"/>
+                        IsVisible="False"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                        Content="🗖"/>
+                <Button Name="PART_RestoreButton"
+                        Grid.Column="2"
+                        IsVisible="False"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                        Content="🗗"/>
                 <Button Name="PART_CloseButton"
                         Grid.Column="3"
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
@@ -113,13 +120,13 @@
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
     </Style>
 
-    <Style Selector="^:maximized /template/ Button#PART_MaximizeRestoreButton">
-      <Setter Property="Content" Value="🗗"/>
+    <Style Selector="^:maximized /template/ Button#PART_RestoreButton" >
+      <Setter Property="IsVisible" Value="True"/>
     </Style>
 
     <!--normal-->
-    <Style Selector="^:normal /template/ Button#PART_MaximizeRestoreButton">
-      <Setter Property="Content" Value="🗖"/>
+    <Style Selector="^:normal /template/ Button#PART_MaximizeButton" >
+      <Setter Property="IsVisible" Value="True"/>
     </Style>
 
     <!-- activated -->
