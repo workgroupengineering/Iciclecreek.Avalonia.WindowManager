@@ -1,9 +1,6 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using System;
 
-namespace Demo
+namespace Demo.Views
 {
     public partial class MainWindow : Window
     {
@@ -11,6 +8,5 @@ namespace Demo
         {
             InitializeComponent();
         }
-
     }
 }

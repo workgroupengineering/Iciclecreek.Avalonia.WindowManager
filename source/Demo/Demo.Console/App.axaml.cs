@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Demo;
+using Demo.Views;
 
-namespace ConsoleDemo;
+namespace Demo.Console;
 
 public partial class App : Application
 {

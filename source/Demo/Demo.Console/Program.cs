@@ -1,7 +1,7 @@
 using Avalonia;
 using Consolonia;
 
-namespace ConsoleDemo
+namespace Demo.Console
 {
     public static class Program
     {

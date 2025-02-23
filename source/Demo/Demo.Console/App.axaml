@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:console="https://github.com/jinek/consolonia"
              xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
-             x:Class="ConsoleDemo.App"
+             x:Class="Demo.Console.App"
              RequestedThemeVariant="Default">
   <Application.Resources>
   </Application.Resources>

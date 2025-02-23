@@ -1,11 +1,10 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Iciclecreek.Avalonia.WindowManager;
 using System;
 
-namespace Demo
-{
+namespace Demo.Views
+{ 
     public partial class MainView : WindowManagerPanel
     {
         public MainView()
