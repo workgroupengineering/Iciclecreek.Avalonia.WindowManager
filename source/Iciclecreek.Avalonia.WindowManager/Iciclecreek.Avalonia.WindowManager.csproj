@@ -42,4 +42,8 @@
     <AvaloniaResource Include="**/*.*xaml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\NotoSansSymbols2-Regular.ttf" />
+  </ItemGroup>
+
 </Project>
