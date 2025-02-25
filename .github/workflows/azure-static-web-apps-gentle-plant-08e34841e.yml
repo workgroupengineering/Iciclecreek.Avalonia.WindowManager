@@ -33,7 +33,7 @@ jobs:
         run: dotnet build --no-restore -c Release source/Iciclecreek.Avalonia.WindowManager.sln --property WarningLevel=0
 
       - name: Build publish
-        run: dotnet publish --no-restore -c Release source/Demo/Demo.Browser.csproj --property WarningLevel=0
+        run: dotnet publish --no-restore -c Release source/Demo/Demo.Browser/Demo.Browser.csproj --property WarningLevel=0
 
       - name: Build And Deploy
         id: builddeploy
