@@ -20,6 +20,21 @@ jobs:
         with:
           submodules: true
           lfs: false
+
+      - name: install dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore source/Iciclecreek.Avalonia.WindowManager.sln 
+
+      - name: Build
+        run: dotnet build --no-restore -c Release source/Iciclecreek.Avalonia.WindowManager.sln --property WarningLevel=0
+
+      - name: Build publish
+        run: dotnet publish --no-restore -c Release source/Demo/Demo.Browser.csproj --property WarningLevel=0
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
