@@ -36,14 +36,11 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="IconPacks.Avalonia.Codicons" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="**/*.*xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\NotoSansSymbols2-Regular.ttf" />
   </ItemGroup>
 
 </Project>

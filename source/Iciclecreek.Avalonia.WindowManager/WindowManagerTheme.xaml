@@ -50,6 +50,7 @@
       <!-- shared resources-->
       <x:Double x:Key='ManagedWindow_ModalOpacity'>0.4</x:Double>
       <Thickness x:Key='ManagedWindow_BorderThickness'>4</Thickness>
+      <x:Double x:Key="ManagedWindow_SystemIconSize">12</x:Double>
     </ResourceDictionary>
   </Styles.Resources>
 
@@ -57,5 +58,6 @@
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
   </Style>
+  <StyleInclude Source="avares://IconPacks.Avalonia.Codicons/Codicons.axaml" />
 
 </Styles>

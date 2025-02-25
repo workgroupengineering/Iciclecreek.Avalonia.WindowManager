@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
-  <FontFamily x:Key="SymbolFont">avares://Iciclecreek.Avalonia.WindowManager/Assets#Noto Sans Symbols 2</FontFamily>
 
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
@@ -41,40 +41,52 @@
                   Background="{TemplateBinding Background}">
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
-                    ColumnDefinitions="* Auto Auto Auto"
+                    ColumnDefinitions="* Auto "
                     Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
                 <Grid.Styles>
                   <Style Selector="Button">
                     <Setter Property="Background" Value="Transparent"/>
                   </Style>
                 </Grid.Styles>
+                
                 <TextBlock Name="PART_Title"
-                  Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                  VerticalAlignment="Center"
-                  Text="{TemplateBinding Title}"/>
-                <Button Name="PART_MinimizeButton"
-                        Grid.Column="1"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                        FontFamily="{StaticResource SymbolFont}"
-                        Content="🗕"/>
-                <Button Name="PART_MaximizeButton"
-                        Grid.Column="2"
-                        IsVisible="False"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                        FontFamily="{StaticResource SymbolFont}"
-                        Content="🗖"/>
-                <Button Name="PART_RestoreButton"
-                        Grid.Column="2"
-                        IsVisible="False"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                        FontFamily="{StaticResource SymbolFont}"
-                        Content="🗗"/>
-                <Button Name="PART_CloseButton"
-                        Grid.Column="3"
-                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                        FontFamily="{StaticResource SymbolFont}"
-                        Content="🗙"
-                        IsVisible="{TemplateBinding IsCloseButtonVisible}"/>
+                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                           VerticalAlignment="Center"
+                           FontFamily="{TemplateBinding FontFamily}"
+                           FontSize="{TemplateBinding FontSize}"
+                           FontWeight="{TemplateBinding FontWeight}"
+                           FontStyle="{TemplateBinding FontStyle}"
+                           Text="{TemplateBinding Title}"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
+                  <Button Name="PART_MinimizeButton"
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
+                    <iconPacks:Codicons Kind="ChromeMinimize"
+                                        Width="{StaticResource ManagedWindow_SystemIconSize}" 
+                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                  </Button>
+                  <Button Name="PART_MaximizeButton"
+                          IsVisible="False"
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
+                    <iconPacks:Codicons Kind="ChromeMaximize"
+                                        Width="{StaticResource ManagedWindow_SystemIconSize}"
+                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                  </Button>
+                  <Button Name="PART_RestoreButton"
+                          IsVisible="False"
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
+                    <iconPacks:Codicons Kind="ChromeRestore"
+                                        Width="{StaticResource ManagedWindow_SystemIconSize}"
+                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                  </Button>
+                  <Button Name="PART_CloseButton"
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                          IsVisible="{TemplateBinding IsCloseButtonVisible}">
+                    <iconPacks:Codicons Kind="ChromeClose"
+                                        Width="{StaticResource ManagedWindow_SystemIconSize}"
+                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                  </Button>
+                </StackPanel>
               </Grid>
 
               <!-- window content-->
