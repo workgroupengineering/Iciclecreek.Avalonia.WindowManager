@@ -1,6 +1,7 @@
 name: Azure Static Web Apps CI/CD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -19,6 +20,21 @@ jobs:
         with:
           submodules: true
           lfs: false
+
+      - name: install dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore source/Iciclecreek.Avalonia.WindowManager.sln 
+
+      - name: Build
+        run: dotnet build --no-restore -c Release source/Iciclecreek.Avalonia.WindowManager.sln --property WarningLevel=0
+
+      - name: Build publish
+        run: dotnet publish --no-restore -c Release source/Demo/Demo.Browser/Demo.Browser.csproj --property WarningLevel=0
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -28,7 +44,7 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./source" # App source code path
+          app_location: "./source/Demo/Demo.Browser" # App source code path
           api_location: "" # Api source code path - optional
           output_location: "." # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
