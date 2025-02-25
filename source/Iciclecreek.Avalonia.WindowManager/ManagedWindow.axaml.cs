@@ -38,7 +38,7 @@ public class ManagedWindow : ContentControl
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_WindowBorder = "PART_WindowBorder";
 
-    private PixelPoint _minimizedPosition = new PixelPoint(int.MinValue,int.MinValue);
+    private PixelPoint _minimizedPosition = new PixelPoint(int.MinValue, int.MinValue);
     private Rect _normalRect;
     private BoxShadows _normalBoxShadow;
     private Thickness _normalMargin;
@@ -136,13 +136,13 @@ public class ManagedWindow : ContentControl
 
     static ManagedWindow()
     {
-            //AffectsRender<ManagedWindow>(
-            //    BackgroundProperty,
-            //    BorderBrushProperty,
-            //    BorderThicknessProperty,
-            //    CornerRadiusProperty,
-            //    BoxShadowProperty);
-            //AffectsMeasure<ManagedWindow>(BorderThicknessProperty);
+        //AffectsRender<ManagedWindow>(
+        //    BackgroundProperty,
+        //    BorderBrushProperty,
+        //    BorderThicknessProperty,
+        //    CornerRadiusProperty,
+        //    BoxShadowProperty);
+        //AffectsMeasure<ManagedWindow>(BorderThicknessProperty);
         //var theme = new ManagedWindowControlTheme() { TargetType = typeof(ManagedWindow) };
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
@@ -402,25 +402,68 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public event EventHandler<WindowClosingEventArgs>? Closing;
 
-    public void MaximizeWindow()
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        switch (change.Property.Name)
+        {
+            case nameof(WindowState):
+                if (change.OldValue is WindowState oldState)
+                {
+                    CaptureWindowState(oldState);
+
+                    switch (WindowState)
+                    {
+                        case WindowState.FullScreen:
+                            OnFullscreenWindow();
+                            break;
+                        case WindowState.Maximized:
+                            OnMaximizeWindow();
+                            break;
+                        case WindowState.Minimized:
+                            OnMinimizeWindow();
+                            break;
+                        case WindowState.Normal:
+                            OnNormalWindow();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
+            default:
+                base.OnPropertyChanged(change);
+                break;
+        }
+    }
+
+    private void CaptureWindowState(WindowState state)
+    {
+        switch (state)
+        {
+            case WindowState.Normal:
+                var width= double.IsNaN(this.Width) ? this.Bounds.Width : this.Width;
+                var height = double.IsNaN(this.Height) ? this.Bounds.Height : this.Height;
+                _normalRect = new Rect((int)this.Position.X, (int)this.Position.Y, (int)width, (int)height);
+                if (_windowBorder != null)
+                {
+                    _normalBoxShadow = _windowBorder.BoxShadow!;
+                    _normalMargin = _windowBorder.Margin;
+                }
+                break;
+            case WindowState.Minimized:
+                _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
+                break;
+            case WindowState.FullScreen:
+            case WindowState.Maximized:
+            default:
+                break;
+        }
+    }
+
+    private void OnMaximizeWindow()
     {
         BringToTop();
         var parent = (WindowManagerPanel)Parent!;
-        if (WindowState == WindowState.Normal)
-        {
-            _normalRect  = new Rect((int)this.Position.X, (int)this.Position.Y, (int)this.Bounds.Width, (int)this.Bounds.Height);
-
-            if (_windowBorder != null)
-            {
-                _normalBoxShadow = _windowBorder.BoxShadow!;
-                _normalMargin = _windowBorder.Margin;
-            }
-        }
-        else if (WindowState == WindowState.Minimized)
-        {
-            _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
-        }
-
         Canvas.SetLeft(this, 0);
         Canvas.SetTop(this, 0);
         this.Width = parent.Bounds.Width;
@@ -430,54 +473,40 @@ public class ManagedWindow : ContentControl
             _windowBorder.Margin = new Thickness(0);
             _windowBorder.BoxShadow = new BoxShadows();
         }
-        WindowState = WindowState.Maximized;
         SetPsuedoClasses();
     }
 
-    public void FullscreenWindow()
+    private void OnFullscreenWindow()
     {
         throw new NotSupportedException();
     }
 
-    public void RestoreWindow()
+    private void OnNormalWindow()
     {
         BringToTop();
-
-        if (WindowState == WindowState.Minimized)
-        {
-            _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
-        }
 
         this.Position = new PixelPoint((int)_normalRect.Position.X, (int)_normalRect.Position.Y);
         this.Width = _normalRect.Width;
         this.Height = _normalRect.Height;
-
-        WindowState = WindowState.Normal;
 
         Canvas.SetLeft(this, (int)this.Position.X);
         Canvas.SetTop(this, (int)this.Position.Y);
 
         if (_windowBorder != null)
         {
-
             _windowBorder.Margin = _normalMargin;
             _windowBorder.BoxShadow = _normalBoxShadow;
         }
         SetPsuedoClasses();
     }
 
-    public void MinimizeWindow()
+    private void OnMinimizeWindow()
     {
         BringToTop();
-        if (WindowState == WindowState.Normal)
-        {
-            _normalRect = new Rect((int)this.Position.X, (int)this.Position.Y, (int)this.Width, (int)this.Height);
-        }
         
-        if (_minimizedPosition.X == int.MinValue)
-        {
+        if (_minimizedPosition.X == int.MinValue && _minimizedPosition.Y == int.MinValue)
             _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
-        }
+
         this.Position = _minimizedPosition;
         this.Width = double.NaN;
         this.Height = double.NaN;
@@ -547,19 +576,21 @@ public class ManagedWindow : ContentControl
                 throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
 
             _shown = true;
-
+            CaptureWindowState(WindowState);
+            
             switch (WindowState)
             {
                 case WindowState.Normal:
+                    OnNormalWindow();
                     break;
                 case WindowState.Maximized:
-                    MaximizeWindow();
+                    OnMaximizeWindow();
                     break;
                 case WindowState.Minimized:
-                    MinimizeWindow();
+                    OnMinimizeWindow();
                     break;
                 case WindowState.FullScreen:
-                    FullscreenWindow();
+                    OnFullscreenWindow();
                     break;
             }
             OnOpened(EventArgs.Empty);
@@ -1131,11 +1162,11 @@ public class ManagedWindow : ContentControl
         if (CanResize)
         {
             if (WindowState == WindowState.Minimized)
-                RestoreWindow();
+                WindowState = WindowState.Normal;
             else if (WindowState == WindowState.Normal)
-                MaximizeWindow();
+                WindowState = WindowState.Maximized;
             else if (WindowState == WindowState.Maximized)
-                RestoreWindow();
+                WindowState = WindowState.Normal;
         }
     }
 
@@ -1148,17 +1179,17 @@ public class ManagedWindow : ContentControl
 
     private void OnMinimizeClick(object? sender, RoutedEventArgs e)
     {
-        MinimizeWindow();
+        WindowState = WindowState.Minimized;
     }
 
 
     private void OnMaximizeClick(object? sender, RoutedEventArgs e)
     {
-        MaximizeWindow();
+        WindowState = WindowState.Maximized;
     }
 
     private void OnRestoreClick(object? sender, RoutedEventArgs e)
     {
-        RestoreWindow();
+        WindowState = WindowState.Normal;
     }
 }
