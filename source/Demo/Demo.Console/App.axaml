@@ -21,26 +21,100 @@
           <console:LineBrush x:Key="activeWindowEdgeBrush" Brush="{DynamicResource ManagedWindow_Active_BorderBrush}" LineStyle="Edge"/>
           <Thickness x:Key='ManagedWindow_BorderThickness'>1</Thickness>
 
-          <!-- control styles -->
-          <ControlTheme x:Key="ConsoleManagedWindowTheme"
-                        BasedOn="{StaticResource {x:Type wm:ManagedWindow}}"
-                        TargetType="wm:ManagedWindow">
-            <Setter Property="BorderBrush" Value="{DynamicResource normalWindowEdgeBrush}"/>
-            <Setter Property="BoxShadow" Value="none" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="MinHeight" Value="1"/>
-            <Setter Property="MinWidth" Value="5"/>
+            <!-- control styles -->
+            <ControlTheme x:Key="ConsoleManagedWindowTheme"
+                          BasedOn="{StaticResource {x:Type wm:ManagedWindow}}"
+                          TargetType="wm:ManagedWindow">
+              <Setter Property="BorderBrush" Value="{DynamicResource normalWindowEdgeBrush}"/>
+              <Setter Property="BoxShadow" Value="none" />
+              <Setter Property="Padding" Value="0" />
+              <Setter Property="MinHeight" Value="1"/>
+              <Setter Property="MinWidth" Value="5"/>
 
-            <Style Selector="^ /template/ TextBlock#PART_Title">
-              <Setter Property="Margin" Value="1 0 0 0"/>
-            </Style>
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate>
+                    <!--window border used for resizing -->
+                    <Border Name="PART_WindowBorder"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BoxShadow="{TemplateBinding BoxShadow}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
 
-            <!-- activated -->
-            <Style Selector="^:active">
-              <Setter Property="BorderBrush" Value="{DynamicResource activeWindowEdgeBrush}"/>
-            </Style>
-          </ControlTheme>
-        </ResourceDictionary>
+                      <Grid RowDefinitions="Auto *"
+                            Background="{TemplateBinding Background}">
+                        <!--Title Bar-->
+                        <Grid Name="PART_TitleBar"
+                              ColumnDefinitions="* Auto "
+                              Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
+                          <Grid.Styles>
+                            <Style Selector="Button">
+                              <Setter Property="Background" Value="Transparent"/>
+                            </Style>
+                          </Grid.Styles>
+
+                          <TextBlock Name="PART_Title"
+                                     Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                                     VerticalAlignment="Center"
+                                     FontFamily="{TemplateBinding FontFamily}"
+                                     FontSize="{TemplateBinding FontSize}"
+                                     FontWeight="{TemplateBinding FontWeight}"
+                                     FontStyle="{TemplateBinding FontStyle}"
+                                     Text="{TemplateBinding Title}"/>
+
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
+                            <Button Name="PART_MinimizeButton"
+                                    Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                                    Content="🗕"/>
+                            <Button Name="PART_MaximizeButton"
+                                    IsVisible="False"
+                                    Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                                    Content="🗖"/>
+                            <Button Name="PART_RestoreButton"
+                                    IsVisible="False"
+                                    Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                                    Content="🗗"/>
+                            <Button Name="PART_CloseButton"
+                                    Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                                    IsVisible="{TemplateBinding IsCloseButtonVisible}"
+                                    Content="🗙"/>
+                          </StackPanel>
+                        </Grid>
+
+                        <!-- window content-->
+                        <ContentPresenter Grid.Row="1"
+                                          ClipToBounds="True"
+                                          Name="PART_ContentPresenter"
+                                          Margin="{TemplateBinding Margin}"
+                                          Padding="{TemplateBinding Padding}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Content="{TemplateBinding Content}" />
+
+                        <Panel Name="PART_ModalOverlay"
+                               Grid.RowSpan="2"
+                               Opacity="{DynamicResource ManagedWindow_ModalOpacity}"
+                               Background="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                               IsVisible="false">
+                        </Panel>
+                      </Grid>
+
+                    </Border>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+              
+              <Style Selector="^ /template/ TextBlock#PART_Title">
+                <Setter Property="Margin" Value="1 0 0 0"/>
+              </Style>
+
+              <!-- activated -->
+              <Style Selector="^:active">
+                <Setter Property="BorderBrush" Value="{DynamicResource activeWindowEdgeBrush}"/>
+              </Style>
+            </ControlTheme>
+
+
+          </ResourceDictionary>
       </Styles.Resources>
 
       <!-- set default style for the ManagedWindow type -->
