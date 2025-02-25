@@ -1,0 +1,11 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "demo.browser": {
+      "appLocation": "bin\\Release\\net9.0-browser\\publish\\wwwroot",
+      "outputLocation": ".",
+      "appName": "avalonia-window-manager",
+      "resourceGroup": "avalonia-window-manager-rg"
+    }
+  }
+}

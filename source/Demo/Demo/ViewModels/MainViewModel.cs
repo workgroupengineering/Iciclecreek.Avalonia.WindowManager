@@ -6,5 +6,8 @@ namespace Demo.ViewModels
     {
         [ObservableProperty]
         private string _greeting = "Welcome to Avalonia!";
+
+        [ObservableProperty]
+        private int _counter;
     }
 }

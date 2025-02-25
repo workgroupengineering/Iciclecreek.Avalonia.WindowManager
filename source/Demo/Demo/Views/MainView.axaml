@@ -3,8 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+                       xmlns:vm="using:Demo.ViewModels"
         Background="AliceBlue"
-        x:Class="Demo.Views.MainView">
+        x:Class="Demo.Views.MainView"
+                       x:DataType="vm:MainViewModel">
   <StackPanel>
     <StackPanel Orientation="Horizontal">
       <Label>SizeToContent</Label>
@@ -24,6 +26,9 @@
       </ComboBox>
     </StackPanel>
     <Button Content="Add a window" Click="OnAddWindowClick" />
+    <TextBlock Text="{Binding Counter}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Button HorizontalAlignment="Left" Click="OnClick" Content="Increment"/>
+
   </StackPanel>
 
 </wm:WindowManagerPanel>
