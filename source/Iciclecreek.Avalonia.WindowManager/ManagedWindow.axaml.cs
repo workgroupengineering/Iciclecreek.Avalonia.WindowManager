@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
+using Avalonia.Styling;
+using Avalonia.Animation;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -47,6 +49,8 @@ public class ManagedWindow : ContentControl
     private ManagedWindow? _owner;
     private bool _isActive;
     private object? _dialogResult;
+    private Control _title;
+    private Control _titleBar;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
     /// <summary>
@@ -441,7 +445,7 @@ public class ManagedWindow : ContentControl
         switch (state)
         {
             case WindowState.Normal:
-                var width= double.IsNaN(this.Width) ? this.Bounds.Width : this.Width;
+                var width = double.IsNaN(this.Width) ? this.Bounds.Width : this.Width;
                 var height = double.IsNaN(this.Height) ? this.Bounds.Height : this.Height;
                 _normalRect = new Rect((int)this.Position.X, (int)this.Position.Y, (int)width, (int)height);
                 if (_windowBorder != null)
@@ -460,12 +464,20 @@ public class ManagedWindow : ContentControl
         }
     }
 
-    private void OnMaximizeWindow()
+    private async void OnMaximizeWindow()
     {
         BringToTop();
+
+        SetPsuedoClasses();
+
         var parent = (WindowManagerPanel)Parent!;
+
+        await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
+                              new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
+
         Canvas.SetLeft(this, 0);
         Canvas.SetTop(this, 0);
+        this.Position = new PixelPoint(0,0);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
         if (_windowBorder != null)
@@ -473,7 +485,6 @@ public class ManagedWindow : ContentControl
             _windowBorder.Margin = new Thickness(0);
             _windowBorder.BoxShadow = new BoxShadows();
         }
-        SetPsuedoClasses();
     }
 
     private void OnFullscreenWindow()
@@ -481,9 +492,14 @@ public class ManagedWindow : ContentControl
         throw new NotSupportedException();
     }
 
-    private void OnNormalWindow()
+    private async void OnNormalWindow()
     {
         BringToTop();
+
+        SetPsuedoClasses();
+
+        await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
+                              _normalRect);
 
         this.Position = new PixelPoint((int)_normalRect.Position.X, (int)_normalRect.Position.Y);
         this.Width = _normalRect.Width;
@@ -497,22 +513,23 @@ public class ManagedWindow : ContentControl
             _windowBorder.Margin = _normalMargin;
             _windowBorder.BoxShadow = _normalBoxShadow;
         }
-        SetPsuedoClasses();
     }
 
-    private void OnMinimizeWindow()
+    private async void OnMinimizeWindow()
     {
         BringToTop();
-        
+
+        SetPsuedoClasses();
+
         if (_minimizedPosition.X == int.MinValue && _minimizedPosition.Y == int.MinValue)
             _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
+
+        await ResizeAnimation(new Rect(Canvas.GetLeft(this), Canvas.GetTop(this), this.Bounds.Width, this.Bounds.Height),
+                              new Rect(_minimizedPosition.X, _minimizedPosition.Y, _title.Bounds.Width, _title.Bounds.Height));
 
         this.Position = _minimizedPosition;
         this.Width = double.NaN;
         this.Height = double.NaN;
-
-        WindowState = WindowState.Minimized;
-        SetPsuedoClasses();
     }
 
     /// <summary>
@@ -569,7 +586,6 @@ public class ManagedWindow : ContentControl
     {
         IsVisible = true;
 
-
         if (!_shown)
         {
             if (!(Parent is WindowManagerPanel))
@@ -577,7 +593,7 @@ public class ManagedWindow : ContentControl
 
             _shown = true;
             CaptureWindowState(WindowState);
-            
+
             switch (WindowState)
             {
                 case WindowState.Normal:
@@ -593,9 +609,11 @@ public class ManagedWindow : ContentControl
                     OnFullscreenWindow();
                     break;
             }
+
+            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
             OnOpened(EventArgs.Empty);
         }
-
     }
 
     /// <summary>
@@ -695,16 +713,17 @@ public class ManagedWindow : ContentControl
         }
     }
 
-    private void CloseInternal()
+    private async void CloseInternal()
     {
         foreach (var (child, _) in _children.ToArray())
         {
             child.CloseInternal();
         }
 
+        await CloseAnimation();
 
         Owner = null;
-        Closed?.Invoke(this, new EventArgs());
+        OnClosed(new EventArgs());
         RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
     }
 
@@ -753,7 +772,7 @@ public class ManagedWindow : ContentControl
     /// </summary>
     protected virtual void OnActivated()
     {
-        Dispatcher.UIThread.Post(() => Activated?.Invoke(this, EventArgs.Empty));
+        Dispatcher.UIThread.Invoke(() => Activated?.Invoke(this, EventArgs.Empty));
     }
 
     /// <summary>
@@ -761,18 +780,19 @@ public class ManagedWindow : ContentControl
     /// </summary>
     protected virtual void OnDeactivated()
     {
-        Dispatcher.UIThread.Post(() => Deactivated?.Invoke(this, EventArgs.Empty));
+        Dispatcher.UIThread.Invoke(() => Deactivated?.Invoke(this, EventArgs.Empty));
     }
 
     /// <summary>
     /// Raises the <see cref="Opened"/> event.
     /// </summary>
     /// <param name="e">The event args.</param>
-    protected virtual void OnOpened(EventArgs e)
+    protected async virtual void OnOpened(EventArgs e)
     {
-        Dispatcher.UIThread.Post(() => Opened?.Invoke(this, e));
-    }
+        await ShowAnimation();
 
+        Dispatcher.UIThread.Invoke(() => Opened?.Invoke(this, e));
+    }
 
     /// <summary>
     /// Raises the <see cref="Closing"/> event.
@@ -785,16 +805,16 @@ public class ManagedWindow : ContentControl
     /// </remarks>
     protected virtual void OnClosing(WindowClosingEventArgs e)
     {
-        Dispatcher.UIThread.Post(() => Closing?.Invoke(this, e));
+        Dispatcher.UIThread.Invoke(() => Closing?.Invoke(this, e));
     }
 
     /// <summary>
     /// Raises the <see cref="Closed"/> event.
     /// </summary>
     /// <param name="e">The event args.</param>
-    protected virtual void OnClosed(EventArgs e)
+    protected virtual async void OnClosed(EventArgs e)
     {
-        Dispatcher.UIThread.Post(() => Closed?.Invoke(this, e));
+        Dispatcher.UIThread.Invoke(() => Closed?.Invoke(this, e));
     }
 
 
@@ -807,11 +827,12 @@ public class ManagedWindow : ContentControl
 
         //if (this.Theme == null)
         //    this.Theme = (ControlTheme)this.FindResource("ManagedWindow");
+        _title = e.NameScope.Find<TextBlock>(PART_Title);
 
-        var partTitleBar = e.NameScope.Find<Control>(PART_TitleBar);
-        if (partTitleBar != null)
+        _titleBar = e.NameScope.Find<Control>(PART_TitleBar);
+        if (_titleBar != null)
         {
-            SetupTitleBar(partTitleBar);
+            SetupTitleBar(_titleBar);
         }
 
         var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
@@ -1192,4 +1213,98 @@ public class ManagedWindow : ContentControl
     {
         WindowState = WindowState.Normal;
     }
+
+    private async Task ShowAnimation()
+    {
+        var scaleTransform = new ScaleTransform(0.2, 0.2);
+        RenderTransform = scaleTransform;
+        RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+        var animation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(100),
+            FillMode = FillMode.Forward,
+            Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                        },
+                        Cue = new Cue(1d)
+                    }
+                }
+        };
+
+        await animation.RunAsync(this);
+        this.RenderTransform = null;
+    }
+
+    private async Task ResizeAnimation(Rect oldPosition, Rect newPosition)
+    {
+        var animation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(100),
+            FillMode = FillMode.Forward, // Ensure the animation holds the end value
+            Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(Canvas.LeftProperty, oldPosition.X),
+                            new Setter(Canvas.TopProperty, oldPosition.Y),
+                            new Setter(WidthProperty, oldPosition.Width),
+                            new Setter(HeightProperty, oldPosition.Height)
+                        },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(Canvas.LeftProperty, newPosition.X),
+                            new Setter(Canvas.TopProperty, newPosition.Y),
+                            new Setter(WidthProperty, newPosition.Width),
+                            new Setter(HeightProperty, newPosition.Height)
+                        },
+                        Cue = new Cue(1d)
+                    }
+                }
+        };
+
+        await animation.RunAsync(this);
+    }
+
+    private async Task CloseAnimation()
+    {
+        var scaleTransform = new ScaleTransform(1.0, 1.0);
+        RenderTransform = scaleTransform;
+        RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+        var animation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(100),
+            FillMode = FillMode.Forward,
+            Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, .2),
+                            new Setter(ScaleTransform.ScaleYProperty, .2)
+                        },
+                        Cue = new Cue(1d)
+                    }
+                }
+        };
+
+        await animation.RunAsync(this);
+        this.RenderTransform = null;
+    }
+
+
 }

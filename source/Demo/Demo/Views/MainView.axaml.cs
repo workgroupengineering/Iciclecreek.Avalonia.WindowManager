@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Demo.ViewModels;
 using Iciclecreek.Avalonia.WindowManager;
 using System;

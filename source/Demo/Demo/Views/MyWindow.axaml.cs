@@ -6,10 +6,7 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Iciclecreek.Avalonia.WindowManager;
 using System;
-using Avalonia;
 using Avalonia.Interactivity;
-using System.Linq;
-using Avalonia.Threading;
 
 namespace Demo;
 
@@ -58,37 +55,6 @@ public partial class MyWindow : ManagedWindow
         this.Background = brushes[Random.Shared.Next(0, brushes.Length)];
     }
 
-    private void OnSpin(object? sender, RoutedEventArgs args)
-    {
-        // Create a rotate transform and apply it to the control
-
-        var rotateAnimation = new Animation
-        {
-            Duration = TimeSpan.FromSeconds(1),
-            Easing = new SineEaseInOut(),
-            Children =
-                    {
-                        new KeyFrame
-                        {
-                            Cue = new Cue(0d),
-                            Setters =
-                            {
-                                new Setter(RotateTransform.AngleProperty, 0d)
-                            }
-                        },
-                        new KeyFrame
-                        {
-                            Cue = new Cue(1d),
-                            Setters =
-                            {
-                                new Setter(RotateTransform.AngleProperty, 360d)
-                            }
-                        }
-                    }
-        };
-
-        rotateAnimation.RunAsync(this);
-    }
 
     private async void OnShowDialog(object? sender, RoutedEventArgs args)
     {
