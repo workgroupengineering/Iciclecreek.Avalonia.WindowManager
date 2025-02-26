@@ -16,7 +16,7 @@
     </StackPanel>
 
     <StackPanel Orientation="Horizontal" >
-      <Label>SizeToContent</Label>
+      <Label>SizeToContent for Dialog</Label>
       <ComboBox Name="SizeToContentCombo" SelectedIndex="3">
         <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
         <ComboBoxItem Tag="Width">Width</ComboBoxItem>
@@ -26,7 +26,7 @@
     </StackPanel>
 
     <StackPanel Orientation="Horizontal" >
-      <Label>StartupLocation</Label>
+      <Label>StartupLocation for Dialog</Label>
       <ComboBox Name="StartupLocationCombo" SelectedIndex="1">
         <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
         <ComboBoxItem Tag="CenterOwner">CenterOwner</ComboBoxItem>

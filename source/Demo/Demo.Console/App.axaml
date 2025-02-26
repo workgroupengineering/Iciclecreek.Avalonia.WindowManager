@@ -16,7 +16,7 @@
       <Styles.Resources>
         <ResourceDictionary>
           <!-- shared resources-->
-          <!--<x:Double x:Key='ManagedWindow_ModalOpacity'>0.4</x:Double>-->
+          <x:Double x:Key='ManagedWindow_ModalOpacity'>0</x:Double>
           <console:LineBrush x:Key="normalWindowEdgeBrush" Brush="{DynamicResource ManagedWindow_BorderBrush}" LineStyle="Edge"/>
           <console:LineBrush x:Key="activeWindowEdgeBrush" Brush="{DynamicResource ManagedWindow_Active_BorderBrush}" LineStyle="Edge"/>
           <Thickness x:Key='ManagedWindow_BorderThickness'>1</Thickness>
