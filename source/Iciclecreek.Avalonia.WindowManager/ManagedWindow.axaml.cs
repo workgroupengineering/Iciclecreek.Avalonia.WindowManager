@@ -475,8 +475,6 @@ public class ManagedWindow : ContentControl
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
                               new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
 
-        Canvas.SetLeft(this, 0);
-        Canvas.SetTop(this, 0);
         this.Position = new PixelPoint(0,0);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
@@ -505,9 +503,6 @@ public class ManagedWindow : ContentControl
         this.Width = _normalRect.Width;
         this.Height = _normalRect.Height;
 
-        Canvas.SetLeft(this, (int)this.Position.X);
-        Canvas.SetTop(this, (int)this.Position.Y);
-
         if (_windowBorder != null)
         {
             _windowBorder.Margin = _normalMargin;
@@ -524,7 +519,7 @@ public class ManagedWindow : ContentControl
         if (_minimizedPosition.X == int.MinValue && _minimizedPosition.Y == int.MinValue)
             _minimizedPosition = new PixelPoint(this.Position.X, this.Position.Y);
 
-        await ResizeAnimation(new Rect(Canvas.GetLeft(this), Canvas.GetTop(this), this.Bounds.Width, this.Bounds.Height),
+        await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
                               new Rect(_minimizedPosition.X, _minimizedPosition.Y, _title.Bounds.Width, _title.Bounds.Height));
 
         this.Position = _minimizedPosition;
