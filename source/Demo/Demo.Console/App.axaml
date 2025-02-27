@@ -21,20 +21,55 @@
           <console:LineBrush x:Key="activeWindowEdgeBrush" Brush="{DynamicResource ManagedWindow_Active_BorderBrush}" LineStyle="Edge"/>
           <Thickness x:Key='ManagedWindow_BorderThickness'>1</Thickness>
 
-            <!-- control styles -->
-            <ControlTheme x:Key="ConsoleManagedWindowTheme"
-                          BasedOn="{StaticResource {x:Type wm:ManagedWindow}}"
-                          TargetType="wm:ManagedWindow">
-              <Setter Property="BorderBrush" Value="{DynamicResource normalWindowEdgeBrush}"/>
-              <Setter Property="BoxShadow" Value="none" />
-              <Setter Property="Padding" Value="0" />
-              <Setter Property="MinHeight" Value="1"/>
-              <Setter Property="MinWidth" Value="5"/>
+          <!-- control styles -->
+          <ControlTheme x:Key="ConsoleManagedWindowTheme"
+                        BasedOn="{StaticResource {x:Type wm:ManagedWindow}}"
+                        TargetType="wm:ManagedWindow">
+            <Setter Property="BorderBrush" Value="{DynamicResource normalWindowEdgeBrush}"/>
+            <Setter Property="BoxShadow" Value="none" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="1"/>
+            <Setter Property="MinWidth" Value="5"/>
 
-              <Setter Property="Template">
-                <Setter.Value>
-                  <ControlTemplate>
-                    <!--window border used for resizing -->
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate>
+                  <!--window border used for resizing -->
+                  <Panel>
+                    <!--Shadow under--><!--
+                    <Panel Background="{DynamicResource ThemeShadeBrush}" Margin="2 2 -2 -2">
+                      <console:SymbolsControl Fill="True"
+                                              Margin="1,0,1,0"
+                                              Text=" "
+                                              Height="1"
+                                              VerticalAlignment="Bottom" />
+
+                      --><!--Right shadow--><!--
+                      <console:SymbolsControl Margin="0,1,0,1"
+                                              Text=" "
+                                              Width="1"
+                                              VerticalAlignment="Stretch"
+                                              Fill="True"
+                                              HorizontalAlignment="Right"
+                                              Foreground="{DynamicResource ThemePseudoShadeBrush}" />
+                      --><!--Right shadow top half--><!--
+                      <console:SymbolsControl Margin="0,0,0,0"
+                                              Text=" "
+                                              Width="1"
+                                              Height="1"
+                                              HorizontalAlignment="Right"
+                                              VerticalAlignment="Top"
+                                              Foreground="{DynamicResource ThemePseudoShadeBrush}" />
+                      --><!--Right shadow bottom half--><!--
+                      <console:SymbolsControl Margin="0,0,0,0"
+                                              Text=" "
+                                              Width="1"
+                                              Height="1"
+                                              HorizontalAlignment="Right"
+                                              VerticalAlignment="Bottom"
+                                              Foreground="{DynamicResource ThemePseudoShadeBrush}" />
+                    </Panel>-->
+                    
                     <Border Name="PART_WindowBorder"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -99,22 +134,24 @@
                       </Grid>
 
                     </Border>
-                  </ControlTemplate>
-                </Setter.Value>
-              </Setter>
-              
-              <Style Selector="^ /template/ TextBlock#PART_Title">
-                <Setter Property="Margin" Value="1 0 0 0"/>
-              </Style>
 
-              <!-- activated -->
-              <Style Selector="^:active">
-                <Setter Property="BorderBrush" Value="{DynamicResource activeWindowEdgeBrush}"/>
-              </Style>
-            </ControlTheme>
+                  </Panel>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+
+            <Style Selector="^ /template/ TextBlock#PART_Title">
+              <Setter Property="Margin" Value="1 0 0 0"/>
+            </Style>
+
+            <!-- activated -->
+            <Style Selector="^:active">
+              <Setter Property="BorderBrush" Value="{DynamicResource activeWindowEdgeBrush}"/>
+            </Style>
+          </ControlTheme>
 
 
-          </ResourceDictionary>
+        </ResourceDictionary>
       </Styles.Resources>
 
       <!-- set default style for the ManagedWindow type -->
