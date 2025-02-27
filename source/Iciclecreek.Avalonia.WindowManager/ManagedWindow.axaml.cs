@@ -84,6 +84,12 @@ public class ManagedWindow : ContentControl
         AvaloniaProperty.Register<ManagedWindow, bool>(nameof(IsCloseButtonVisible), true);
 
     /// <summary>
+    /// Defines the <see cref="AnimateWindow"/> property. If True, animations will be used for transitions.
+    /// </summary>
+    public static readonly StyledProperty<bool> AnimateWindowProperty =
+        AvaloniaProperty.Register<ManagedWindow, bool>(nameof(AnimateWindow), true);
+
+    /// <summary>
     /// Represents the current window state (normal, minimized, maximized)
     /// </summary>
     public static readonly StyledProperty<WindowState> WindowStateProperty =
@@ -120,6 +126,12 @@ public class ManagedWindow : ContentControl
         AvaloniaProperty.Register<ManagedWindow, bool>(nameof(CanResize), true);
 
     /// <summary>
+    /// Defines the <see cref="BoxShadow"/> property.
+    /// </summary>
+    public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
+        AvaloniaProperty.Register<ManagedWindow, BoxShadows>(nameof(BoxShadow));
+
+    /// <summary>
     /// Routed event that can be used for global tracking of window destruction
     /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> WindowClosedEvent =
@@ -130,13 +142,6 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
         RoutedEvent.Register<ManagedWindow, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
-
-    /// <summary>
-    /// Defines the <see cref="BoxShadow"/> property.
-    /// </summary>
-    public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
-        AvaloniaProperty.Register<ManagedWindow, BoxShadows>(nameof(BoxShadow));
-
 
     static ManagedWindow()
     {
@@ -205,7 +210,19 @@ public class ManagedWindow : ContentControl
         set => SetValue(ClosingBehaviorProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets value indicating that the window should animate when opening, closing, and resizing
+    /// </summary>
+    public bool AnimateWindow
+    {
+        get => GetValue(AnimateWindowProperty);
+        set => SetValue(AnimateWindowProperty, value);
+    }
 
+
+    /// <summary>
+    /// Gets or sets value indicating that the close button should be visible
+    /// </summary>
     public bool IsCloseButtonVisible
     {
         get => GetValue(IsCloseButtonVisibleProperty);
@@ -475,7 +492,7 @@ public class ManagedWindow : ContentControl
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
                               new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
 
-        this.Position = new PixelPoint(0,0);
+        this.Position = new PixelPoint(0, 0);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
         if (_windowBorder != null)
@@ -510,7 +527,7 @@ public class ManagedWindow : ContentControl
         }
     }
 
-    private async void OnMinimizeWindow()
+    protected virtual async void OnMinimizeWindow()
     {
         BringToTop();
 
@@ -807,9 +824,112 @@ public class ManagedWindow : ContentControl
     /// Raises the <see cref="Closed"/> event.
     /// </summary>
     /// <param name="e">The event args.</param>
-    protected virtual async void OnClosed(EventArgs e)
+    protected virtual void OnClosed(EventArgs e)
     {
         Dispatcher.UIThread.Invoke(() => Closed?.Invoke(this, e));
+    }
+
+    protected virtual async Task ShowAnimation()
+    {
+        if (AnimateWindow)
+        {
+
+            var scaleTransform = new ScaleTransform(0.2, 0.2);
+            RenderTransform = scaleTransform;
+            RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(100),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
+                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
+                        },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
+
+            await animation.RunAsync(this);
+            this.RenderTransform = null;
+        }
+    }
+
+    protected virtual async Task ResizeAnimation(Rect oldPosition, Rect newPosition)
+    {
+        if (AnimateWindow)
+        {
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(100),
+                FillMode = FillMode.Forward, // Ensure the animation holds the end value
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(Canvas.LeftProperty, oldPosition.X),
+                            new Setter(Canvas.TopProperty, oldPosition.Y),
+                            new Setter(WidthProperty, oldPosition.Width),
+                            new Setter(HeightProperty, oldPosition.Height)
+                        },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(Canvas.LeftProperty, newPosition.X),
+                            new Setter(Canvas.TopProperty, newPosition.Y),
+                            new Setter(WidthProperty, newPosition.Width),
+                            new Setter(HeightProperty, newPosition.Height)
+                        },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
+
+            await animation.RunAsync(this);
+        }
+    }
+
+    protected virtual async Task CloseAnimation()
+    {
+        if (AnimateWindow)
+        {
+            var scaleTransform = new ScaleTransform(1.0, 1.0);
+            RenderTransform = scaleTransform;
+            RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(100),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters =
+                        {
+                            new Setter(ScaleTransform.ScaleXProperty, .2),
+                            new Setter(ScaleTransform.ScaleYProperty, .2)
+                        },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
+
+            await animation.RunAsync(this);
+            this.RenderTransform = null;
+        }
     }
 
 
@@ -1208,98 +1328,5 @@ public class ManagedWindow : ContentControl
     {
         WindowState = WindowState.Normal;
     }
-
-    private async Task ShowAnimation()
-    {
-        var scaleTransform = new ScaleTransform(0.2, 0.2);
-        RenderTransform = scaleTransform;
-        RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-
-        var animation = new Animation
-        {
-            Duration = TimeSpan.FromMilliseconds(100),
-            FillMode = FillMode.Forward,
-            Children =
-                {
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter(ScaleTransform.ScaleXProperty, 1.0),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0)
-                        },
-                        Cue = new Cue(1d)
-                    }
-                }
-        };
-
-        await animation.RunAsync(this);
-        this.RenderTransform = null;
-    }
-
-    private async Task ResizeAnimation(Rect oldPosition, Rect newPosition)
-    {
-        var animation = new Animation
-        {
-            Duration = TimeSpan.FromMilliseconds(100),
-            FillMode = FillMode.Forward, // Ensure the animation holds the end value
-            Children =
-                {
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter(Canvas.LeftProperty, oldPosition.X),
-                            new Setter(Canvas.TopProperty, oldPosition.Y),
-                            new Setter(WidthProperty, oldPosition.Width),
-                            new Setter(HeightProperty, oldPosition.Height)
-                        },
-                        Cue = new Cue(0d)
-                    },
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter(Canvas.LeftProperty, newPosition.X),
-                            new Setter(Canvas.TopProperty, newPosition.Y),
-                            new Setter(WidthProperty, newPosition.Width),
-                            new Setter(HeightProperty, newPosition.Height)
-                        },
-                        Cue = new Cue(1d)
-                    }
-                }
-        };
-
-        await animation.RunAsync(this);
-    }
-
-    private async Task CloseAnimation()
-    {
-        var scaleTransform = new ScaleTransform(1.0, 1.0);
-        RenderTransform = scaleTransform;
-        RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-
-        var animation = new Animation
-        {
-            Duration = TimeSpan.FromMilliseconds(100),
-            FillMode = FillMode.Forward,
-            Children =
-                {
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter(ScaleTransform.ScaleXProperty, .2),
-                            new Setter(ScaleTransform.ScaleYProperty, .2)
-                        },
-                        Cue = new Cue(1d)
-                    }
-                }
-        };
-
-        await animation.RunAsync(this);
-        this.RenderTransform = null;
-    }
-
 
 }
