@@ -18,7 +18,7 @@ public class WindowManagerPanel : Canvas
         {
             var window = (ManagedWindow)sender!;
             Children.Remove(window);
-
+            
             if (window.Owner != null)
             {
                 window.Owner.Activate();

@@ -1,7 +1,18 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+        xmlns:console="https://github.com/jinek/consolonia"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
+
+  <BoxShadows x:Key="NullBoxShadows" >none</BoxShadows>
+  <Thickness x:Key="SingleThickness">1</Thickness>
+  <x:Double x:Key="NoOpacity">1</x:Double>
+  <console:LineBrush x:Key="EdgeLineBrush"
+                     Brush="{DynamicResource ManagedWindow_BorderBrush}"
+                     LineStyle="Edge"/>
+  <console:LineBrush x:Key="ManagedWindow_Active_EdgeLineBrush"
+                  Brush="{DynamicResource ManagedWindow_Active_BorderBrush}"
+                  LineStyle="Edge"/>
 
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
@@ -9,20 +20,21 @@
             Value="{DynamicResource ManagedWindow_BackgroundBrush}" />
     <Setter Property="Foreground"
             Value="{DynamicResource ManagedWindow_ForegroundBrush}" />
-    <Setter Property="BorderBrush"
-            Value="{DynamicResource ManagedWindow_BorderBrush}" />
-    <Setter Property="BorderThickness"
-            Value="{DynamicResource ManagedWindow_BorderThickness}" />
-    <Setter Property="BoxShadow"
-            Value="{DynamicResource ManagedWindow_BoxShadows}" />
-    <Setter Property="CornerRadius"
-            Value="0" />
-    <Setter Property="Padding"
-            Value="1" />
-    <!--<Setter Property="MinHeight"
-            Value="20"/>
-    <Setter Property="MinWidth"
-            Value="80"/>-->
+    <Setter Property="BorderBrush">
+      <console:OnPlatformEx Default="{DynamicResource ManagedWindow_BorderBrush}"
+                            Console="{StaticResource EdgeLineBrush}"/>
+    </Setter>
+
+    <Setter Property="BorderThickness">
+      <console:OnPlatformEx x:Class="Thickness" Default="{DynamicResource ManagedWindow_BorderThickness}"
+                            Console="{StaticResource SingleThickness}"/>
+    </Setter>
+    <Setter Property="BoxShadow">
+      <console:OnPlatformEx Default="{DynamicResource ManagedWindow_BoxShadows}"
+                            Console="{StaticResource NullBoxShadows}"/>
+    </Setter>
+    <Setter Property="Padding" Value="0" />
+
     <Setter Property="IsCloseButtonVisible"
             Value="True" />
     <Setter Property="ZIndex"
@@ -48,7 +60,7 @@
                     <Setter Property="Background" Value="Transparent"/>
                   </Style>
                 </Grid.Styles>
-                
+
                 <TextBlock Name="PART_Title"
                            Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                            VerticalAlignment="Center"
@@ -61,30 +73,47 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
                   <Button Name="PART_MinimizeButton"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <iconPacks:Codicons Kind="ChromeMinimize"
-                                        Width="{StaticResource ManagedWindow_SystemIconSize}" 
-                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                    <console:OnPlatformEx Console="🗕">
+                      <console:OnPlatformEx.Default>
+                        <iconPacks:Codicons Kind="ChromeMinimize"
+                                            Width="{StaticResource ManagedWindow_SystemIconSize}"
+                                            Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                      </console:OnPlatformEx.Default>
+                    </console:OnPlatformEx>
                   </Button>
                   <Button Name="PART_MaximizeButton"
                           IsVisible="False"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <iconPacks:Codicons Kind="ChromeMaximize"
+
+                    <console:OnPlatformEx Console="🗖">
+                      <console:OnPlatformEx.Default>
+                        <iconPacks:Codicons Kind="ChromeMaximize"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
                                         Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                      </console:OnPlatformEx.Default>
+                    </console:OnPlatformEx>
                   </Button>
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <iconPacks:Codicons Kind="ChromeRestore"
+                    <console:OnPlatformEx Console="🗗">
+                      <console:OnPlatformEx.Default>
+                        <iconPacks:Codicons Kind="ChromeRestore"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
                                         Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                      </console:OnPlatformEx.Default>
+                    </console:OnPlatformEx>
                   </Button>
                   <Button Name="PART_CloseButton"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                           IsVisible="{TemplateBinding IsCloseButtonVisible}">
-                    <iconPacks:Codicons Kind="ChromeClose"
+                    <console:OnPlatformEx Console="🗙">
+                      <console:OnPlatformEx.Default>
+                        <iconPacks:Codicons Kind="ChromeClose"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
                                         Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                      </console:OnPlatformEx.Default>
+                    </console:OnPlatformEx>
                   </Button>
                 </StackPanel>
               </Grid>
@@ -100,9 +129,13 @@
 
               <Panel Name="PART_ModalOverlay"
                      Grid.RowSpan="2"
-                     Opacity="{DynamicResource ManagedWindow_ModalOpacity}"
-                     Background="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                     Opacity="{console:OnPlatformEx Default={DynamicResource ManagedWindow_ModalOpacity} Console={StaticResource NoOpacity}}"
                      IsVisible="false">
+                     <Panel.Background>
+                       <console:OnPlatformExExtension x:TypeArguments="IBrush"
+                                                      Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                                                      Console="{DynamicResource ThemeShadeBrush}"/>
+                     </Panel.Background>
               </Panel>
             </Grid>
 
@@ -112,7 +145,18 @@
     </Setter>
 
     <Style Selector="^ /template/ TextBlock#PART_Title">
-      <Setter Property="Margin" Value="8 0 0 0"/>
+      <Setter Property="Margin" >
+        <Setter.Value>
+          <console:OnPlatformEx>
+            <console:OnPlatformEx.Default>
+              <Thickness>8 0 0 0</Thickness>
+            </console:OnPlatformEx.Default>
+            <console:OnPlatformEx.Console>
+              <Thickness>1 0 0 0</Thickness>
+            </console:OnPlatformEx.Console>
+          </console:OnPlatformEx>
+        </Setter.Value>
+      </Setter>
     </Style>
 
     <!-- window state styles -->
@@ -148,7 +192,10 @@
 
     <!-- activated -->
     <Style Selector="^:active">
-      <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindow_Active_BorderBrush}"/>
+      <Setter Property="BorderBrush">
+        <console:OnPlatformEx Default="{DynamicResource ManagedWindow_Active_BorderBrush}"
+                              Console="{DynamicResource ManagedWindow_Active_EdgeLineBrush}"/>
+      </Setter>
     </Style>
 
     <Style Selector="^:active /template/ Grid#PART_TitleBar">

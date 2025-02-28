@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Consolonia.Core" Version="11.2.3-beta.954" />
     <PackageReference Include="IconPacks.Avalonia.Codicons" Version="1.0.0" />
   </ItemGroup>
 
