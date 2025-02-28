@@ -4,6 +4,7 @@
         xmlns:console="https://github.com/jinek/consolonia"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
 
+  <!--console extra resources-->
   <BoxShadows x:Key="NullBoxShadows" >none</BoxShadows>
   <Thickness x:Key="SingleThickness">1</Thickness>
   <x:Double x:Key="NoOpacity">1</x:Double>
@@ -13,6 +14,7 @@
   <console:LineBrush x:Key="ManagedWindow_Active_EdgeLineBrush"
                   Brush="{DynamicResource ManagedWindow_Active_BorderBrush}"
                   LineStyle="Edge"/>
+  <!--console resources-->
 
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
@@ -26,7 +28,7 @@
     </Setter>
 
     <Setter Property="BorderThickness">
-      <console:OnPlatformEx x:Class="Thickness" Default="{DynamicResource ManagedWindow_BorderThickness}"
+      <console:OnPlatformEx Default="{DynamicResource ManagedWindow_BorderThickness}"
                             Console="{StaticResource SingleThickness}"/>
     </Setter>
     <Setter Property="BoxShadow">
@@ -73,7 +75,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
                   <Button Name="PART_MinimizeButton"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <console:OnPlatformEx Console="🗕">
+                      <console:OnPlatformEx Console="🗕">
                       <console:OnPlatformEx.Default>
                         <iconPacks:Codicons Kind="ChromeMinimize"
                                             Width="{StaticResource ManagedWindow_SystemIconSize}"
@@ -96,7 +98,7 @@
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <console:OnPlatformEx Console="🗗">
+                     <console:OnPlatformEx Console="🗗">
                       <console:OnPlatformEx.Default>
                         <iconPacks:Codicons Kind="ChromeRestore"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
@@ -131,11 +133,11 @@
                      Grid.RowSpan="2"
                      Opacity="{console:OnPlatformEx Default={DynamicResource ManagedWindow_ModalOpacity} Console={StaticResource NoOpacity}}"
                      IsVisible="false">
-                     <Panel.Background>
-                       <console:OnPlatformExExtension x:TypeArguments="IBrush"
-                                                      Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
-                                                      Console="{DynamicResource ThemeShadeBrush}"/>
-                     </Panel.Background>
+                <Panel.Background>
+                  <console:OnPlatformExExtension x:TypeArguments="IBrush"
+                                                 Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                                                 Console="{DynamicResource ThemeShadeBrush}"/>
+                </Panel.Background>
               </Panel>
             </Grid>
 
@@ -147,14 +149,9 @@
     <Style Selector="^ /template/ TextBlock#PART_Title">
       <Setter Property="Margin" >
         <Setter.Value>
-          <console:OnPlatformEx>
-            <console:OnPlatformEx.Default>
-              <Thickness>8 0 0 0</Thickness>
-            </console:OnPlatformEx.Default>
-            <console:OnPlatformEx.Console>
-              <Thickness>1 0 0 0</Thickness>
-            </console:OnPlatformEx.Console>
-          </console:OnPlatformEx>
+          <console:OnPlatformExExtension x:TypeArguments="Thickness"
+                                         Default="8 0 0 0"
+                                          Console="5 0 0 0"/>
         </Setter.Value>
       </Setter>
     </Style>
