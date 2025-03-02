@@ -23,16 +23,16 @@
     <Setter Property="Foreground"
             Value="{DynamicResource ManagedWindow_ForegroundBrush}" />
     <Setter Property="BorderBrush">
-      <console:OnPlatformEx Default="{DynamicResource ManagedWindow_BorderBrush}"
+      <console:OnPlatform Default="{DynamicResource ManagedWindow_BorderBrush}"
                             Console="{StaticResource EdgeLineBrush}"/>
     </Setter>
 
     <Setter Property="BorderThickness">
-      <console:OnPlatformEx Default="{DynamicResource ManagedWindow_BorderThickness}"
+      <console:OnPlatform Default="{DynamicResource ManagedWindow_BorderThickness}"
                             Console="{StaticResource SingleThickness}"/>
     </Setter>
     <Setter Property="BoxShadow">
-      <console:OnPlatformEx Default="{DynamicResource ManagedWindow_BoxShadows}"
+      <console:OnPlatform Default="{DynamicResource ManagedWindow_BoxShadows}"
                             Console="{StaticResource NullBoxShadows}"/>
     </Setter>
     <Setter Property="Padding" Value="0" />
@@ -75,47 +75,47 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
                   <Button Name="PART_MinimizeButton"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                      <console:OnPlatformEx Console="🗕">
-                      <console:OnPlatformEx.Default>
+                      <console:OnPlatform Console="🗕">
+                      <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeMinimize"
                                             Width="{StaticResource ManagedWindow_SystemIconSize}"
                                             Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatformEx.Default>
-                    </console:OnPlatformEx>
+                      </console:OnPlatform.Default>
+                    </console:OnPlatform>
                   </Button>
                   <Button Name="PART_MaximizeButton"
                           IsVisible="False"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
 
-                    <console:OnPlatformEx Console="🗖">
-                      <console:OnPlatformEx.Default>
+                    <console:OnPlatform Console="🗖">
+                      <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeMaximize"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
                                         Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatformEx.Default>
-                    </console:OnPlatformEx>
+                      </console:OnPlatform.Default>
+                    </console:OnPlatform>
                   </Button>
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                     <console:OnPlatformEx Console="🗗">
-                      <console:OnPlatformEx.Default>
+                     <console:OnPlatform Console="🗗">
+                      <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeRestore"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
                                         Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatformEx.Default>
-                    </console:OnPlatformEx>
+                      </console:OnPlatform.Default>
+                    </console:OnPlatform>
                   </Button>
                   <Button Name="PART_CloseButton"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                           IsVisible="{TemplateBinding IsCloseButtonVisible}">
-                    <console:OnPlatformEx Console="🗙">
-                      <console:OnPlatformEx.Default>
+                    <console:OnPlatform Console="🗙">
+                      <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeClose"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
                                         Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatformEx.Default>
-                    </console:OnPlatformEx>
+                      </console:OnPlatform.Default>
+                    </console:OnPlatform>
                   </Button>
                 </StackPanel>
               </Grid>
@@ -131,10 +131,10 @@
 
               <Panel Name="PART_ModalOverlay"
                      Grid.RowSpan="2"
-                     Opacity="{console:OnPlatformEx Default={DynamicResource ManagedWindow_ModalOpacity} Console={StaticResource NoOpacity}}"
+                     Opacity="{console:OnPlatform Default={DynamicResource ManagedWindow_ModalOpacity} Console={StaticResource NoOpacity}}"
                      IsVisible="false">
                 <Panel.Background>
-                  <console:OnPlatformExExtension x:TypeArguments="IBrush"
+                  <console:OnPlatformExtension x:TypeArguments="IBrush"
                                                  Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
                                                  Console="{DynamicResource ThemeShadeBrush}"/>
                 </Panel.Background>
@@ -149,7 +149,7 @@
     <Style Selector="^ /template/ TextBlock#PART_Title">
       <Setter Property="Margin" >
         <Setter.Value>
-          <console:OnPlatformExExtension x:TypeArguments="Thickness"
+          <console:OnPlatformExtension x:TypeArguments="Thickness"
                                          Default="8 0 0 0"
                                           Console="5 0 0 0"/>
         </Setter.Value>
@@ -190,7 +190,7 @@
     <!-- activated -->
     <Style Selector="^:active">
       <Setter Property="BorderBrush">
-        <console:OnPlatformEx Default="{DynamicResource ManagedWindow_Active_BorderBrush}"
+        <console:OnPlatform Default="{DynamicResource ManagedWindow_Active_BorderBrush}"
                               Console="{DynamicResource ManagedWindow_Active_EdgeLineBrush}"/>
       </Setter>
     </Style>
