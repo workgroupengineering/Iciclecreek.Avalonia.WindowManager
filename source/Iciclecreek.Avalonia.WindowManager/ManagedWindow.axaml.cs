@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Styling;
 using Avalonia.Animation;
+using Avalonia.LogicalTree;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -349,7 +350,7 @@ public class ManagedWindow : ContentControl
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public WindowManagerPanel WindowManager => (WindowManagerPanel)Parent;
+    public WindowManagerPanel WindowManager => Parent.FindLogicalAncestorOfType<WindowManagerPanel>();
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
@@ -487,7 +488,7 @@ public class ManagedWindow : ContentControl
 
         SetPsuedoClasses();
 
-        var parent = (WindowManagerPanel)Parent!;
+        var parent = WindowManager!;
 
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
                               new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
@@ -600,8 +601,8 @@ public class ManagedWindow : ContentControl
 
         if (!_shown)
         {
-            if (!(Parent is WindowManagerPanel))
-                throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
+            //if (!(Parent is WindowManagerPanel))
+            //    throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
 
             _shown = true;
             CaptureWindowState(WindowState);

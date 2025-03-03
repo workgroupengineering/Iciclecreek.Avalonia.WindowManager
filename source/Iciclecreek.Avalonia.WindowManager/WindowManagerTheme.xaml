@@ -9,6 +9,7 @@
       <!-- control styles -->
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/ManagedWindow.axaml" />
+        <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/WindowManagerPanel.axaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <!-- themed resources -->
@@ -57,6 +58,9 @@
   <!-- set default style for the ManagedWindow type -->
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
+  </Style>
+  <Style Selector=":is(wm|WindowManagerPanel)">
+    <Setter Property="Theme" Value="{StaticResource {x:Type wm:WindowManagerPanel}}"/>
   </Style>
   <StyleInclude Source="avares://IconPacks.Avalonia.Codicons/Codicons.axaml" />
 

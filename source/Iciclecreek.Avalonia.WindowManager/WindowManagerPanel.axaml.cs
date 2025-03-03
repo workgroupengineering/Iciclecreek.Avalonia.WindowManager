@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using System;
@@ -8,16 +10,23 @@ using System.Linq;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
-public class WindowManagerPanel : Canvas
+[TemplatePart(PART_Windows, typeof(Canvas))]
+public class WindowManagerPanel : ContentControl
 {
     private const int WINDOWLAYER = 10000;
 
+    private const string PART_Windows = "PART_Windows";
+
+    private Canvas _canvas;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public WindowManagerPanel()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         ManagedWindow.WindowClosedEvent.AddClassHandler(typeof(ManagedWindow), (sender, _) =>
         {
             var window = (ManagedWindow)sender!;
-            Children.Remove(window);
+            _canvas.Children.Remove(window);
             
             if (window.Owner != null)
             {
@@ -30,14 +39,21 @@ public class WindowManagerPanel : Canvas
         });
     }
 
-    /// <summary>
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        _canvas = (Canvas)e.NameScope.Find<Control>(PART_Windows) ?? throw new ArgumentNullException(PART_Windows);
+    }
+
+    /// <summary>de
     /// Gets a collection of child windows owned by this window.
     /// </summary>
-    public IReadOnlyList<ManagedWindow> Windows => this.Children?.Where(Children => Children is ManagedWindow).Cast<ManagedWindow>().ToArray() ?? Array.Empty<ManagedWindow>();
+    public IReadOnlyList<ManagedWindow> Windows => this._canvas?.Children.Cast<ManagedWindow>().ToArray() ?? Array.Empty<ManagedWindow>();
 
     public void ShowWindow(ManagedWindow window)
     {
-        this.Children.Add(window);
+        this._canvas.Children.Add(window);
 
         // Force a layout pass
         window.Measure(Size.Infinity);

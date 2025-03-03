@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
     <Description>This library implements a window manager for Avalonia with windows defined using Avalonia instead of native windows.</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>

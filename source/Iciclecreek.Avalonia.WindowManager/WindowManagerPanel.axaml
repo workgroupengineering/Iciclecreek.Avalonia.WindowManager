@@ -1,0 +1,31 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+        xmlns:console="https://github.com/jinek/consolonia"
+        xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
+
+  <!--console resources-->
+  <ControlTheme x:Key="{x:Type wm:WindowManagerPanel}"
+                TargetType="wm:WindowManagerPanel">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid>
+            <ContentPresenter 
+                  ClipToBounds="True"
+                  Name="PART_ContentPresenter"
+                  Margin="{TemplateBinding Margin}"
+                  Padding="{TemplateBinding Padding}"
+                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                  Content="{TemplateBinding Content}" />
+
+            <Canvas Name="PART_Windows"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+
+  </ControlTheme>
+
+</ResourceDictionary>
+
