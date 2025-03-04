@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Demo.ViewModels;
-using Iciclecreek.Avalonia.WindowManager;
 using System;
 
 namespace Demo.Views
 {
-    public partial class MainView : WindowManagerPanel
+    public partial class MainView : Grid
     {
         public MainView()
         {
@@ -24,7 +23,7 @@ namespace Demo.Views
             
             window.AdjustWindowSize(this.Bounds);
 
-            ShowWindow(window);
+            WindowManager.ShowWindow(window);
         }
 
         private void OnClick(object? sender, RoutedEventArgs args)

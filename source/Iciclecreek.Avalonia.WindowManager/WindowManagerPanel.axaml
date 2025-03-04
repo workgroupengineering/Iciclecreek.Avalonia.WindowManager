@@ -10,9 +10,10 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid>
+          <Grid >
             <ContentPresenter 
                   ClipToBounds="True"
+                  Background="{TemplateBinding Background}"
                   Name="PART_ContentPresenter"
                   Margin="{TemplateBinding Margin}"
                   Padding="{TemplateBinding Padding}"

@@ -494,9 +494,9 @@ public class ManagedWindow : ContentControl
         var parent = WindowManager!;
 
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
-                              new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
+                              new Rect(parent.Bounds.Left, parent.Bounds.Top, parent.Bounds.Width, parent.Bounds.Height));
 
-        this.Position = new PixelPoint(0, 0);
+        this.Position = new PixelPoint((ushort)parent.Bounds.Left, (ushort)parent.Bounds.Top);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
         if (_windowBorder != null)
@@ -873,7 +873,6 @@ public class ManagedWindow : ContentControl
     {
         if (AnimateWindow)
         {
-
             var animation = new Animation
             {
                 Duration = TimeSpan.FromMilliseconds(100),
