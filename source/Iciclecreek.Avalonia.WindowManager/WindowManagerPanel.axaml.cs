@@ -63,10 +63,6 @@ public class WindowManagerPanel : ContentControl
 
         window.Show();
 
-        if (window.ShowActivated)
-        {
-            window.Activate();
-        }
     }
 
     public void BringToTop(ManagedWindow window)

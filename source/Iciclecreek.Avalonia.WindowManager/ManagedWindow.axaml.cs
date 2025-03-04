@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Styling;
 using Avalonia.Animation;
+using Avalonia.VisualTree;
 using Avalonia.LogicalTree;
 
 namespace Iciclecreek.Avalonia.WindowManager;
@@ -350,7 +351,9 @@ public class ManagedWindow : ContentControl
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public WindowManagerPanel WindowManager => Parent.FindLogicalAncestorOfType<WindowManagerPanel>();
+    public WindowManagerPanel WindowManager => this.FindAncestorOfType<WindowManagerPanel>() ??
+        this.FindLogicalAncestorOfType<WindowManagerPanel>() ?? 
+        throw new ArgumentNullException("Missing WindowManagerPanel in the parent visual tree");
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
@@ -591,7 +594,6 @@ public class ManagedWindow : ContentControl
     }
 
     private bool _shown;
-
     /// <summary>
     /// Shows the window.
     /// </summary>
@@ -601,8 +603,8 @@ public class ManagedWindow : ContentControl
 
         if (!_shown)
         {
-            //if (!(Parent is WindowManagerPanel))
-            //    throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
+            if (WindowManager == null)
+                throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
 
             _shown = true;
             CaptureWindowState(WindowState);
@@ -626,6 +628,11 @@ public class ManagedWindow : ContentControl
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             OnOpened(EventArgs.Empty);
+
+            if (ShowActivated)
+            {
+                Activate();
+            }
         }
     }
 

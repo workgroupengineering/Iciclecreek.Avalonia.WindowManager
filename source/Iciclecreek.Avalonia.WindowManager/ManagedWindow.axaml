@@ -72,10 +72,16 @@
                            FontStyle="{TemplateBinding FontStyle}"
                            Text="{TemplateBinding Title}"/>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right">
+                  <StackPanel.Spacing>
+                    <console:OnPlatformExtension x:TypeArguments="x:Double" Default="8" Console="-1" />
+                  </StackPanel.Spacing>
                   <Button Name="PART_MinimizeButton"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                      <console:OnPlatform Console="🗕">
+                    <console:OnPlatform Console="🗕">
                       <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeMinimize"
                                             Width="{StaticResource ManagedWindow_SystemIconSize}"
@@ -98,7 +104,7 @@
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                     <console:OnPlatform Console="🗗">
+                    <console:OnPlatform Console="🗗">
                       <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeRestore"
                                         Width="{StaticResource ManagedWindow_SystemIconSize}"
@@ -151,7 +157,7 @@
         <Setter.Value>
           <console:OnPlatformExtension x:TypeArguments="Thickness"
                                          Default="8 0 0 0"
-                                          Console="5 0 0 0"/>
+                                         Console="1 0 0 0"/>
         </Setter.Value>
       </Setter>
     </Style>
