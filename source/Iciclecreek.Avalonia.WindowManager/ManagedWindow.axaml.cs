@@ -494,9 +494,9 @@ public class ManagedWindow : ContentControl
         var parent = WindowManager!;
 
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
-                              new Rect(parent.Bounds.Left, parent.Bounds.Top, parent.Bounds.Width, parent.Bounds.Height));
+                              new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
 
-        this.Position = new PixelPoint((ushort)parent.Bounds.Left, (ushort)parent.Bounds.Top);
+        this.Position = new PixelPoint((ushort)0, (ushort)0);
         this.Width = parent.Bounds.Width;
         this.Height = parent.Bounds.Height;
         if (_windowBorder != null)
@@ -683,7 +683,7 @@ public class ManagedWindow : ContentControl
             result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
         };
 
-        owner.WindowManager.ShowWindow(this);
+        owner.WindowManager.AddWindow(this);
 
         return result.Task;
     }

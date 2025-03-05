@@ -23,7 +23,7 @@ namespace Demo.Views
             
             window.AdjustWindowSize(this.Bounds);
 
-            WindowManager.ShowWindow(window);
+            WindowManager.AddWindow(window);
         }
 
         private void OnClick(object? sender, RoutedEventArgs args)

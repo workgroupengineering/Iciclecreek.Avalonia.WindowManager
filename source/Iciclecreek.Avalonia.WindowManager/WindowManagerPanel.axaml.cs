@@ -51,7 +51,7 @@ public class WindowManagerPanel : ContentControl
     /// </summary>
     public IReadOnlyList<ManagedWindow> Windows => this._canvas?.Children.Cast<ManagedWindow>().ToArray() ?? Array.Empty<ManagedWindow>();
 
-    public void ShowWindow(ManagedWindow window)
+    public void AddWindow(ManagedWindow window)
     {
         this._canvas.Children.Add(window);
 
