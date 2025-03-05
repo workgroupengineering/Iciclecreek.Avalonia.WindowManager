@@ -636,6 +636,7 @@ public class ManagedWindow : ContentControl
         }
     }
 
+
     /// <summary>
     /// Shows the window as a dialog.
     /// </summary>
