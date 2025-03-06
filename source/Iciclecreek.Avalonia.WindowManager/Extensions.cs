@@ -31,11 +31,11 @@ namespace Iciclecreek.Avalonia.WindowManager
     {
         public static void ShowWindow(this Visual visual, ManagedWindow window)
         {
-            WindowManagerPanel windowManager = visual as WindowManagerPanel ??
-                visual.FindAncestorOfType<WindowManagerPanel>() ??
-                TopLevel.GetTopLevel(visual).FindDescendantOfType<WindowManagerPanel>();
+            WindowsPanel windowManager = visual as WindowsPanel ??
+                visual.FindAncestorOfType<WindowsPanel>() ??
+                TopLevel.GetTopLevel(visual).FindDescendantOfType<WindowsPanel>();
 
-            ArgumentNullException.ThrowIfNull(windowManager, nameof(WindowManagerPanel));
+            ArgumentNullException.ThrowIfNull(windowManager, nameof(WindowsPanel));
             windowManager.AddWindow(window);
         }
     }

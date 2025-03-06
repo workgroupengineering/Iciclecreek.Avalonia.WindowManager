@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+        xmlns:converters="using:Avalonia.Controls.Converters"
         x:Class="Iciclecreek.Avalonia.WindowManager.WindowManagerTheme">
 
   <Styles.Resources>
@@ -9,7 +10,7 @@
       <!-- control styles -->
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/ManagedWindow.axaml" />
-        <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/WindowManagerPanel.axaml" />
+        <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/WindowsPanel.axaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <!-- themed resources -->
@@ -52,6 +53,7 @@
       <x:Double x:Key='ManagedWindow_ModalOpacity'>0.4</x:Double>
       <Thickness x:Key='ManagedWindow_BorderThickness'>4</Thickness>
       <x:Double x:Key="ManagedWindow_SystemIconSize">12</x:Double>
+      <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
     </ResourceDictionary>
   </Styles.Resources>
 
@@ -59,8 +61,8 @@
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
   </Style>
-  <Style Selector=":is(wm|WindowManagerPanel)">
-    <Setter Property="Theme" Value="{StaticResource {x:Type wm:WindowManagerPanel}}"/>
+  <Style Selector=":is(wm|WindowsPanel)">
+    <Setter Property="Theme" Value="{StaticResource {x:Type wm:WindowsPanel}}"/>
   </Style>
   <StyleInclude Source="avares://IconPacks.Avalonia.Codicons/Codicons.axaml" />
 

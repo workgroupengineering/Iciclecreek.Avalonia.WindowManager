@@ -30,7 +30,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
-[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal")]
+[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder")]
 public class ManagedWindow : ContentControl
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
@@ -82,9 +82,6 @@ public class ManagedWindow : ContentControl
     public static readonly StyledProperty<bool> ShowActivatedProperty =
         AvaloniaProperty.Register<ManagedWindow, bool>(nameof(ShowActivated), true);
 
-    public static readonly StyledProperty<bool> IsCloseButtonVisibleProperty =
-        AvaloniaProperty.Register<ManagedWindow, bool>(nameof(IsCloseButtonVisible), true);
-
     /// <summary>
     /// Defines the <see cref="AnimateWindow"/> property. If True, animations will be used for transitions.
     /// </summary>
@@ -134,6 +131,12 @@ public class ManagedWindow : ContentControl
         AvaloniaProperty.Register<ManagedWindow, BoxShadows>(nameof(BoxShadow));
 
     /// <summary>
+    /// Defines the <see cref="SystemDecorations"/> property.
+    /// </summary>
+    public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
+        AvaloniaProperty.Register<ManagedWindow, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
+
+    /// <summary>
     /// Routed event that can be used for global tracking of window destruction
     /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> WindowClosedEvent =
@@ -144,6 +147,15 @@ public class ManagedWindow : ContentControl
     /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
         RoutedEvent.Register<ManagedWindow, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
+
+    /// <summary>
+    /// Sets the system decorations (title bar, border, etc)
+    /// </summary>
+    public SystemDecorations SystemDecorations
+    {
+        get => GetValue(SystemDecorationsProperty);
+        set => SetValue(SystemDecorationsProperty, value);
+    }
 
     static ManagedWindow()
     {
@@ -221,15 +233,6 @@ public class ManagedWindow : ContentControl
         set => SetValue(AnimateWindowProperty, value);
     }
 
-
-    /// <summary>
-    /// Gets or sets value indicating that the close button should be visible
-    /// </summary>
-    public bool IsCloseButtonVisible
-    {
-        get => GetValue(IsCloseButtonVisibleProperty);
-        set => SetValue(IsCloseButtonVisibleProperty, value);
-    }
 
     /// <summary>
     /// Gets or sets a value that indicates whether a window is activated when first shown. 
@@ -351,9 +354,9 @@ public class ManagedWindow : ContentControl
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public WindowManagerPanel WindowManager => this.FindAncestorOfType<WindowManagerPanel>() ??
-        this.FindLogicalAncestorOfType<WindowManagerPanel>() ?? 
-        throw new ArgumentNullException("Missing WindowManagerPanel in the parent visual tree");
+    public WindowsPanel WindowManager => this.FindAncestorOfType<WindowsPanel>() ??
+        this.FindLogicalAncestorOfType<WindowsPanel>() ?? 
+        throw new ArgumentNullException("Missing WindowsPanel in the parent visual tree");
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
@@ -455,6 +458,11 @@ public class ManagedWindow : ContentControl
                     }
                 }
                 break;
+
+            case nameof(SystemDecorations):
+                SetPsuedoClasses();
+                break;
+
             default:
                 base.OnPropertyChanged(change);
                 break;
@@ -604,7 +612,7 @@ public class ManagedWindow : ContentControl
         if (!_shown)
         {
             if (WindowManager == null)
-                throw new Exception("ManagedWindow must be a child of WindowManagerPanel. Call WindowManagerPanel.ShowWindow(window) to show the window.");
+                throw new Exception("ManagedWindow must be a child of WindowsPanel. Call WindowsPanel.ShowWindow(window) to show the window.");
 
             _shown = true;
             CaptureWindowState(WindowState);
@@ -1109,7 +1117,12 @@ public class ManagedWindow : ContentControl
                 Canvas.SetTop(this, 0);
                 break;
         }
+
+        classes.Remove(":noborder");
+        if (SystemDecorations == SystemDecorations.None)
+            classes.Add(":noborder");
     }
+
     public void BringToTop()
     {
         WindowManager.BringToTop(this);

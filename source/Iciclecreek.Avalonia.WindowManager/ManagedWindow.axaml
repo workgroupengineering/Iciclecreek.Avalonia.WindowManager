@@ -6,6 +6,7 @@
 
   <!--console extra resources-->
   <BoxShadows x:Key="NullBoxShadows" >none</BoxShadows>
+  <Thickness x:Key="NoThickness">0</Thickness>
   <Thickness x:Key="SingleThickness">1</Thickness>
   <x:Double x:Key="NoOpacity">1</x:Double>
   <console:LineBrush x:Key="EdgeLineBrush"
@@ -36,11 +37,10 @@
                             Console="{StaticResource NullBoxShadows}"/>
     </Setter>
     <Setter Property="Padding" Value="0" />
-
-    <Setter Property="IsCloseButtonVisible"
-            Value="True" />
     <Setter Property="ZIndex"
             Value="10000" />
+    <Setter Property="SystemDecorations"
+            Value="Full"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -56,7 +56,8 @@
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="* Auto "
-                    Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
+                    Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}"
+                    IsVisible="{TemplateBinding SystemDecorations, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static SystemDecorations.Full}}">
                 <Grid.Styles>
                   <Style Selector="Button">
                     <Setter Property="Background" Value="Transparent"/>
@@ -113,8 +114,7 @@
                     </console:OnPlatform>
                   </Button>
                   <Button Name="PART_CloseButton"
-                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                          IsVisible="{TemplateBinding IsCloseButtonVisible}">
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
                     <console:OnPlatform Console="🗙">
                       <console:OnPlatform.Default>
                         <iconPacks:Codicons Kind="ChromeClose"
@@ -125,7 +125,7 @@
                   </Button>
                 </StackPanel>
               </Grid>
-
+              
               <!-- window content-->
               <ContentPresenter Grid.Row="1"
                                 ClipToBounds="True"
@@ -213,6 +213,10 @@
       <Setter Property="Foreground" Value="{DynamicResource ManagedWindow_Active_TitleBarForegroundBrush}"/>
     </Style>
 
+    <!--no border -->
+    <Style Selector="^:noborder /template/ Border#PART_WindowBorder">
+      <Setter Property="BorderThickness" Value="{StaticResource NoThickness}}"/>
+    </Style>
     <!-- dialog state styles -->
 
     <!-- window is a dialog -->

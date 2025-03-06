@@ -39,6 +39,15 @@
 
     <Button  HorizontalAlignment="Left" Click="OnColor">Background</Button>
 
+    <StackPanel Orientation="Horizontal" >
+      <Label>SystemDecorations for this window</Label>
+      <ComboBox Name="SystemDecorationCombo" SelectedIndex="2" SelectionChanged="OnSystemDecoration_SelectionChanged">
+        <ComboBoxItem Tag="None">None</ComboBoxItem>
+        <ComboBoxItem Tag="BorderOnly">BorderOnly</ComboBoxItem>
+        <ComboBoxItem Tag="Full">Full</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+
     <ToggleSwitch Content="CanResize" IsChecked="{Binding CanResize, RelativeSource={RelativeSource AncestorType={x:Type wm:ManagedWindow}}}"/>
   </StackPanel>
 </wm:ManagedWindow>

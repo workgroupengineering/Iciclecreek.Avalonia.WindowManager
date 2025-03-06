@@ -11,7 +11,7 @@ using System.Linq;
 namespace Iciclecreek.Avalonia.WindowManager;
 
 [TemplatePart(PART_Windows, typeof(Canvas))]
-public class WindowManagerPanel : ContentControl
+public class WindowsPanel : ContentControl
 {
     private const int WINDOWLAYER = 10000;
 
@@ -20,7 +20,7 @@ public class WindowManagerPanel : ContentControl
     private Canvas _canvas;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public WindowManagerPanel()
+    public WindowsPanel()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         ManagedWindow.WindowClosedEvent.AddClassHandler(typeof(ManagedWindow), (sender, _) =>

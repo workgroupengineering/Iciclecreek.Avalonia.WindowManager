@@ -71,6 +71,15 @@ public partial class MyWindow : ManagedWindow
         if (result != null)
             ViewModel.Text = result;
     }
+
+    private void OnSystemDecoration_SelectionChanged(object? sender, Avalonia.Controls.SelectionChangedEventArgs e)
+    {
+        if (this.SystemDecorationCombo?.SelectedItem is ComboBoxItem item)
+        {
+            var decoration = Enum.Parse<SystemDecorations>(item.Tag.ToString());
+            this.SystemDecorations = decoration;
+        }
+    }
 }
 
 public partial class MyWindowViewModel : ObservableObject

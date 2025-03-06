@@ -5,8 +5,8 @@
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
 
   <!--console resources-->
-  <ControlTheme x:Key="{x:Type wm:WindowManagerPanel}"
-                TargetType="wm:WindowManagerPanel">
+  <ControlTheme x:Key="{x:Type wm:WindowsPanel}"
+                TargetType="wm:WindowsPanel">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
