@@ -19,6 +19,8 @@ using Avalonia.Styling;
 using Avalonia.Animation;
 using Avalonia.VisualTree;
 using Avalonia.LogicalTree;
+using Consolonia.Controls;
+using Avalonia.Metadata;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -109,8 +111,8 @@ public class ManagedWindow : ContentControl
     /// <summary>
     /// Defines the <see cref="Icon"/> property.
     /// </summary>
-    public static readonly StyledProperty<WindowIcon?> IconProperty =
-        AvaloniaProperty.Register<ManagedWindow, WindowIcon?>(nameof(Icon));
+    public static readonly StyledProperty<object?> IconProperty =
+        AvaloniaProperty.Register<ManagedWindow, object?>(nameof(Icon));
 
     /// <summary>
     /// Defines the <see cref="WindowStartupLocation"/> property.
@@ -148,21 +150,13 @@ public class ManagedWindow : ContentControl
     public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
         RoutedEvent.Register<ManagedWindow, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
-    /// <summary>
-    /// Sets the system decorations (title bar, border, etc)
-    /// </summary>
-    public SystemDecorations SystemDecorations
-    {
-        get => GetValue(SystemDecorationsProperty);
-        set => SetValue(SystemDecorationsProperty, value);
-    }
 
     static ManagedWindow()
     {
         //AffectsRender<ManagedWindow>(
         //    BackgroundProperty,
         //    BorderBrushProperty,
-        //    BorderThicknessProperty,
+        //    BorderTknessProperty,
         //    CornerRadiusProperty,
         //    BoxShadowProperty);
         //AffectsMeasure<ManagedWindow>(BorderThicknessProperty);
@@ -264,10 +258,20 @@ public class ManagedWindow : ContentControl
     /// <summary>
     /// Gets or sets the icon of the window.
     /// </summary>
-    public WindowIcon? Icon
+    [DependsOn(nameof(ContentTemplate))]
+    public object? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
+    }
+
+    /// <summary>
+    /// Sets the system decorations (title bar, border, etc)
+    /// </summary>
+    public SystemDecorations SystemDecorations
+    {
+        get => GetValue(SystemDecorationsProperty);
+        set => SetValue(SystemDecorationsProperty, value);
     }
 
     /// <summary>
@@ -354,9 +358,7 @@ public class ManagedWindow : ContentControl
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public WindowsPanel WindowManager => this.FindAncestorOfType<WindowsPanel>() ??
-        this.FindLogicalAncestorOfType<WindowsPanel>() ?? 
-        throw new ArgumentNullException("Missing WindowsPanel in the parent visual tree");
+    public WindowsPanel? WindowManager => this.FindAncestorOfType<WindowsPanel>();
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
@@ -435,26 +437,29 @@ public class ManagedWindow : ContentControl
         switch (change.Property.Name)
         {
             case nameof(WindowState):
-                if (change.OldValue is WindowState oldState)
+                if (WindowManager != null)
                 {
-                    CaptureWindowState(oldState);
-
-                    switch (WindowState)
+                    if (change.OldValue is WindowState oldState)
                     {
-                        case WindowState.FullScreen:
-                            OnFullscreenWindow();
-                            break;
-                        case WindowState.Maximized:
-                            OnMaximizeWindow();
-                            break;
-                        case WindowState.Minimized:
-                            OnMinimizeWindow();
-                            break;
-                        case WindowState.Normal:
-                            OnNormalWindow();
-                            break;
-                        default:
-                            break;
+                        CaptureWindowState(oldState);
+
+                        switch (WindowState)
+                        {
+                            case WindowState.FullScreen:
+                                OnFullscreenWindow();
+                                break;
+                            case WindowState.Maximized:
+                                OnMaximizeWindow();
+                                break;
+                            case WindowState.Minimized:
+                                OnMinimizeWindow();
+                                break;
+                            case WindowState.Normal:
+                                OnNormalWindow();
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
                 break;
@@ -488,25 +493,35 @@ public class ManagedWindow : ContentControl
                 break;
             case WindowState.FullScreen:
             case WindowState.Maximized:
+                if (_normalRect.Width == 0 && _normalRect.Height == 0)
+                {
+                    _normalRect = new Rect((int)2, (int)2, (int)WindowManager.Bounds.Width - 4, (int)WindowManager.Bounds.Height - 4);
+                    if (_windowBorder != null)
+                    {
+                        _normalBoxShadow = _windowBorder.BoxShadow!;
+                        _normalMargin = _windowBorder.Margin;
+                    }
+                }
+                break;
             default:
                 break;
         }
     }
 
-    private async void OnMaximizeWindow()
+    protected virtual async void OnMaximizeWindow()
     {
         BringToTop();
 
         SetPsuedoClasses();
 
-        var parent = WindowManager!;
+        ArgumentNullException.ThrowIfNull(WindowManager, nameof(WindowsPanel));
 
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
-                              new Rect(0, 0, parent.Bounds.Width, parent.Bounds.Height));
+                              new Rect(0, 0, WindowManager.Bounds.Width, WindowManager.Bounds.Height));
 
         this.Position = new PixelPoint((ushort)0, (ushort)0);
-        this.Width = parent.Bounds.Width;
-        this.Height = parent.Bounds.Height;
+        this.Width = WindowManager.Bounds.Width;
+        this.Height = WindowManager.Bounds.Height;
         if (_windowBorder != null)
         {
             _windowBorder.Margin = new Thickness(0);
@@ -514,12 +529,12 @@ public class ManagedWindow : ContentControl
         }
     }
 
-    private void OnFullscreenWindow()
+    protected virtual async void OnFullscreenWindow()
     {
         throw new NotSupportedException();
     }
 
-    private async void OnNormalWindow()
+    protected virtual async void OnNormalWindow()
     {
         BringToTop();
 
@@ -1087,10 +1102,10 @@ public class ManagedWindow : ContentControl
         else
             classes.Remove(":hasdialog");
 
-        if (Owner != null)
-            classes.Add(":isdialog");
+        if (CanResize)
+            classes.Remove(":noresize");
         else
-            classes.Remove(":isdialog");
+            classes.Add(":noresize");
 
         classes.Remove(":minimized");
         classes.Remove(":normal");

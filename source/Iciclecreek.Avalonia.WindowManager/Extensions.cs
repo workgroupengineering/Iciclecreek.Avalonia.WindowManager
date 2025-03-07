@@ -1,13 +1,11 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Iciclecreek.Avalonia.WindowManager
 {
@@ -43,7 +41,7 @@ namespace Iciclecreek.Avalonia.WindowManager
             windowManager.AddWindow(window);
         }
 
-        public static void ShowDialog(this Visual visual, ManagedWindow window)
+        public static async Task ShowDialog(this Visual visual, ManagedWindow window)
         {
             WindowsPanel? windowsPanel = visual as WindowsPanel ??
                 visual.FindAncestorOfType<WindowsPanel>() ??
@@ -54,7 +52,21 @@ namespace Iciclecreek.Avalonia.WindowManager
             ManagedWindow owner = visual.FindAncestorOfType<ManagedWindow>()
                 ?? CreateOverlayWindow(windowsPanel, window);
 
-            window.ShowDialog(owner);
+            await window.ShowDialog(owner);
+        }
+
+        public static async Task<T> ShowDialog<T>(this Visual visual, ManagedWindow window)
+        {
+            WindowsPanel? windowsPanel = visual as WindowsPanel ??
+                visual.FindAncestorOfType<WindowsPanel>() ??
+                TopLevel.GetTopLevel(visual).FindDescendantOfType<WindowsPanel>();
+
+            ArgumentNullException.ThrowIfNull(windowsPanel, nameof(WindowsPanel));
+
+            ManagedWindow owner = visual.FindAncestorOfType<ManagedWindow>()
+                ?? CreateOverlayWindow(windowsPanel, window);
+
+            return await window.ShowDialog<T>(owner);
         }
 
         private static ManagedWindow CreateOverlayWindow(WindowsPanel wm, ManagedWindow childWindow)

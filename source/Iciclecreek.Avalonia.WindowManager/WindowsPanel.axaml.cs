@@ -54,15 +54,21 @@ public class WindowsPanel : ContentControl
     public void AddWindow(ManagedWindow window)
     {
         this._canvas.Children.Add(window);
+        window.Closed += Window_Closed;
 
         // Force a layout pass
         window.Measure(Size.Infinity);
         window.Arrange(new Rect(window.DesiredSize));
 
         SetWindowStartupLocation(window);
-
         window.Show();
+    }
 
+    private void Window_Closed(object? sender, EventArgs e)
+    {
+        var window = sender as ManagedWindow;
+        window.Closed -= Window_Closed;
+        this._canvas.Children.Remove(window);
     }
 
     public void BringToTop(ManagedWindow window)
@@ -90,11 +96,15 @@ public class WindowsPanel : ContentControl
     {
         var startupLocation = GetEffectiveWindowStartupLocation(window);
 
+        var screenSize = new PixelRect(0, 0, (int)this.Bounds.Width, (int)this.Bounds.Height);
+
         PixelRect size;
         switch (window.SizeToContent)
         {
             case SizeToContent.Manual:
-                size = new PixelRect(0, 0, (int)window.Width, (int)window.Height);
+                size = new PixelRect(0, 0, 
+                                     (int)(Double.IsNaN(window.Width) ? window.DesiredSize.Width : window.Width), 
+                                     (int)(Double.IsNaN(window.Height) ? window.DesiredSize.Height : window.Height));
                 break;
             case SizeToContent.WidthAndHeight:
                 size = new PixelRect(0, 0, (int)window.DesiredSize.Width, (int)window.DesiredSize.Height);
@@ -109,8 +119,6 @@ public class WindowsPanel : ContentControl
             default:
                 throw new NotImplementedException();
         }
-
-        var screenSize = new PixelRect(0, 0, (int)this.Bounds.Width, (int)this.Bounds.Height);
 
         if (startupLocation == WindowStartupLocation.CenterOwner)
         {

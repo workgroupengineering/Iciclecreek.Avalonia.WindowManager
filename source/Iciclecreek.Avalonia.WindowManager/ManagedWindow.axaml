@@ -53,9 +53,10 @@
 
             <Grid RowDefinitions="Auto *"
                   Background="{TemplateBinding Background}">
+              
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
-                    ColumnDefinitions="* Auto "
+                    ColumnDefinitions="Auto * Auto"
                     Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}"
                     IsVisible="{TemplateBinding SystemDecorations, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static SystemDecorations.Full}}">
                 <Grid.Styles>
@@ -64,7 +65,12 @@
                   </Style>
                 </Grid.Styles>
 
+                <!-- Icon -->
+                <ContentPresenter Grid.Column="0"
+                                  Content="{TemplateBinding Icon}" />
+                <!-- Title -->
                 <TextBlock Name="PART_Title"
+                           Grid.Column="1"
                            Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                            VerticalAlignment="Center"
                            FontFamily="{TemplateBinding FontFamily}"
@@ -73,7 +79,8 @@
                            FontStyle="{TemplateBinding FontStyle}"
                            Text="{TemplateBinding Title}"/>
 
-                <StackPanel Grid.Column="1"
+                <!-- System Decorations (aka buttons)-->
+                <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Right">
@@ -125,7 +132,7 @@
                   </Button>
                 </StackPanel>
               </Grid>
-              
+
               <!-- window content-->
               <ContentPresenter Grid.Row="1"
                                 ClipToBounds="True"
@@ -220,7 +227,7 @@
     <!-- dialog state styles -->
 
     <!-- window is a dialog -->
-    <Style Selector="^:isdialog /template/ Border#PART_WindowBorder">
+    <Style Selector="^:noresize /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
