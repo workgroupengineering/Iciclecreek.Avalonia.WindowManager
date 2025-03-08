@@ -88,6 +88,8 @@ public class WindowsPanel : ContentControl
         foreach (var win in windows)
         {
             win.ZIndex = i++;
+            if (win.Topmost)
+                win.ZIndex += 1000;
         }
         window.ZIndex = i;
     }
