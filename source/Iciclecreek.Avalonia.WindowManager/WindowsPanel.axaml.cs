@@ -43,7 +43,7 @@ public class WindowsPanel : ContentControl
     {
         base.OnApplyTemplate(e);
 
-        _canvas = (Canvas)e.NameScope.Find<Control>(PART_Windows) ?? throw new ArgumentNullException(PART_Windows);
+        _canvas = (Canvas)e.NameScope.Find<Canvas>(PART_Windows) ?? throw new ArgumentNullException(PART_Windows);
     }
 
     /// <summary>de

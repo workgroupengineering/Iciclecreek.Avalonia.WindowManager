@@ -67,6 +67,8 @@
 
                 <!-- Icon -->
                 <ContentPresenter Grid.Column="0"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"
                                   Content="{TemplateBinding Icon}" />
                 <!-- Title -->
                 <TextBlock Name="PART_Title"
@@ -88,6 +90,7 @@
                     <console:OnPlatformExtension x:TypeArguments="x:Double" Default="8" Console="-1" />
                   </StackPanel.Spacing>
                   <Button Name="PART_MinimizeButton"
+                          IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
                     <console:OnPlatform Console="🗕">
                       <console:OnPlatform.Default>
@@ -99,6 +102,7 @@
                   </Button>
                   <Button Name="PART_MaximizeButton"
                           IsVisible="False"
+                          IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
 
                     <console:OnPlatform Console="🗖">
@@ -111,6 +115,7 @@
                   </Button>
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
+                          IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
                     <console:OnPlatform Console="🗗">
                       <console:OnPlatform.Default>
@@ -120,7 +125,8 @@
                       </console:OnPlatform.Default>
                     </console:OnPlatform>
                   </Button>
-                  <Button Name="PART_CloseButton"
+                  <Button Name="PART_CloseButton" 
+                          IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
                     <console:OnPlatform Console="🗙">
                       <console:OnPlatform.Default>

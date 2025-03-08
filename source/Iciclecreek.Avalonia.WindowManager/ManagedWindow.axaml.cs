@@ -18,8 +18,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Styling;
 using Avalonia.Animation;
 using Avalonia.VisualTree;
-using Avalonia.LogicalTree;
-using Consolonia.Controls;
 using Avalonia.Metadata;
 
 namespace Iciclecreek.Avalonia.WindowManager;
@@ -153,6 +151,8 @@ public class ManagedWindow : ContentControl
 
     static ManagedWindow()
     {
+        KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<ManagedWindow>(KeyboardNavigationMode.Cycle);
+
         //AffectsRender<ManagedWindow>(
         //    BackgroundProperty,
         //    BorderBrushProperty,
@@ -592,6 +592,8 @@ public class ManagedWindow : ContentControl
             }
             BringToTop();
             SetPsuedoClasses();
+
+            this.Focus();
         }
     }
 
@@ -970,6 +972,7 @@ public class ManagedWindow : ContentControl
 
         this.GotFocus += (s, e) => Activate();
         this.LostFocus += (s, e) => Deactivate();
+        this.KeyDown += OnKeyDown;
 
         //if (this.Theme == null)
         //    this.Theme = (ControlTheme)this.FindResource("ManagedWindow");
@@ -1011,6 +1014,25 @@ public class ManagedWindow : ContentControl
 
         this.Tapped += ManagedWindow_Tapped;
         SetPsuedoClasses();
+    }
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        var buttons = this.GetVisualDescendants().OfType<Button>().ToList();
+        var defaultButton = buttons.FirstOrDefault(x => x.IsDefault);
+        var cancelButton = buttons.FirstOrDefault(x => x.IsCancel);
+        if (e.Key == Key.Escape && cancelButton != null)
+        {
+            cancelButton.Command?.Execute(null);
+        }
+        else if (e.Key == Key.Enter && defaultButton != null)
+        {
+            defaultButton.Command?.Execute(null);
+        }
+        else if (e.Key == Key.W && e.KeyModifiers == KeyModifiers.Control)
+        {
+            Close();
+        }
     }
 
     private void ManagedWindow_Tapped(object? sender, TappedEventArgs e)
