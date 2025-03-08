@@ -29,33 +29,17 @@ App.axaml
 ```
 
 # Usage
-This library defines 2 classes:
-* **WindowsPanel** - panel which hosts any content you want and also manages overlapping ManagedWindow instances 
+This library defines a single class:
 * **ManagedWindow** - a Window implementation which isn't native but instead 100% avalonia 
  
-## WindowsPanel control
-The **WindowsPanel** is a **Canvas** control which manages overlapping windows.
-
-It has the following properties:
-* **Content** - which the content of the background of the windows panel
-* **Windows** - which is enumeration of all of the windows the WindowsPanel owns.
-
-And the following window oriented methods:
-* **AddWindow(window)** - Adds a window to the panel
-* **ShowAllWindows()** - restores all windows
-* **MinimizeAllWindows()** - Minimizes all windows.
-
 ## ManagedWindow control
 The **ManagedWindow** control is a clone of the **Window** control. It has standard Window properties like **Title**, **WindowState**, **WindowStartupLocation**, **Position**, etc.
-Instead of being hosted using Native windows, a ManagedWindow control is hosted by the **WindowsPanel**
+Instead of being hosted using Native windows, a ManagedWindow control is hosted via the Avalonia Overlay system.
 
 ### Showing a window
 To show a window you need to get an instance of the WindowsPanel and call **ShowWindow()**.
 
 For example:
-```xaml
-  <wm:WindowsPanel Name="WindowManager"/>
-```
 And code behind
 ```cs
    var window = new ManagedWindow()
@@ -64,7 +48,7 @@ And code behind
        WindowStartupLocation=WindowStartupLocation.CenterScreen,
        Width=300, Height=300
    };
-    WindowManager.ShowWindow(window);
+   window.Show()
 ```
 
 To close a window you simple call **Close()**.
@@ -82,5 +66,3 @@ To show a dialog is exactly the same as Avalonia, you instantiate a ManagedWindo
 ```
 
 To close a dialog you call **Close(result)**;
-
-

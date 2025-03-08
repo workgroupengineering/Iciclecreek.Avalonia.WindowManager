@@ -1,5 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Consolonia.Controls;
 using Demo.ViewModels;
 using System;
 
@@ -21,9 +26,9 @@ namespace Demo.Views
                 SizeToContent = Enum.Parse<SizeToContent>(((ComboBoxItem)SizeToContentCombo.SelectedItem).Tag.ToString())
             };
             
-            window.AdjustWindowSize(this.Bounds);
+            window.ApplySettings(this.Bounds);
 
-            WindowManager.AddWindow(window);
+            window.Show(this);
         }
 
         private void OnClick(object? sender, RoutedEventArgs args)

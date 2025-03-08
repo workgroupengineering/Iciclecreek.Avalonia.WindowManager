@@ -19,6 +19,9 @@ using Avalonia.Styling;
 using Avalonia.Animation;
 using Avalonia.VisualTree;
 using Avalonia.Metadata;
+using Avalonia.Controls.ApplicationLifetimes;
+using System.Diagnostics;
+using Consolonia.Controls.Brushes;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -31,7 +34,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
 [PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder")]
-public class ManagedWindow : ContentControl
+public class ManagedWindow : OverlayPopupHost
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
     public const string PART_TitleBar = "PART_TitleBar";
@@ -51,9 +54,10 @@ public class ManagedWindow : ContentControl
     private ManagedWindow? _owner;
     private bool _isActive;
     private object? _dialogResult;
-    private Control _title;
-    private Control _titleBar;
+    private Control? _title;
+    private Control? _titleBar;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
+    private OverlayLayer? _overlayLayer;
 
     /// <summary>
     /// Defines the <see cref="IsActive"/> property.
@@ -164,10 +168,33 @@ public class ManagedWindow : ContentControl
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
 
-    public ManagedWindow()
+    public ManagedWindow(Visual? visual = null)
+        : this(GetOverlayLayer(visual))
     {
     }
 
+    public ManagedWindow(OverlayLayer layer)
+        : base(layer)
+    {
+        _overlayLayer = layer;
+    }
+
+    private static OverlayLayer GetOverlayLayer(Visual? visual)
+    {
+        if (visual == null)
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                visual = desktop.MainWindow;
+            }
+            else if (Application.Current.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
+            {
+                visual = singleView.MainView;
+            }
+        }
+        ArgumentNullException.ThrowIfNull(visual);
+        return OverlayLayer.GetOverlayLayer(visual);
+    }
 
     /// <summary>
     /// Gets or sets a value indicating how the window will size itself to fit its content.
@@ -358,7 +385,7 @@ public class ManagedWindow : ContentControl
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public WindowsPanel? WindowManager => this.FindAncestorOfType<WindowsPanel>();
+    public OverlayLayer OverlayLayer => _overlayLayer!;
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
@@ -366,20 +393,10 @@ public class ManagedWindow : ContentControl
         get => _modalDialog;
         set
         {
-            if (_modalDialog != null)
+            if (value != null && _modalDialog != null)
                 throw new NotSupportedException("Already showing a modal dialog for this window");
 
             _modalDialog = value;
-            if (_modalDialog != null)
-            {
-                _modalDialog.Closed += (sender, e) =>
-                {
-                    // when dialog closes change focus back to owner.
-                    _modalDialog = null;
-                    Activate();
-                };
-            }
-
             SetPsuedoClasses();
         }
     }
@@ -437,29 +454,26 @@ public class ManagedWindow : ContentControl
         switch (change.Property.Name)
         {
             case nameof(WindowState):
-                if (WindowManager != null)
+                if (change.OldValue is WindowState oldState)
                 {
-                    if (change.OldValue is WindowState oldState)
-                    {
-                        CaptureWindowState(oldState);
+                    CaptureWindowState(oldState);
 
-                        switch (WindowState)
-                        {
-                            case WindowState.FullScreen:
-                                OnFullscreenWindow();
-                                break;
-                            case WindowState.Maximized:
-                                OnMaximizeWindow();
-                                break;
-                            case WindowState.Minimized:
-                                OnMinimizeWindow();
-                                break;
-                            case WindowState.Normal:
-                                OnNormalWindow();
-                                break;
-                            default:
-                                break;
-                        }
+                    switch (WindowState)
+                    {
+                        case WindowState.FullScreen:
+                            OnFullscreenWindow();
+                            break;
+                        case WindowState.Maximized:
+                            OnMaximizeWindow();
+                            break;
+                        case WindowState.Minimized:
+                            OnMinimizeWindow();
+                            break;
+                        case WindowState.Normal:
+                            OnNormalWindow();
+                            break;
+                        default:
+                            break;
                     }
                 }
                 break;
@@ -495,7 +509,7 @@ public class ManagedWindow : ContentControl
             case WindowState.Maximized:
                 if (_normalRect.Width == 0 && _normalRect.Height == 0)
                 {
-                    _normalRect = new Rect((int)2, (int)2, (int)WindowManager.Bounds.Width - 4, (int)WindowManager.Bounds.Height - 4);
+                    _normalRect = new Rect((int)2, (int)2, (int)_overlayLayer.Bounds.Width - 4, (int)_overlayLayer.Bounds.Height - 4);
                     if (_windowBorder != null)
                     {
                         _normalBoxShadow = _windowBorder.BoxShadow!;
@@ -514,14 +528,12 @@ public class ManagedWindow : ContentControl
 
         SetPsuedoClasses();
 
-        ArgumentNullException.ThrowIfNull(WindowManager, nameof(WindowsPanel));
-
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
-                              new Rect(0, 0, WindowManager.Bounds.Width, WindowManager.Bounds.Height));
+                              new Rect(0, 0, _overlayLayer.Bounds.Width, _overlayLayer.Bounds.Height));
 
         this.Position = new PixelPoint((ushort)0, (ushort)0);
-        this.Width = WindowManager.Bounds.Width;
-        this.Height = WindowManager.Bounds.Height;
+        this.Width = _overlayLayer.Bounds.Width;
+        this.Height = _overlayLayer.Bounds.Height;
         if (_windowBorder != null)
         {
             _windowBorder.Margin = new Thickness(0);
@@ -586,7 +598,7 @@ public class ManagedWindow : ContentControl
             OnActivated();
             IsActive = true;
 
-            foreach (var win in WindowManager.Windows.Where(win => win != this))
+            foreach (var win in GetWindows().Where(win => win != this))
             {
                 win.Deactivate();
             }
@@ -610,54 +622,57 @@ public class ManagedWindow : ContentControl
         }
     }
 
-    /// <summary>
-    /// Hides the popup.
-    /// </summary>
-    public virtual void Hide()
+    public new void Show()
     {
-        IsVisible = false;
+        Show(null);
     }
 
-    private bool _shown;
     /// <summary>
     /// Shows the window.
     /// </summary>
-    public virtual void Show()
+    public virtual void Show(Visual parent)
     {
-        IsVisible = true;
+        base.Show();
 
-        if (!_shown)
+        //// Force a layout pass
+        //Measure(Size.Infinity);
+        //Arrange(new Rect(DesiredSize));
+        Owner = parent as ManagedWindow;
+        if (Owner == null)
         {
-            if (WindowManager == null)
-                throw new Exception("ManagedWindow must be a child of WindowsPanel. Call WindowsPanel.ShowWindow(window) to show the window.");
+            Owner = parent?.GetVisualParent<ManagedWindow>();
+        }
 
-            _shown = true;
-            CaptureWindowState(WindowState);
+        SetWindowStartupLocation();
 
-            switch (WindowState)
-            {
-                case WindowState.Normal:
-                    OnNormalWindow();
-                    break;
-                case WindowState.Maximized:
-                    OnMaximizeWindow();
-                    break;
-                case WindowState.Minimized:
-                    OnMinimizeWindow();
-                    break;
-                case WindowState.FullScreen:
-                    OnFullscreenWindow();
-                    break;
-            }
+        // dialogWrap.HadFocusOn = focusedElement;
+        // _dialogs.Push(popupHost);
 
-            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+        CaptureWindowState(WindowState);
 
-            OnOpened(EventArgs.Empty);
+        switch (WindowState)
+        {
+            case WindowState.Normal:
+                OnNormalWindow();
+                break;
+            case WindowState.Maximized:
+                OnMaximizeWindow();
+                break;
+            case WindowState.Minimized:
+                OnMinimizeWindow();
+                break;
+            case WindowState.FullScreen:
+                OnFullscreenWindow();
+                break;
+        }
 
-            if (ShowActivated)
-            {
-                Activate();
-            }
+        RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+        OnOpened(EventArgs.Empty);
+
+        if (ShowActivated)
+        {
+            Activate();
         }
     }
 
@@ -672,7 +687,7 @@ public class ManagedWindow : ContentControl
     /// <returns>
     /// A task that can be used to track the lifetime of the dialog.
     /// </returns>
-    public Task ShowDialog(ManagedWindow owner)
+    public Task ShowDialog(ManagedWindow? owner = null)
     {
         return ShowDialog<object>(owner);
     }
@@ -687,29 +702,47 @@ public class ManagedWindow : ContentControl
     /// <returns>.
     /// A task that can be used to retrieve the result of the dialog when it closes.
     /// </returns>
-    public Task<TResult> ShowDialog<TResult>(ManagedWindow owner)
+    public Task<TResult> ShowDialog<TResult>(ManagedWindow? owner = null)
     {
         if (ModalDialog != null)
             throw new NotSupportedException("Already showing a modal dialog for this window");
 
+
+        IInputElement ownerFocus = null;
+        IBrush originalBackground = this.OverlayLayer.Background;
         if (owner == null)
         {
-            throw new ArgumentNullException(nameof(owner));
+            this.OverlayLayer.Classes.Add("hasdialog");
         }
-
-        this.Owner = owner;
-
-        owner.ModalDialog = this;
+        else
+        {
+            // we have an owner
+            var topLevel = TopLevel.GetTopLevel(owner);
+            ownerFocus = topLevel.FocusManager!.GetFocusedElement();
+            owner.ModalDialog = this;
+        }
 
         var result = new TaskCompletionSource<TResult>();
 
         this.Closed += (sender, e) =>
         {
-            this.ModalDialog = null;
+            // when dialog closes change focus back to owner.
+            if (owner != null)
+            {
+                owner.ModalDialog = null;
+                owner.Activate();
+                if (ownerFocus != null)
+                    ownerFocus.Focus();
+            }
+            else
+            {
+                this.OverlayLayer.Classes.Remove("hasdialog");
+            }
+
             result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
         };
 
-        owner.WindowManager.AddWindow(this);
+        this.Show(owner);
 
         return result.Task;
     }
@@ -771,6 +804,7 @@ public class ManagedWindow : ContentControl
         Owner = null;
         OnClosed(new EventArgs());
         RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
+        this.Hide();
     }
 
     private bool ShouldCancelClose(WindowClosingEventArgs args)
@@ -1160,9 +1194,43 @@ public class ManagedWindow : ContentControl
             classes.Add(":noborder");
     }
 
+
     public void BringToTop()
     {
-        WindowManager.BringToTop(this);
+        Debug.WriteLine($"====== BringToTop: {this.Title}");
+        foreach (var win in GetWindows().Where(win => win != this && win.WindowState == WindowState.Minimized))
+        {
+            win.ZIndex = 0;
+        }
+
+        var windows = GetWindows().Where(win => win != this && win.WindowState != WindowState.Minimized).OrderBy(win => win.ZIndex);
+        int i = 1;
+        foreach (var win in windows)
+        {
+            win.ZIndex = i++;
+            if (win.Topmost)
+                win.ZIndex += 100;
+        }
+        if (Owner != null)
+        {
+            Stack<ManagedWindow> owners = new Stack<ManagedWindow>();
+            var owner = Owner;
+            do
+            {
+                owners.Push(owner);
+            } while ((owner = owner.Owner) != null);
+
+            while (owners.Count > 0)
+            {
+                var ownerWindow = owners.Pop();
+                ownerWindow.ZIndex = i++;
+            }
+        }
+        this.ZIndex = i++;
+        foreach (var window in GetWindows())
+        {
+            Debug.WriteLine($"{window.Title} [{window.ZIndex}]");
+        }
     }
 
     void SetupResize(Border? border)
@@ -1180,7 +1248,6 @@ public class ManagedWindow : ContentControl
         {
             if (ModalDialog != null)
                 return;
-
             if (!IsActive)
                 Activate();
 
@@ -1291,11 +1358,8 @@ public class ManagedWindow : ContentControl
                 }
                 else
                 {
-                    if (ModalDialog == null)
-                    {
-                        var edgeTemp = GetEdge(border, position);
-                        border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
-                    }
+                    var edgeTemp = GetEdge(border, position);
+                    border.Cursor = new Cursor(GetCursorForEdge(edgeTemp));
                 }
             }
         };
@@ -1386,5 +1450,78 @@ public class ManagedWindow : ContentControl
     {
         WindowState = WindowState.Normal;
     }
+
+    private void SetWindowStartupLocation()
+    {
+        var startupLocation = GetEffectiveWindowStartupLocation();
+
+        var screenSize = new PixelRect(0, 0, (int)_overlayLayer.Bounds.Width, (int)_overlayLayer.Bounds.Height);
+
+        PixelRect size;
+        switch (this.SizeToContent)
+        {
+            case SizeToContent.Manual:
+                size = new PixelRect(0, 0,
+                                     (int)(Double.IsNaN(this.Width) ? this.DesiredSize.Width : this.Width),
+                                     (int)(Double.IsNaN(this.Height) ? this.DesiredSize.Height : this.Height));
+                break;
+            case SizeToContent.WidthAndHeight:
+                size = new PixelRect(0, 0, (int)this.DesiredSize.Width, (int)this.DesiredSize.Height);
+                break;
+
+            case SizeToContent.Width:
+                size = new PixelRect(0, 0, (int)this.DesiredSize.Width, (int)this.Height);
+                break;
+            case SizeToContent.Height:
+                size = new PixelRect(0, 0, (int)this.Width, (int)this.DesiredSize.Height);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        if (startupLocation == WindowStartupLocation.CenterOwner)
+        {
+            if (this.Owner != null)
+            {
+                var ownerRect = new PixelRect(
+                    this.Owner.Position,
+                    new PixelSize((int)this.Owner.Bounds.Width, (int)this.Owner.Bounds.Height));
+                var childRect = ownerRect.CenterRect(size);
+                this.Position = childRect.Position;
+                return;
+            }
+            else
+            {
+                var childRect = screenSize.CenterRect(size);
+                this.Position = childRect.Position;
+            }
+        }
+        else if (startupLocation == WindowStartupLocation.CenterScreen)
+        {
+            var childRect = screenSize.CenterRect(size);
+            this.Position = childRect.Position;
+        }
+
+    }
+
+    private WindowStartupLocation GetEffectiveWindowStartupLocation()
+    {
+        if (this.WindowStartupLocation == WindowStartupLocation.CenterOwner &&
+            (this.Owner is null ||
+             (this.Owner != null && this.Owner.WindowState == WindowState.Minimized)))
+        {
+            // If startup location is CenterOwner, but owner is null or minimized then fall back
+            // to CenterScreen. This behavior is consistent with WPF.
+            return WindowStartupLocation.CenterScreen;
+        }
+
+        return this.WindowStartupLocation;
+    }
+
+    private IEnumerable<ManagedWindow> GetWindows()
+    {
+        return _overlayLayer.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
+    }
+
 
 }

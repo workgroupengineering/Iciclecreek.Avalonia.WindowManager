@@ -20,10 +20,12 @@
     <StackPanel Orientation="Horizontal" >
       <Button
           HorizontalAlignment="Center"
+          IsDefault="True"
           Click="OnOK">OK</Button>
 
       <Button
           HorizontalAlignment="Center"
+          IsCancel="True"
           Click="OnCancel">Cancel</Button>
     </StackPanel>
   </StackPanel>

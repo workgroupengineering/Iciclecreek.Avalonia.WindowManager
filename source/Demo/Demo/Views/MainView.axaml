@@ -6,31 +6,29 @@
                        xmlns:vm="using:Demo.ViewModels"
                        x:Class="Demo.Views.MainView"
                        x:DataType="vm:MainViewModel">
-  <wm:WindowsPanel Name="WindowManager" Background="AliceBlue" >
-    <StackPanel>
-      <StackPanel Orientation="Horizontal">
-        <Label>SizeToContent for new Window</Label>
-        <ComboBox Name="SizeToContentCombo" SelectedIndex="3">
-          <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
-          <ComboBoxItem Tag="Width">Width</ComboBoxItem>
-          <ComboBoxItem Tag="Height">Height</ComboBoxItem>
-          <ComboBoxItem Tag="WidthAndHeight">WidthAndHeight</ComboBoxItem>
-        </ComboBox>
-      </StackPanel>
-      <StackPanel Orientation="Horizontal">
-        <Label>StartupLocation for new Window</Label>
-        <ComboBox Name="StartupLocationCombo" SelectedIndex="0">
-          <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
-          <ComboBoxItem Tag="CenterOwner">CenterOwner</ComboBoxItem>
-          <ComboBoxItem Tag="CenterScreen">CenterScreen</ComboBoxItem>
-        </ComboBox>
-      </StackPanel>
-      <Button Content="Add a window" Click="OnAddWindowClick" />
-      <StackPanel Orientation="Horizontal">
-        <Button HorizontalAlignment="Left" Click="OnClick" Content="Increment"/>
-        <TextBlock Text="Counter:" />
-        <TextBlock Text="{Binding Counter}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-      </StackPanel>
+  <StackPanel Background="AliceBlue">
+    <StackPanel Orientation="Horizontal">
+      <Label>SizeToContent for new Window</Label>
+      <ComboBox Name="SizeToContentCombo" SelectedIndex="3">
+        <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
+        <ComboBoxItem Tag="Width">Width</ComboBoxItem>
+        <ComboBoxItem Tag="Height">Height</ComboBoxItem>
+        <ComboBoxItem Tag="WidthAndHeight">WidthAndHeight</ComboBoxItem>
+      </ComboBox>
     </StackPanel>
-  </wm:WindowsPanel>
+    <StackPanel Orientation="Horizontal">
+      <Label>StartupLocation for new Window</Label>
+      <ComboBox Name="StartupLocationCombo" SelectedIndex="0">
+        <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
+        <ComboBoxItem Tag="CenterOwner">CenterOwner</ComboBoxItem>
+        <ComboBoxItem Tag="CenterScreen">CenterScreen</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+    <Button Content="Add a window" Click="OnAddWindowClick" />
+    <StackPanel Orientation="Horizontal">
+      <Button HorizontalAlignment="Left" Click="OnClick" Content="Increment"/>
+      <TextBlock Text="Counter:" />
+      <TextBlock Text="{Binding Counter}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </StackPanel>
+  </StackPanel>
 </Grid>
