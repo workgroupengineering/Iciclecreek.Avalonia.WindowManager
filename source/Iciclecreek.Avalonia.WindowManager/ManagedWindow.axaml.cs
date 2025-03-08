@@ -1042,7 +1042,7 @@ public class ManagedWindow : OverlayPopupHost
         _windowBorder = e.NameScope.Find<Border>(PART_WindowBorder);
         SetupResize(_windowBorder);
 
-        this.Tapped += ManagedWindow_Tapped;
+        this.Tapped += OnTapped;
         SetPsuedoClasses();
     }
 
@@ -1065,12 +1065,13 @@ public class ManagedWindow : OverlayPopupHost
         }
     }
 
-    private void ManagedWindow_Tapped(object? sender, TappedEventArgs e)
+    private void OnTapped(object? sender, TappedEventArgs e)
     {
         if (!IsActive)
         {
             Activate();
         }
+        e.Handled = true;
     }
 
     private void SetupDragging(Control? partTitleBar)
