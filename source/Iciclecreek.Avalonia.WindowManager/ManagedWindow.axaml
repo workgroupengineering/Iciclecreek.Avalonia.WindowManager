@@ -51,11 +51,13 @@
                   BoxShadow="{TemplateBinding BoxShadow}"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid RowDefinitions="Auto *"
+                  KeyboardNavigation.TabNavigation="Cycle"
                   Background="{TemplateBinding Background}">
 
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="Auto * Auto"
+                    KeyboardNavigation.TabNavigation="Continue"
                     Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}"
                     IsVisible="{TemplateBinding SystemDecorations, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static SystemDecorations.Full}}">
                 <Grid.Styles>
@@ -139,23 +141,24 @@
               </Grid>
 
               <!-- window content-->
-                <ContentPresenter Grid.Row="1"
-                                ClipToBounds="True"
+              <ContentPresenter Grid.Row="1"
                                 Name="PART_ContentPresenter"
+                                ClipToBounds="True"
+                                KeyboardNavigation.TabNavigation="Continue"                                
                                 Margin="{TemplateBinding Margin}"
                                 Padding="{TemplateBinding Padding}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}" />
 
-                <Panel Name="PART_ModalOverlay"
-                       Grid.RowSpan="2"
-                       IsVisible="false">
-                  <Panel.Background>
-                    <console:OnPlatformExtension x:TypeArguments="IBrush"
-                                                   Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
-                                                   Console="{DynamicResource ThemeShadeBrush}"/>
-                  </Panel.Background>
-                </Panel>
+              <Panel Name="PART_ModalOverlay"
+                     Grid.RowSpan="2"
+                     IsVisible="false">
+                <Panel.Background>
+                  <console:OnPlatformExtension x:TypeArguments="IBrush"
+                                                 Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                                                 Console="{DynamicResource ThemeShadeBrush}"/>
+                </Panel.Background>
+              </Panel>
             </Grid>
           </Border>
 

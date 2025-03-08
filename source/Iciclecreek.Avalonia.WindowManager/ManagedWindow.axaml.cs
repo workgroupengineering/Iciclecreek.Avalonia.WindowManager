@@ -20,8 +20,6 @@ using Avalonia.Animation;
 using Avalonia.VisualTree;
 using Avalonia.Metadata;
 using Avalonia.Controls.ApplicationLifetimes;
-using System.Diagnostics;
-using Consolonia.Controls.Brushes;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
@@ -155,8 +153,6 @@ public class ManagedWindow : OverlayPopupHost
 
     static ManagedWindow()
     {
-        KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<ManagedWindow>(KeyboardNavigationMode.Cycle);
-
         //AffectsRender<ManagedWindow>(
         //    BackgroundProperty,
         //    BorderBrushProperty,
@@ -605,7 +601,7 @@ public class ManagedWindow : OverlayPopupHost
             BringToTop();
             SetPsuedoClasses();
 
-            this.Focus();
+            // this.Focus();
         }
     }
 
@@ -1015,7 +1011,7 @@ public class ManagedWindow : OverlayPopupHost
         _titleBar = e.NameScope.Find<Control>(PART_TitleBar);
         if (_titleBar != null)
         {
-            SetupTitleBar(_titleBar);
+            SetupDragging(_titleBar);
         }
 
         var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
@@ -1077,9 +1073,10 @@ public class ManagedWindow : OverlayPopupHost
         }
     }
 
-    private void SetupTitleBar(Control? partTitleBar)
+    private void SetupDragging(Control? partTitleBar)
     {
         if (partTitleBar == null)
+            // no title bar means no draggable behavior needed.
             return;
 
         PixelPoint? start = null;
@@ -1087,9 +1084,6 @@ public class ManagedWindow : OverlayPopupHost
 
         partTitleBar.PointerPressed += (object? sender, PointerPressedEventArgs e) =>
         {
-            if (!IsActive)
-                Activate();
-
             if (WindowState != WindowState.Maximized)
             {
                 var properties = e.GetCurrentPoint(this).Properties;
@@ -1100,6 +1094,9 @@ public class ManagedWindow : OverlayPopupHost
                     SetPsuedoClasses(true);
                 }
             }
+
+            if (!IsActive)
+                Activate();
         };
 
         partTitleBar.PointerReleased += (object? sender, PointerReleasedEventArgs e) =>
@@ -1197,7 +1194,6 @@ public class ManagedWindow : OverlayPopupHost
 
     public void BringToTop()
     {
-        Debug.WriteLine($"====== BringToTop: {this.Title}");
         foreach (var win in GetWindows().Where(win => win != this && win.WindowState == WindowState.Minimized))
         {
             win.ZIndex = 0;
@@ -1209,8 +1205,9 @@ public class ManagedWindow : OverlayPopupHost
         {
             win.ZIndex = i++;
             if (win.Topmost)
-                win.ZIndex += 100;
+                win.ZIndex = GetWindows().Count() + 10;
         }
+
         if (Owner != null)
         {
             Stack<ManagedWindow> owners = new Stack<ManagedWindow>();
@@ -1227,10 +1224,17 @@ public class ManagedWindow : OverlayPopupHost
             }
         }
         this.ZIndex = i++;
-        foreach (var window in GetWindows())
-        {
-            Debug.WriteLine($"{window.Title} [{window.ZIndex}]");
-        }
+        //var windows = GetWindows();
+        //if (windows.Count() > 1)
+        //{
+        //    var currentIndex = this.OverlayLayer.Children.IndexOf(this);
+        //    var lastIndex = this.OverlayLayer.Children.IndexOf(GetWindows().Last());
+        //    if (currentIndex < lastIndex)
+        //    {
+        //        this.OverlayLayer.Children.RemoveAt(currentIndex);
+        //        this.OverlayLayer.Children.Add(this);
+        //    }
+        //}
     }
 
     void SetupResize(Border? border)
@@ -1248,6 +1252,7 @@ public class ManagedWindow : OverlayPopupHost
         {
             if (ModalDialog != null)
                 return;
+
             if (!IsActive)
                 Activate();
 

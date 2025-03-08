@@ -17,6 +17,12 @@
 
     <Button  HorizontalAlignment="Left" Click="OnColor">Background</Button>
 
+    <ComboBox>
+      <ComboBoxItem Content="Item 1"/>
+      <ComboBoxItem Content="Item 2"/>
+      <ComboBoxItem Content="Item 3"/>
+    </ComboBox>
+    
     <StackPanel Orientation="Horizontal" >
       <Button
           HorizontalAlignment="Center"
