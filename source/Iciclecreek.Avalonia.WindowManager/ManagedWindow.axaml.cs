@@ -154,14 +154,12 @@ public class ManagedWindow : OverlayPopupHost
 
     static ManagedWindow()
     {
-        //AffectsRender<ManagedWindow>(
-        //    SystemDecorationsProperty,
-        //    SizeToContentProperty,
-        //    WindowStartupLocationProperty,
-        //    WindowStateProperty,
-        //    TopmostProperty,
-        //    IsActiveProperty);
-        // AffectsMeasure<ManagedWindow>(SystemDecorationsProperty);
+        AffectsRender<ManagedWindow>(
+            SystemDecorationsProperty,
+            WindowStateProperty);
+        AffectsMeasure<ManagedWindow>(
+            SystemDecorationsProperty,
+            WindowStateProperty);
         //var theme = new ManagedWindowControlTheme() { TargetType = typeof(ManagedWindow) };
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
@@ -174,6 +172,8 @@ public class ManagedWindow : OverlayPopupHost
     public ManagedWindow(OverlayLayer layer)
         : base(layer)
     {
+        SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
+
         _overlayLayer = layer;
     }
 
@@ -654,9 +654,6 @@ public class ManagedWindow : OverlayPopupHost
 
         switch (WindowState)
         {
-            case WindowState.Normal:
-                OnNormalWindow();
-                break;
             case WindowState.Maximized:
                 OnMaximizeWindow();
                 break;

@@ -7,15 +7,15 @@
         x:Class="Demo.MyWindow"
         x:DataType="local:MyWindowViewModel"
         Title="{Binding Title}">
-  <StackPanel>
-    <StackPanel Orientation="Horizontal" >
+  <StackPanel Margin="1">
+    <StackPanel Orientation="Horizontal" Spacing="1">
       <Button
           HorizontalAlignment="Left"
           Click="OnIncrement">Increment</Button>
       <TextBlock Text="{Binding Counter}"/>
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal" >
+    <StackPanel Orientation="Horizontal" Spacing="1">
       <Label>SizeToContent for Dialog</Label>
       <ComboBox Name="SizeToContentCombo" SelectedIndex="3">
         <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
@@ -25,7 +25,7 @@
       </ComboBox>
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal" >
+    <StackPanel Orientation="Horizontal" Spacing="1">
       <Label>StartupLocation for Dialog</Label>
       <ComboBox Name="StartupLocationCombo" SelectedIndex="1">
         <ComboBoxItem Tag="Manual">Manual</ComboBoxItem>
@@ -34,12 +34,14 @@
       </ComboBox>
     </StackPanel>
 
-    <Button Click="OnShowDialog" HorizontalAlignment="Left">Show dialog</Button>
-    <TextBlock Text="{Binding Text}"/>
-
+    <StackPanel Orientation="Horizontal" Spacing="1">
+      <Button Click="OnShowDialog" HorizontalAlignment="Left">Show dialog</Button>
+      <TextBlock Text="DialogResult:"/>
+      <TextBlock Text="{Binding Text}"/>
+    </StackPanel>
     <Button  HorizontalAlignment="Left" Click="OnColor">Background</Button>
 
-    <StackPanel Orientation="Horizontal" >
+    <StackPanel Orientation="Horizontal" Spacing="1">
       <Label>SystemDecorations for this window</Label>
       <ComboBox Name="SystemDecorationCombo" SelectedIndex="2" SelectionChanged="OnSystemDecoration_SelectionChanged">
         <ComboBoxItem Tag="None">None</ComboBoxItem>

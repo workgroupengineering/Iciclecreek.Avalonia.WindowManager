@@ -49,13 +49,11 @@
                   BoxShadow="{TemplateBinding BoxShadow}"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid RowDefinitions="Auto *"
-                  KeyboardNavigation.TabNavigation="Cycle"
                   Background="{TemplateBinding Background}">
 
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="Auto * Auto"
-                    KeyboardNavigation.TabNavigation="Continue"
                     Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
                 <Grid.Styles>
                   <Style Selector="Button">

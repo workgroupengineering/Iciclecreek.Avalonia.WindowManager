@@ -9,21 +9,15 @@
         x:DataType="local:MyDialogViewModel"
         ShowActivated="True"
         Title="{Binding Title}">
-  <StackPanel >
-    <StackPanel Orientation="Horizontal" >
+  <StackPanel Spacing="1" Margin="1">
+    <StackPanel Orientation="Horizontal"  Spacing="1">
       <Label>Enter some text:</Label>
-      <TextBox Text="{Binding Text}"/>
+      <TextBox Text="{Binding Text}" MinWidth="10"/>
     </StackPanel>
 
-    <Button  HorizontalAlignment="Left" Click="OnColor">Background</Button>
+    <StackPanel Orientation="Horizontal" Spacing="1">
+      <Button  HorizontalAlignment="Left" Click="OnColor">Background</Button>
 
-    <ComboBox>
-      <ComboBoxItem Content="Item 1"/>
-      <ComboBoxItem Content="Item 2"/>
-      <ComboBoxItem Content="Item 3"/>
-    </ComboBox>
-    
-    <StackPanel Orientation="Horizontal" >
       <Button
           HorizontalAlignment="Center"
           IsDefault="True"
