@@ -37,8 +37,6 @@
                             Console="{StaticResource NullBoxShadows}"/>
     </Setter>
     <Setter Property="Padding" Value="0" />
-    <Setter Property="ZIndex"
-            Value="10000" />
     <Setter Property="SystemDecorations"
             Value="Full"/>
     <Setter Property="Template">
@@ -58,8 +56,7 @@
               <Grid Name="PART_TitleBar"
                     ColumnDefinitions="Auto * Auto"
                     KeyboardNavigation.TabNavigation="Continue"
-                    Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}"
-                    IsVisible="{TemplateBinding SystemDecorations, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static SystemDecorations.Full}}">
+                    Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
                 <Grid.Styles>
                   <Style Selector="Button">
                     <Setter Property="Background" Value="Transparent"/>
@@ -232,6 +229,12 @@
     <Style Selector="^:noborder /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="{StaticResource NoThickness}}"/>
     </Style>
+
+    <!--no titlebar -->
+    <Style Selector="^:notitle /template/ Grid#PART_TitleBar">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    
     <!-- dialog state styles -->
 
     <!-- window is a dialog -->

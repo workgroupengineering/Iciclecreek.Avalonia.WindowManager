@@ -65,7 +65,7 @@ public partial class MyWindow : ManagedWindow
         };
         dialog.ViewModel.Text = ViewModel.Text;
 
-        dialog.ApplySettings(this.Bounds);
+        dialog.SizeToBounds(this.Bounds);
 
         var result = await dialog.ShowDialog<string?>(this);
         if (result != null)

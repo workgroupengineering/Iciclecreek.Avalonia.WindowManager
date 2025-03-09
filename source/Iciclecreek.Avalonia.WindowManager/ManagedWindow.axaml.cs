@@ -31,7 +31,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
-[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder")]
+[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder", ":notitle")]
 public class ManagedWindow : OverlayPopupHost
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
@@ -50,6 +50,7 @@ public class ManagedWindow : OverlayPopupHost
     private ContentPresenter? _content;
     private Border? _windowBorder;
     private ManagedWindow? _owner;
+    private bool _loaded;
     private bool _isActive;
     private object? _dialogResult;
     private Control? _title;
@@ -154,12 +155,13 @@ public class ManagedWindow : OverlayPopupHost
     static ManagedWindow()
     {
         //AffectsRender<ManagedWindow>(
-        //    BackgroundProperty,
-        //    BorderBrushProperty,
-        //    BorderTknessProperty,
-        //    CornerRadiusProperty,
-        //    BoxShadowProperty);
-        //AffectsMeasure<ManagedWindow>(BorderThicknessProperty);
+        //    SystemDecorationsProperty,
+        //    SizeToContentProperty,
+        //    WindowStartupLocationProperty,
+        //    WindowStateProperty,
+        //    TopmostProperty,
+        //    IsActiveProperty);
+        // AffectsMeasure<ManagedWindow>(SystemDecorationsProperty);
         //var theme = new ManagedWindowControlTheme() { TargetType = typeof(ManagedWindow) };
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
@@ -450,26 +452,29 @@ public class ManagedWindow : OverlayPopupHost
         switch (change.Property.Name)
         {
             case nameof(WindowState):
-                if (change.OldValue is WindowState oldState)
+                if (_loaded)
                 {
-                    CaptureWindowState(oldState);
-
-                    switch (WindowState)
+                    if (change.OldValue is WindowState oldState)
                     {
-                        case WindowState.FullScreen:
-                            OnFullscreenWindow();
-                            break;
-                        case WindowState.Maximized:
-                            OnMaximizeWindow();
-                            break;
-                        case WindowState.Minimized:
-                            OnMinimizeWindow();
-                            break;
-                        case WindowState.Normal:
-                            OnNormalWindow();
-                            break;
-                        default:
-                            break;
+                        CaptureWindowState(oldState);
+
+                        switch (WindowState)
+                        {
+                            case WindowState.FullScreen:
+                                OnFullscreenWindow();
+                                break;
+                            case WindowState.Maximized:
+                                OnMaximizeWindow();
+                                break;
+                            case WindowState.Minimized:
+                                OnMinimizeWindow();
+                                break;
+                            case WindowState.Normal:
+                                OnNormalWindow();
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
                 break;
@@ -539,7 +544,7 @@ public class ManagedWindow : OverlayPopupHost
 
     protected virtual async void OnFullscreenWindow()
     {
-        throw new NotSupportedException();
+        OnMaximizeWindow();
     }
 
     protected virtual async void OnNormalWindow()
@@ -644,7 +649,8 @@ public class ManagedWindow : OverlayPopupHost
         // dialogWrap.HadFocusOn = focusedElement;
         // _dialogs.Push(popupHost);
 
-        CaptureWindowState(WindowState);
+        // we capture window state for normal before we maximize/minimize/etc.
+        CaptureWindowState(WindowState.Normal);
 
         switch (WindowState)
         {
@@ -1041,7 +1047,26 @@ public class ManagedWindow : OverlayPopupHost
         SetupResize(_windowBorder);
 
         this.Tapped += OnTapped;
-        SetPsuedoClasses();
+
+        //switch (WindowState)
+        //{
+        //    case WindowState.FullScreen:
+        //        OnFullscreenWindow();
+        //        break;
+        //    case WindowState.Maximized:
+        //        OnMaximizeWindow();
+        //        break;
+        //    case WindowState.Minimized:
+        //        OnMinimizeWindow();
+        //        break;
+        //    case WindowState.Normal:
+        //        OnNormalWindow();
+        //        break;
+        //    default:
+        //        break;
+        //}
+
+        _loaded = true;
     }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
@@ -1138,30 +1163,30 @@ public class ManagedWindow : OverlayPopupHost
     private void SetPsuedoClasses(bool isDragging = false)
     {
         var classes = ((IPseudoClasses)this.Classes);
-        if (isDragging)
-            classes.Add(":dragging");
-        else
-            classes.Remove(":dragging");
-
-        if (IsActive)
-            classes.Add(":active");
-        else
-            classes.Remove(":active");
-
-        if (ModalDialog != null)
-            classes.Add(":hasdialog");
-        else
-            classes.Remove(":hasdialog");
-
-        if (CanResize)
-            classes.Remove(":noresize");
-        else
-            classes.Add(":noresize");
+        classes.Remove(":active");
+        classes.Remove(":dragging");
 
         classes.Remove(":minimized");
         classes.Remove(":normal");
         classes.Remove(":maximized");
-        classes.Remove(":fullscreen");
+
+        classes.Remove(":hasdialog");
+        classes.Remove(":noborder");
+        classes.Remove(":notitle");
+        classes.Remove(":noresize");
+
+        if (isDragging)
+            classes.Add(":dragging");
+
+        if (IsActive)
+            classes.Add(":active");
+
+        if (ModalDialog != null)
+            classes.Add(":hasdialog");
+
+        if (!CanResize)
+            classes.Add(":noresize");
+
         switch (WindowState)
         {
             case WindowState.Minimized:
@@ -1169,24 +1194,30 @@ public class ManagedWindow : OverlayPopupHost
                 break;
             case WindowState.Maximized:
                 classes.Add(":maximized");
-                Canvas.SetLeft(this, 0);
-                Canvas.SetTop(this, 0);
                 break;
             case WindowState.Normal:
                 classes.Add(":normal");
-                Canvas.SetLeft(this, Position.X);
-                Canvas.SetTop(this, Position.Y);
                 break;
             case WindowState.FullScreen:
-                classes.Add(":fullscreen");
-                Canvas.SetLeft(this, 0);
-                Canvas.SetTop(this, 0);
+                classes.Add(":maximized");
+                classes.Add(":noborder");
+                classes.Add(":notitle");
                 break;
         }
 
-        classes.Remove(":noborder");
-        if (SystemDecorations == SystemDecorations.None)
-            classes.Add(":noborder");
+        switch (SystemDecorations)
+        {
+            case SystemDecorations.None:
+                classes.Add(":noborder");
+                classes.Add(":notitle");
+                break;
+            case SystemDecorations.BorderOnly:
+                classes.Add(":notitle");
+                break;
+            case SystemDecorations.Full:
+            default:
+                break;
+        }
     }
 
 

@@ -7,7 +7,7 @@ namespace Demo
 {
     internal static class Utils
     {
-        public static void ApplySettings(this ManagedWindow window, Rect rect)
+        public static void SizeToBounds(this ManagedWindow window, Rect rect)
         {
             var minWidth = (int)rect.Width / 4;
             var minHeight = (int)rect.Height / 4;
