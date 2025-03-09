@@ -1000,8 +1000,6 @@ public class ManagedWindow : OverlayPopupHost
     {
         base.OnApplyTemplate(e);
 
-        this.GotFocus += (s, e) => Activate();
-        this.LostFocus += (s, e) => Deactivate();
         this.KeyDown += OnKeyDown;
 
         //if (this.Theme == null)
@@ -1071,7 +1069,6 @@ public class ManagedWindow : OverlayPopupHost
         {
             Activate();
         }
-        e.Handled = true;
     }
 
     private void SetupDragging(Control? partTitleBar)
@@ -1197,18 +1194,19 @@ public class ManagedWindow : OverlayPopupHost
     {
         foreach (var win in GetWindows().Where(win => win != this && win.WindowState == WindowState.Minimized))
         {
-            win.ZIndex = 0;
+            win.ZIndex = -10000;
         }
 
-        var windows = GetWindows().Where(win => win != this && win.WindowState != WindowState.Minimized).OrderBy(win => win.ZIndex);
-        int i = 1;
-        foreach (var win in windows)
+        var windows = GetWindows().ToList();
+        int i = 0 - windows.Count();
+        foreach (var win in windows.Where(win => win != this && win.WindowState != WindowState.Minimized))
         {
             win.ZIndex = i++;
             if (win.Topmost)
-                win.ZIndex = GetWindows().Count() + 10;
+                win.ZIndex = 0;
         }
 
+        // bring all parent windows to top with the active one.
         if (Owner != null)
         {
             Stack<ManagedWindow> owners = new Stack<ManagedWindow>();
@@ -1225,17 +1223,6 @@ public class ManagedWindow : OverlayPopupHost
             }
         }
         this.ZIndex = i++;
-        //var windows = GetWindows();
-        //if (windows.Count() > 1)
-        //{
-        //    var currentIndex = this.OverlayLayer.Children.IndexOf(this);
-        //    var lastIndex = this.OverlayLayer.Children.IndexOf(GetWindows().Last());
-        //    if (currentIndex < lastIndex)
-        //    {
-        //        this.OverlayLayer.Children.RemoveAt(currentIndex);
-        //        this.OverlayLayer.Children.Add(this);
-        //    }
-        //}
     }
 
     void SetupResize(Border? border)
