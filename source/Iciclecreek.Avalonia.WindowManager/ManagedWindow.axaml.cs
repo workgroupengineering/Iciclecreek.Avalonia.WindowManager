@@ -710,7 +710,6 @@ public class ManagedWindow : OverlayPopupHost
 
 
         IInputElement ownerFocus = null;
-        IBrush originalBackground = this.OverlayLayer.Background;
         if (owner == null)
         {
             this.OverlayLayer.Classes.Add("hasdialog");
