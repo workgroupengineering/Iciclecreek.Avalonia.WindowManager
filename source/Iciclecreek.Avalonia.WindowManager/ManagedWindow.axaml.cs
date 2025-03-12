@@ -56,7 +56,6 @@ public class ManagedWindow : OverlayPopupHost
     private Control? _title;
     private Control? _titleBar;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
-    private OverlayLayer? _overlayLayer;
 
     /// <summary>
     /// Defines the <see cref="IsActive"/> property.
@@ -164,6 +163,11 @@ public class ManagedWindow : OverlayPopupHost
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
 
+    public ManagedWindow()
+        : this(GetOverlayLayer(null))
+    {
+    }
+
     public ManagedWindow(Visual? visual = null)
         : this(GetOverlayLayer(visual))
     {
@@ -173,8 +177,6 @@ public class ManagedWindow : OverlayPopupHost
         : base(layer)
     {
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
-
-        _overlayLayer = layer;
     }
 
     private static OverlayLayer GetOverlayLayer(Visual? visual)
@@ -383,7 +385,7 @@ public class ManagedWindow : OverlayPopupHost
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public OverlayLayer OverlayLayer => _overlayLayer!;
+    public OverlayLayer OverlayLayer => GetOverlayLayer(this);
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
@@ -510,7 +512,7 @@ public class ManagedWindow : OverlayPopupHost
             case WindowState.Maximized:
                 if (_normalRect.Width == 0 && _normalRect.Height == 0)
                 {
-                    _normalRect = new Rect((int)2, (int)2, (int)_overlayLayer.Bounds.Width - 4, (int)_overlayLayer.Bounds.Height - 4);
+                    _normalRect = new Rect((int)2, (int)2, (int)OverlayLayer.Bounds.Width - 4, (int)OverlayLayer.Bounds.Height - 4);
                     if (_windowBorder != null)
                     {
                         _normalBoxShadow = _windowBorder.BoxShadow!;
@@ -530,11 +532,11 @@ public class ManagedWindow : OverlayPopupHost
         SetPsuedoClasses();
 
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
-                              new Rect(0, 0, _overlayLayer.Bounds.Width, _overlayLayer.Bounds.Height));
+                              new Rect(0, 0, OverlayLayer.Bounds.Width, OverlayLayer.Bounds.Height));
 
         this.Position = new PixelPoint((ushort)0, (ushort)0);
-        this.Width = _overlayLayer.Bounds.Width;
-        this.Height = _overlayLayer.Bounds.Height;
+        this.Width = OverlayLayer.Bounds.Width;
+        this.Height = OverlayLayer.Bounds.Height;
         if (_windowBorder != null)
         {
             _windowBorder.Margin = new Thickness(0);
@@ -1476,7 +1478,7 @@ public class ManagedWindow : OverlayPopupHost
     {
         var startupLocation = GetEffectiveWindowStartupLocation();
 
-        var screenSize = new PixelRect(0, 0, (int)_overlayLayer.Bounds.Width, (int)_overlayLayer.Bounds.Height);
+        var screenSize = new PixelRect(0, 0, (int)OverlayLayer.Bounds.Width, (int)OverlayLayer.Bounds.Height);
 
         PixelRect size;
         switch (this.SizeToContent)
@@ -1541,8 +1543,8 @@ public class ManagedWindow : OverlayPopupHost
 
     private IEnumerable<ManagedWindow> GetWindows()
     {
-        return _overlayLayer.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
+        if (OverlayLayer == null)
+            return Array.Empty<ManagedWindow>();
+        return OverlayLayer.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
     }
-
-
 }
