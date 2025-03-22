@@ -176,6 +176,7 @@ public class ManagedWindow : OverlayPopupHost
     public ManagedWindow(OverlayLayer layer)
         : base(layer)
     {
+        OverlayLayer = layer;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
     }
 
@@ -385,7 +386,7 @@ public class ManagedWindow : OverlayPopupHost
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public OverlayLayer OverlayLayer => GetOverlayLayer(this);
+    public OverlayLayer OverlayLayer { get; init; }
 
     private ManagedWindow? _modalDialog;
     public ManagedWindow? ModalDialog
