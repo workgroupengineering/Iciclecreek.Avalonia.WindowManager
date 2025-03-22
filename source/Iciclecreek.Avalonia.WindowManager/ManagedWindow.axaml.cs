@@ -1323,8 +1323,8 @@ public class ManagedWindow : OverlayPopupHost
                 {
                     double top = Canvas.GetTop(this);
                     double left = Canvas.GetLeft(this);
-                    double width = this.Width;
-                    double height = this.Height;
+                    double width = this.Bounds.Width;
+                    double height = this.Bounds.Height;
 
                     var deltaX = (int)position.X - (int)start.Value.X;
                     var deltaY = (int)position.Y - (int)start.Value.Y;
@@ -1393,8 +1393,8 @@ public class ManagedWindow : OverlayPopupHost
             return null;
         double top = Canvas.GetTop(this);
         double left = Canvas.GetLeft(this);
-        double right = left + this.Width;
-        double bottom = top + this.Height;
+        double right = left + this.Bounds.Width;
+        double bottom = top + this.Bounds.Height;
 
         var leftEdge = start.Value.X >= left &&
                        start.Value.X < left + border.BorderThickness.Left - border.Margin.Left;
