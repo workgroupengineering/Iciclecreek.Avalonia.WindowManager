@@ -1149,8 +1149,9 @@ public class ManagedWindow : OverlayPopupHost
                     var delta = position - start.Value;
                     start = position;
                     this.Position = this.Position + delta;
-                    e.Handled = true;
                 }
+                
+                e.Handled = true;
             }
         };
 
