@@ -1119,6 +1119,8 @@ public class ManagedWindow : OverlayPopupHost
 
             if (!IsActive)
                 Activate();
+
+            e.Handled = true;
         };
 
         partTitleBar.PointerReleased += (object? sender, PointerReleasedEventArgs e) =>
@@ -1129,10 +1131,11 @@ public class ManagedWindow : OverlayPopupHost
                 {
                     SetPsuedoClasses(false);
                     start = null;
+                    e.Handled = true;
                 }
             }
         };
-
+        
         partTitleBar.PointerMoved += (object? sender, PointerEventArgs e) =>
         {
             if (WindowState != WindowState.Maximized)
@@ -1147,12 +1150,17 @@ public class ManagedWindow : OverlayPopupHost
                     start = position;
                     this.Position = this.Position + delta;
                 }
+                
+                e.Handled = true;
             }
         };
 
         partTitleBar.PointerCaptureLost += (object? sender, PointerCaptureLostEventArgs e) =>
         {
             SetPsuedoClasses(false);
+            if(start!=null)
+                e.Handled = true;
+            
             start = null;
         };
 
@@ -1448,6 +1456,8 @@ public class ManagedWindow : OverlayPopupHost
                 WindowState = WindowState.Maximized;
             else if (WindowState == WindowState.Maximized)
                 WindowState = WindowState.Normal;
+
+            e.Handled = true;
         }
     }
 
