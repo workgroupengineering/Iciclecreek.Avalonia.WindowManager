@@ -38,7 +38,7 @@
     
     <StackPanel Orientation="Horizontal" >
       <Button HorizontalAlignment="Left" Click="OnClick" Content="Increment"/>
-      <TextBlock Text="Counter:" />
+      <TextBlock Text="Counter:"  VerticalAlignment="Center" />
       <TextBlock Text="{Binding Counter}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </StackPanel>
   </StackPanel>

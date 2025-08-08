@@ -25,6 +25,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 
 [TemplatePart(PART_TitleBar, typeof(Control))]
 [TemplatePart(PART_Title, typeof(TextBlock))]
+[TemplatePart(PART_SystemButton, typeof(Button))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
 [TemplatePart(PART_RestoreButton, typeof(Button))]
@@ -37,6 +38,7 @@ public class ManagedWindow : OverlayPopupHost
     public const string PART_ContentPresenter = "PART_ContentPresenter";
     public const string PART_TitleBar = "PART_TitleBar";
     public const string PART_Title = "PART_Title";
+    public const string PART_SystemButton= "PART_SystemButton";
     public const string PART_MinimizeButton = "PART_MinimizeButton";
     public const string PART_MaximizeButton = "PART_MaximizeButton";
     public const string PART_RestoreButton = "PART_RestoreButton";

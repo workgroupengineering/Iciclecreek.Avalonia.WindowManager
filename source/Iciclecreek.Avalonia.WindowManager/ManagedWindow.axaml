@@ -53,7 +53,7 @@
 
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
-                    ColumnDefinitions="Auto * Auto"
+                    ColumnDefinitions="Auto Auto * Auto"
                     Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
                 <Grid.Styles>
                   <Style Selector="Button">
@@ -61,14 +61,27 @@
                   </Style>
                 </Grid.Styles>
 
+                <!--system button-->
+                <Button Name="PART_SystemButton"
+                        IsTabStop="True"
+                        Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
+                  <console:OnPlatform Console="≡">
+                    <console:OnPlatform.Default>
+                      <iconPacks:Codicons Kind="Menu"
+                                          Width="{StaticResource ManagedWindow_SystemIconSize}"
+                                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                    </console:OnPlatform.Default>
+                  </console:OnPlatform>
+                </Button>
+
                 <!-- Icon -->
-                <ContentPresenter Grid.Column="0"
+                <ContentPresenter Grid.Column="1"
                                   VerticalAlignment="Center"
                                   HorizontalAlignment="Center"
                                   Content="{TemplateBinding Icon}" />
                 <!-- Title -->
                 <TextBlock Name="PART_Title"
-                           Grid.Column="1"
+                           Grid.Column="2"
                            Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
                            VerticalAlignment="Center"
                            FontFamily="{TemplateBinding FontFamily}"
@@ -78,7 +91,7 @@
                            Text="{TemplateBinding Title}"/>
 
                 <!-- System Decorations (aka buttons)-->
-                <StackPanel Grid.Column="2"
+                <StackPanel Grid.Column="3"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Right">
