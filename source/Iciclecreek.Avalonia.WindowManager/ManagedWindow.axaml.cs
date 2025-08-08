@@ -49,6 +49,9 @@ public class ManagedWindow : OverlayPopupHost
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_WindowBorder = "PART_WindowBorder";
 
+    // used to track MRU windows globally
+    private static List<ManagedWindow> s_MRU = null;
+
     private PixelPoint _minimizedPosition = new PixelPoint(int.MinValue, int.MinValue);
     private Rect _normalRect;
     private BoxShadows _normalBoxShadow;
@@ -64,16 +67,13 @@ public class ManagedWindow : OverlayPopupHost
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
-
     public ReactiveCommand<Unit, Unit> RestoreCommand { get; }
-
     public ReactiveCommand<Unit, Unit> MinimizeCommand { get; }
-
     public ReactiveCommand<Unit, Unit> MaximizeCommand { get; }
-
     public ReactiveCommand<Unit, Unit> ResizeCommand { get; }
-
     public ReactiveCommand<Unit, Unit> MoveCommand { get; }
+    public ReactiveCommand<Unit, Unit> NextWindowCommand { get; }
+    public ReactiveCommand<Unit, Unit> PreviousWindowCommand { get; }
 
 
     /// <summary>
@@ -211,6 +211,36 @@ public class ManagedWindow : OverlayPopupHost
         MinimizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Minimized; },
             canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Minimized),
             outputScheduler: AvaloniaScheduler.Instance);
+
+        NextWindowCommand = ReactiveCommand.Create(() => { NextWindow(); }, outputScheduler: AvaloniaScheduler.Instance);
+
+        PreviousWindowCommand = ReactiveCommand.Create(() => { PreviousWindow(); }, outputScheduler: AvaloniaScheduler.Instance);
+    }
+
+    public void PreviousWindow()
+    {
+        var index = s_MRU.IndexOf(this);
+        if (index > 0)
+        {
+            s_MRU[index - 1].Activate();
+        }
+        else if (s_MRU.Count > 0)
+        {
+            s_MRU.Last().Activate();
+        }
+    }
+
+    public void NextWindow()
+    {
+        var index = s_MRU.IndexOf(this);
+        if (index >= 0 && index < s_MRU.Count - 1)
+        {
+            s_MRU[index + 1].Activate();
+        }
+        else if (s_MRU.Count > 0)
+        {
+            s_MRU.First().Activate();
+        }
     }
 
     private static OverlayLayer GetOverlayLayer(Visual? visual)
@@ -642,7 +672,11 @@ public class ManagedWindow : OverlayPopupHost
             BringToTop();
             SetPsuedoClasses();
 
-            // this.Focus();
+            var firstFocusable = _content.GetVisualDescendants()
+                   .OfType<Control>()
+                   .FirstOrDefault(c => c.IsEffectivelyEnabled && c.IsVisible && c.Focusable);
+
+            firstFocusable?.Focus();
         }
     }
 
@@ -1038,7 +1072,7 @@ public class ManagedWindow : OverlayPopupHost
     {
         base.OnApplyTemplate(e);
 
-        this.KeyDown += OnKeyDown;
+        this.AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
         //if (this.Theme == null)
         //    this.Theme = (ControlTheme)this.FindResource("ManagedWindow");
@@ -1104,21 +1138,47 @@ public class ManagedWindow : OverlayPopupHost
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        var buttons = this.GetVisualDescendants().OfType<Button>().ToList();
-        var defaultButton = buttons.FirstOrDefault(x => x.IsDefault);
-        var cancelButton = buttons.FirstOrDefault(x => x.IsCancel);
-        if (e.Key == Key.Escape && cancelButton != null)
+        if (e.Key == Key.Escape || e.Key == Key.Enter)
         {
-            cancelButton.Command?.Execute(null);
+            var buttons = this.GetVisualDescendants().OfType<Button>().ToList();
+            var defaultButton = buttons.FirstOrDefault(x => x.IsDefault);
+            var cancelButton = buttons.FirstOrDefault(x => x.IsCancel);
+            if (e.Key == Key.Escape && cancelButton != null)
+            {
+                cancelButton.Command?.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && defaultButton != null)
+            {
+                defaultButton.Command?.Execute(null);
+                e.Handled = true;
+            }
         }
-        else if (e.Key == Key.Enter && defaultButton != null)
+        else if (e.Key == Key.Tab)
         {
-            defaultButton.Command?.Execute(null);
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                if (s_MRU == null)
+                {
+                    s_MRU = GetWindows().ToList();
+                }
+                PreviousWindow();
+                e.Handled = true;
+                return;
+            }
+            else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                if (s_MRU == null)
+                {
+                    s_MRU = GetWindows().ToList();
+                }
+                // Ctrl + Tab
+                NextWindow();
+                e.Handled = true;
+                return;
+            }
         }
-        else if (e.Key == Key.W && e.KeyModifiers == KeyModifiers.Control)
-        {
-            Close();
-        }
+        s_MRU = null;
     }
 
     private void OnTapped(object? sender, TappedEventArgs e)
