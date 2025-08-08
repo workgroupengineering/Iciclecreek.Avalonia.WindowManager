@@ -629,6 +629,7 @@ public class ManagedWindow : OverlayPopupHost
             _windowBorder.Margin = new Thickness(0);
             _windowBorder.BoxShadow = new BoxShadows();
         }
+        GetDefaultFocus()?.Focus();
     }
 
     protected virtual async void OnFullscreenWindow()
@@ -654,6 +655,7 @@ public class ManagedWindow : OverlayPopupHost
             _windowBorder.Margin = _normalMargin;
             _windowBorder.BoxShadow = _normalBoxShadow;
         }
+        GetDefaultFocus()?.Focus();
     }
 
     protected virtual async void OnMinimizeWindow()
@@ -671,6 +673,8 @@ public class ManagedWindow : OverlayPopupHost
         this.Position = _minimizedPosition;
         this.Width = double.NaN;
         this.Height = double.NaN;
+
+        _systemMenu?.Focus();
     }
 
     /// <summary>
@@ -1181,12 +1185,12 @@ public class ManagedWindow : OverlayPopupHost
             var cancelButton = buttons.FirstOrDefault(x => x.IsCancel);
             if (e.Key == Key.Escape && cancelButton != null)
             {
-                cancelButton.Command?.Execute(null);
+                cancelButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 e.Handled = true;
             }
             else if (e.Key == Key.Enter && defaultButton != null)
             {
-                defaultButton.Command?.Execute(null);
+                defaultButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 e.Handled = true;
             }
         }
