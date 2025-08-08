@@ -1213,6 +1213,25 @@ public class ManagedWindow : OverlayPopupHost
                 return;
             }
         }
+        else if (e.Key == Key.F6)
+        {
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                if (s_MRU == null)
+                    s_MRU = GetWindows().ToList();
+                PreviousWindow();
+                e.Handled = true;
+                return;
+            }
+            else 
+            {
+                if (s_MRU == null)
+                    s_MRU = GetWindows().ToList();
+                NextWindow();
+                e.Handled = true;
+                return;
+            }
+        }
         s_MRU = null;
     }
 
