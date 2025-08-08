@@ -171,7 +171,7 @@
                             VerticalAlignment="Center"
                             HorizontalAlignment="Right">
                   <StackPanel.Spacing>
-                    <console:OnPlatformExtension x:TypeArguments="x:Double" Default="8" Console="-1" />
+                    <console:OnPlatformExtension x:TypeArguments="x:Double" Default="8" Console="0" />
                   </StackPanel.Spacing>
                   <Button Name="PART_MinimizeButton"
                           IsTabStop="True"
