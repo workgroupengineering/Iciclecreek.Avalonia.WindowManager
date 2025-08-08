@@ -101,32 +101,10 @@
             <Grid RowDefinitions="Auto *"
                   Background="{TemplateBinding Background}">
               <Grid.KeyBindings>
+                <KeyBinding Gesture="Alt+-"
+                              Command="{Binding $parent[wm:ManagedWindow].ShowSystemMenuCommand}" />
                 <KeyBinding Gesture="Ctrl+F4"
                             Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" />
-
-                <KeyBinding Gesture="Ctrl+W"
-                            Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" />
-
-                <KeyBinding Gesture="Ctrl+R"
-                            Command="{Binding $parent[wm:ManagedWindow].RestoreCommand}" />
-
-                <KeyBinding Gesture="Ctrl+M"
-                            Command="{Binding $parent[wm:ManagedWindow].MinimizeCommand}" />
-
-                <KeyBinding Gesture="Ctrl+Shift+M"
-                            Command="{Binding $parent[wm:ManagedWindow].MaximizeCommand}" />
-
-                <!--<KeyBinding Gesture="Ctrl+Tab"
-                            Command="{Binding $parent[wm:ManagedWindow].NextWindowCommand}" />
-
-                <KeyBinding Gesture="Ctrl+Alt+Tab"
-                            Command="{Binding $parent[wm:ManagedWindow].NextWindowCommand}" />
-
-                <KeyBinding Gesture="Ctrl+Shift+Tab"
-                            Command="{Binding $parent[wm:ManagedWindow].PreviousWindowCommand}" />
-
-                <KeyBinding Gesture="Ctrl+Alt+Shift+Tab"
-                            Command="{Binding $parent[wm:ManagedWindow].PreviousWindowCommand}" />-->
               </Grid.KeyBindings>
 
               <!--Title Bar-->
@@ -141,9 +119,9 @@
 
                 <!--system button-->
                 <Menu Name="PART_SystemMenu"
-                        IsTabStop="True"
+                        IsTabStop="True" 
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                  <MenuItem>
+                  <MenuItem Name="PART_SystemMenuItem">
                     <MenuItem.Header>
                       <console:OnPlatform Console="☰">
                         <console:OnPlatform.Default>

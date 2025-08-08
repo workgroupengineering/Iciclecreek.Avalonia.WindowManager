@@ -30,6 +30,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_TitleBar, typeof(Control))]
 [TemplatePart(PART_Title, typeof(TextBlock))]
 [TemplatePart(PART_SystemMenu, typeof(Menu))]
+[TemplatePart(PART_SystemMenuItem, typeof(MenuItem))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
 [TemplatePart(PART_RestoreButton, typeof(Button))]
@@ -43,6 +44,7 @@ public class ManagedWindow : OverlayPopupHost
     public const string PART_TitleBar = "PART_TitleBar";
     public const string PART_Title = "PART_Title";
     public const string PART_SystemMenu = "PART_SystemMenu";
+    public const string PART_SystemMenuItem = "PART_SystemMenuItem";
     public const string PART_MinimizeButton = "PART_MinimizeButton";
     public const string PART_MaximizeButton = "PART_MaximizeButton";
     public const string PART_RestoreButton = "PART_RestoreButton";
@@ -65,6 +67,8 @@ public class ManagedWindow : OverlayPopupHost
     private Control? _title;
     private Control? _titleBar;
     private Control? _focus;
+    private Menu? _systemMenu;
+    private MenuItem? _systemMenuItem;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
@@ -73,6 +77,7 @@ public class ManagedWindow : OverlayPopupHost
     public ReactiveCommand<Unit, Unit> MaximizeCommand { get; }
     public ReactiveCommand<Unit, Unit> ResizeCommand { get; }
     public ReactiveCommand<Unit, Unit> MoveCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowSystemMenuCommand { get; }
 
 
     /// <summary>
@@ -195,6 +200,7 @@ public class ManagedWindow : OverlayPopupHost
         : base(layer)
     {
         OverlayLayer = layer;
+        layer.ZIndex = 100000000;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
 
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
@@ -211,6 +217,27 @@ public class ManagedWindow : OverlayPopupHost
             canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Minimized),
             outputScheduler: AvaloniaScheduler.Instance);
 
+        ShowSystemMenuCommand = ReactiveCommand.Create(() =>
+        {
+            if (_systemMenu != null)
+                _systemMenu.Focus();
+
+            if (_systemMenuItem != null)
+            {
+                _systemMenuItem.IsSubMenuOpen = true;
+                _systemMenuItem.Focus();
+
+                // Optionally, raise a synthetic KeyDown event for Alt or F10
+                var keyEvent = new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.F10,
+                    KeyModifiers = KeyModifiers.None,
+                    Source = _systemMenuItem
+                };
+                _systemMenuItem.RaiseEvent(keyEvent);
+            }
+        }, outputScheduler: AvaloniaScheduler.Instance);
     }
 
     public void PreviousWindow()
@@ -889,12 +916,12 @@ public class ManagedWindow : OverlayPopupHost
         OnClosed(new EventArgs());
         RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
         this.Hide();
-        
+
         if (s_MRU == null)
             s_MRU = GetWindows().ToList();
-        
+
         PreviousWindow();
-        
+
         s_MRU.Remove(this);
     }
 
@@ -1130,6 +1157,10 @@ public class ManagedWindow : OverlayPopupHost
         {
             partCloseButton.Command = CloseCommand;
         }
+
+        _systemMenu = e.NameScope.Find<Menu>(PART_SystemMenu);
+
+        _systemMenuItem = e.NameScope.Find<MenuItem>(PART_SystemMenuItem);
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
 
