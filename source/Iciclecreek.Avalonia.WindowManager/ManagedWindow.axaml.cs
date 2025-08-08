@@ -64,6 +64,7 @@ public class ManagedWindow : OverlayPopupHost
     private object? _dialogResult;
     private Control? _title;
     private Control? _titleBar;
+    private Control? _focus;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
@@ -72,8 +73,6 @@ public class ManagedWindow : OverlayPopupHost
     public ReactiveCommand<Unit, Unit> MaximizeCommand { get; }
     public ReactiveCommand<Unit, Unit> ResizeCommand { get; }
     public ReactiveCommand<Unit, Unit> MoveCommand { get; }
-    public ReactiveCommand<Unit, Unit> NextWindowCommand { get; }
-    public ReactiveCommand<Unit, Unit> PreviousWindowCommand { get; }
 
 
     /// <summary>
@@ -212,9 +211,6 @@ public class ManagedWindow : OverlayPopupHost
             canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Minimized),
             outputScheduler: AvaloniaScheduler.Instance);
 
-        NextWindowCommand = ReactiveCommand.Create(() => { NextWindow(); }, outputScheduler: AvaloniaScheduler.Instance);
-
-        PreviousWindowCommand = ReactiveCommand.Create(() => { PreviousWindow(); }, outputScheduler: AvaloniaScheduler.Instance);
     }
 
     public void PreviousWindow()
@@ -672,12 +668,19 @@ public class ManagedWindow : OverlayPopupHost
             BringToTop();
             SetPsuedoClasses();
 
-            var firstFocusable = _content.GetVisualDescendants()
-                   .OfType<Control>()
-                   .FirstOrDefault(c => c.IsEffectivelyEnabled && c.IsVisible && c.Focusable);
-
-            firstFocusable?.Focus();
+            if (_focus == null)
+            {
+                _focus = GetDefaultFocus();
+            }
+            _focus?.Focus();
         }
+    }
+
+    private Control? GetDefaultFocus()
+    {
+        return _content.GetVisualDescendants()
+               .OfType<Control>()
+               .FirstOrDefault(c => c.IsEffectivelyEnabled && c.IsVisible && c.Focusable);
     }
 
     /// <summary>
@@ -687,10 +690,23 @@ public class ManagedWindow : OverlayPopupHost
     {
         if (IsActive)
         {
+            _focus = GetCurrentFocus();
             IsActive = false;
             OnDeactivated();
             SetPsuedoClasses();
         }
+    }
+
+    private Control? GetCurrentFocus()
+    {
+        var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+        var focusedElement = focusManager?.GetFocusedElement();
+        if (focusedElement is Control control && this.IsVisualAncestorOf(control))
+        {
+            // 'control' is the focused control within 'this'
+            return control;
+        }
+        return null;
     }
 
     public new void Show()
@@ -873,6 +889,13 @@ public class ManagedWindow : OverlayPopupHost
         OnClosed(new EventArgs());
         RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
         this.Hide();
+        
+        if (s_MRU == null)
+            s_MRU = GetWindows().ToList();
+        
+        PreviousWindow();
+        
+        s_MRU.Remove(this);
     }
 
     private bool ShouldCancelClose(WindowClosingEventArgs args)
@@ -1115,24 +1138,6 @@ public class ManagedWindow : OverlayPopupHost
 
         this.Tapped += OnTapped;
 
-        //switch (WindowState)
-        //{
-        //    case WindowState.FullScreen:
-        //        OnFullscreenWindow();
-        //        break;
-        //    case WindowState.Maximized:
-        //        OnMaximizeWindow();
-        //        break;
-        //    case WindowState.Minimized:
-        //        OnMinimizeWindow();
-        //        break;
-        //    case WindowState.Normal:
-        //        OnNormalWindow();
-        //        break;
-        //    default:
-        //        break;
-        //}
-
         _loaded = true;
     }
 
@@ -1159,9 +1164,7 @@ public class ManagedWindow : OverlayPopupHost
             if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
             {
                 if (s_MRU == null)
-                {
                     s_MRU = GetWindows().ToList();
-                }
                 PreviousWindow();
                 e.Handled = true;
                 return;
@@ -1169,10 +1172,7 @@ public class ManagedWindow : OverlayPopupHost
             else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {
                 if (s_MRU == null)
-                {
                     s_MRU = GetWindows().ToList();
-                }
-                // Ctrl + Tab
                 NextWindow();
                 e.Handled = true;
                 return;
