@@ -2,7 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
         xmlns:console="https://github.com/jinek/consolonia"
-        xmlns:wm="using:Iciclecreek.Avalonia.WindowManager">
+        xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+        x:DataType="wm:ManagedWindow">
 
   <!--console extra resources-->
   <BoxShadows x:Key="NullBoxShadows" >none</BoxShadows>
@@ -15,6 +16,55 @@
   <console:LineBrush x:Key="ManagedWindow_Active_EdgeLineBrush"
                   Brush="{DynamicResource ManagedWindow_Active_BorderBrush}"
                   LineStyle="Edge"/>
+
+  <DataTemplate x:Key="MinimizeIcon">
+    <ContentControl>
+      <console:OnPlatform Console="🗕" >
+        <console:OnPlatform.Default>
+          <iconPacks:Codicons Kind="ChromeMinimize"
+                              Width="{StaticResource ManagedWindow_SystemIconSize}"
+                              Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+        </console:OnPlatform.Default>
+      </console:OnPlatform>
+    </ContentControl>
+  </DataTemplate>
+
+  <DataTemplate x:Key="MaximizeIcon">
+    <ContentControl>
+      <console:OnPlatform Console="🗖">
+        <console:OnPlatform.Default>
+          <iconPacks:Codicons Kind="ChromeMaximize"
+                          Width="{StaticResource ManagedWindow_SystemIconSize}"
+                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+        </console:OnPlatform.Default>
+      </console:OnPlatform>
+    </ContentControl>
+  </DataTemplate>
+
+  <DataTemplate x:Key="RestoreIcon">
+    <ContentControl>
+      <console:OnPlatform Console="🗗">
+        <console:OnPlatform.Default>
+          <iconPacks:Codicons Kind="ChromeRestore"
+                          Width="{StaticResource ManagedWindow_SystemIconSize}"
+                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+        </console:OnPlatform.Default>
+      </console:OnPlatform>
+    </ContentControl>
+  </DataTemplate>
+
+  <DataTemplate x:Key="CloseIcon">
+    <ContentControl>
+      <console:OnPlatform Console="🗙">
+        <console:OnPlatform.Default>
+          <iconPacks:Codicons Kind="ChromeClose"
+                          Width="{StaticResource ManagedWindow_SystemIconSize}"
+                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+        </console:OnPlatform.Default>
+      </console:OnPlatform>
+    </ContentControl>
+  </DataTemplate>
+
   <!--console resources-->
 
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
@@ -62,17 +112,42 @@
                 </Grid.Styles>
 
                 <!--system button-->
-                <Button Name="PART_SystemButton"
+                <Menu Name="PART_SystemMenu"
                         IsTabStop="True"
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                  <console:OnPlatform Console="≡">
-                    <console:OnPlatform.Default>
-                      <iconPacks:Codicons Kind="Menu"
-                                          Width="{StaticResource ManagedWindow_SystemIconSize}"
-                                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                    </console:OnPlatform.Default>
-                  </console:OnPlatform>
-                </Button>
+                  <MenuItem>
+                    <MenuItem.Header>
+                      <console:OnPlatform Console="☰">
+                        <console:OnPlatform.Default>
+                          <iconPacks:Codicons Kind="Menu"
+                                              Width="{StaticResource ManagedWindow_SystemIconSize}"
+                                              Height="{StaticResource ManagedWindow_SystemIconSize}"/>
+                        </console:OnPlatform.Default>
+                      </console:OnPlatform>
+                    </MenuItem.Header>
+
+                    <MenuItem Header="_Restore" >
+                      <MenuItem.Icon>
+                        <ContentControl ContentTemplate="{StaticResource RestoreIcon}" />
+                      </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Mi_nimize">
+                      <MenuItem.Icon>
+                        <ContentControl ContentTemplate="{StaticResource MinimizeIcon}" />
+                      </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Ma_ximize">
+                      <MenuItem.Icon>
+                        <ContentControl ContentTemplate="{StaticResource MaximizeIcon}" />
+                      </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="_Close">
+                      <MenuItem.Icon>
+                        <ContentControl ContentTemplate="{StaticResource CloseIcon}" />
+                      </MenuItem.Icon>
+                    </MenuItem>
+                  </MenuItem>
+                </Menu>
 
                 <!-- Icon -->
                 <ContentPresenter Grid.Column="1"
@@ -100,51 +175,22 @@
                   </StackPanel.Spacing>
                   <Button Name="PART_MinimizeButton"
                           IsTabStop="True"
-                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <console:OnPlatform Console="🗕">
-                      <console:OnPlatform.Default>
-                        <iconPacks:Codicons Kind="ChromeMinimize"
-                                            Width="{StaticResource ManagedWindow_SystemIconSize}"
-                                            Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatform.Default>
-                    </console:OnPlatform>
-                  </Button>
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                          ContentTemplate="{StaticResource MinimizeIcon}" />
                   <Button Name="PART_MaximizeButton"
                           IsVisible="False"
                           IsTabStop="True"
-                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-
-                    <console:OnPlatform Console="🗖">
-                      <console:OnPlatform.Default>
-                        <iconPacks:Codicons Kind="ChromeMaximize"
-                                        Width="{StaticResource ManagedWindow_SystemIconSize}"
-                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatform.Default>
-                    </console:OnPlatform>
-                  </Button>
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                          ContentTemplate="{StaticResource MaximizeIcon}" />
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
                           IsTabStop="True"
-                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <console:OnPlatform Console="🗗">
-                      <console:OnPlatform.Default>
-                        <iconPacks:Codicons Kind="ChromeRestore"
-                                        Width="{StaticResource ManagedWindow_SystemIconSize}"
-                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatform.Default>
-                    </console:OnPlatform>
-                  </Button>
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                          ContentTemplate="{StaticResource RestoreIcon}" />
                   <Button Name="PART_CloseButton"
                           IsTabStop="True"
-                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
-                    <console:OnPlatform Console="🗙">
-                      <console:OnPlatform.Default>
-                        <iconPacks:Codicons Kind="ChromeClose"
-                                        Width="{StaticResource ManagedWindow_SystemIconSize}"
-                                        Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                      </console:OnPlatform.Default>
-                    </console:OnPlatform>
-                  </Button>
+                          Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
+                          ContentTemplate="{StaticResource CloseIcon}" />
                 </StackPanel>
               </Grid>
 
@@ -152,7 +198,7 @@
               <ContentPresenter Grid.Row="1"
                                 Name="PART_ContentPresenter"
                                 ClipToBounds="True"
-                                KeyboardNavigation.TabNavigation="Continue"                                
+                                KeyboardNavigation.TabNavigation="Continue"
                                 Margin="{TemplateBinding Margin}"
                                 Padding="{TemplateBinding Padding}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -238,14 +284,14 @@
 
     <!--no border -->
     <Style Selector="^:noborder /template/ Border#PART_WindowBorder">
-      <Setter Property="BorderThickness" Value="{StaticResource NoThickness}}"/>
+      <Setter Property="BorderThickness" Value="{StaticResource NoThickness}"/>
     </Style>
 
     <!--no titlebar -->
     <Style Selector="^:notitle /template/ Grid#PART_TitleBar">
       <Setter Property="IsVisible" Value="False"/>
     </Style>
-    
+
     <!-- dialog state styles -->
 
     <!-- window is a dialog -->
