@@ -126,22 +126,22 @@
                       </console:OnPlatform>
                     </MenuItem.Header>
 
-                    <MenuItem Header="_Restore" >
+                    <MenuItem Header="_Restore" Command="{Binding $parent[wm:ManagedWindow].RestoreCommand}" >
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource RestoreIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Mi_nimize">
+                    <MenuItem Header="Mi_nimize" Command="{Binding $parent[wm:ManagedWindow].MinimizeCommand}" >
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource MinimizeIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Ma_ximize">
+                    <MenuItem Header="Ma_ximize" Command="{Binding $parent[wm:ManagedWindow].MaximizeCommand}" >
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource MaximizeIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Close">
+                    <MenuItem Header="_Close" Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" >
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource CloseIcon}" />
                       </MenuItem.Icon>

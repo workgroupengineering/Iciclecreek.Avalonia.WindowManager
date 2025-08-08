@@ -1,30 +1,35 @@
 ﻿using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Platform.Storage;
+using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.ReactiveUI;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Presenters;
-using Avalonia.Styling;
-using Avalonia.Animation;
-using Avalonia.VisualTree;
-using Avalonia.Metadata;
-using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Iciclecreek.Avalonia.WindowManager;
 
 [TemplatePart(PART_TitleBar, typeof(Control))]
 [TemplatePart(PART_Title, typeof(TextBlock))]
+[TemplatePart(PART_SystemMenu, typeof(Menu))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
 [TemplatePart(PART_RestoreButton, typeof(Button))]
@@ -37,7 +42,7 @@ public class ManagedWindow : OverlayPopupHost
     public const string PART_ContentPresenter = "PART_ContentPresenter";
     public const string PART_TitleBar = "PART_TitleBar";
     public const string PART_Title = "PART_Title";
-    public const string PART_SystemMenu= "PART_SystemMenu";
+    public const string PART_SystemMenu = "PART_SystemMenu";
     public const string PART_MinimizeButton = "PART_MinimizeButton";
     public const string PART_MaximizeButton = "PART_MaximizeButton";
     public const string PART_RestoreButton = "PART_RestoreButton";
@@ -57,6 +62,19 @@ public class ManagedWindow : OverlayPopupHost
     private Control? _title;
     private Control? _titleBar;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
+
+    public ReactiveCommand<Unit, Unit> CloseCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> RestoreCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> MinimizeCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> MaximizeCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> ResizeCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> MoveCommand { get; }
+
 
     /// <summary>
     /// Defines the <see cref="IsActive"/> property.
@@ -179,6 +197,20 @@ public class ManagedWindow : OverlayPopupHost
     {
         OverlayLayer = layer;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
+
+        CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
+
+        RestoreCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Normal; },
+            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Normal),
+            outputScheduler: AvaloniaScheduler.Instance);
+
+        MaximizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Maximized; },
+            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Maximized),
+            outputScheduler: AvaloniaScheduler.Instance);
+
+        MinimizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Minimized; },
+            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Minimized),
+            outputScheduler: AvaloniaScheduler.Instance);
     }
 
     private static OverlayLayer GetOverlayLayer(Visual? visual)
@@ -1021,24 +1053,25 @@ public class ManagedWindow : OverlayPopupHost
         var partMinimizeButton = e.NameScope.Find<Button>(PART_MinimizeButton);
         if (partMinimizeButton != null)
         {
-            partMinimizeButton.Click += OnMinimizeClick;
+            partMinimizeButton.Command = MinimizeCommand;
         }
 
         var partMaximizeButton = e.NameScope.Find<Button>(PART_MaximizeButton);
         if (partMaximizeButton != null)
         {
-            partMaximizeButton.Click += OnMaximizeClick;
+            partMaximizeButton.Command = MaximizeCommand;
         }
+
         var partRestoreButton = e.NameScope.Find<Button>(PART_RestoreButton);
         if (partRestoreButton != null)
         {
-            partRestoreButton.Click += OnRestoreClick;
+            partRestoreButton.Command = RestoreCommand;
         }
 
         var partCloseButton = e.NameScope.Find<Button>(PART_CloseButton);
         if (partCloseButton != null)
         {
-            partCloseButton.Click += OnCloseClick;
+            partCloseButton.Command = CloseCommand;
         }
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
@@ -1450,34 +1483,6 @@ public class ManagedWindow : OverlayPopupHost
             else if (WindowState == WindowState.Maximized)
                 WindowState = WindowState.Normal;
         }
-    }
-
-
-    private void OnCloseClick(object? sender, RoutedEventArgs e)
-    {
-        this.Close();
-    }
-
-
-    private void OnSystemButtonClick(object? sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
-    private void OnMinimizeClick(object? sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Minimized;
-    }
-
-
-    private void OnMaximizeClick(object? sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Maximized;
-    }
-
-    private void OnRestoreClick(object? sender, RoutedEventArgs e)
-    {
-        WindowState = WindowState.Normal;
     }
 
     private void SetWindowStartupLocation()
