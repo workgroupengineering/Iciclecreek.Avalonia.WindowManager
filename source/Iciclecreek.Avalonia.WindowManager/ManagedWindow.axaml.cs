@@ -204,7 +204,7 @@ public class ManagedWindow : OverlayPopupHost
         : base(layer)
     {
         OverlayLayer = layer;
-        layer.ZIndex = 100000000;
+        //layer.ZIndex = 10000000;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
 
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
@@ -1281,18 +1281,24 @@ public class ManagedWindow : OverlayPopupHost
 
         if (e.Key == Key.Escape || e.Key == Key.Enter)
         {
-            var buttons = this.GetVisualDescendants().OfType<Button>().ToList();
-            var defaultButton = buttons.FirstOrDefault(x => x.IsDefault);
-            var cancelButton = buttons.FirstOrDefault(x => x.IsCancel);
-            if (e.Key == Key.Escape && cancelButton != null)
+            var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+            var focusedElement = focusManager?.GetFocusedElement();
+            bool isMenuFocused = focusedElement is Menu || focusedElement is MenuItem;
+            if (!isMenuFocused)
             {
-                cancelButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Enter && defaultButton != null)
-            {
-                defaultButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                e.Handled = true;
+                var buttons = this.GetVisualDescendants().OfType<Button>().ToList();
+                var defaultButton = buttons.FirstOrDefault(x => x.IsDefault);
+                var cancelButton = buttons.FirstOrDefault(x => x.IsCancel);
+                if (e.Key == Key.Escape && cancelButton != null)
+                {
+                    cancelButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Enter && defaultButton != null)
+                {
+                    defaultButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    e.Handled = true;
+                }
             }
         }
         else if (e.Key == Key.Tab)
@@ -1303,6 +1309,7 @@ public class ManagedWindow : OverlayPopupHost
                     s_MRU = GetWindows().ToList();
                 PreviousWindow();
                 e.Handled = true;
+                // return because we don't want to reset the MRU 
                 return;
             }
             else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
@@ -1311,6 +1318,7 @@ public class ManagedWindow : OverlayPopupHost
                     s_MRU = GetWindows().ToList();
                 NextWindow();
                 e.Handled = true;
+                // return because we don't want to reset the MRU 
                 return;
             }
         }
