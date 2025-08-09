@@ -215,7 +215,7 @@ public class ManagedWindow : OverlayPopupHost
             outputScheduler: AvaloniaScheduler.Instance);
 
         MaximizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Maximized; },
-            canExecute: this.WhenAnyValue(win => win.CanResize,win => win.WindowState, (canResize, windowState) => canResize && windowState != WindowState.Maximized),
+            canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState, (canResize, windowState) => canResize && windowState != WindowState.Maximized),
             outputScheduler: AvaloniaScheduler.Instance);
 
         MinimizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Minimized; },
@@ -224,27 +224,27 @@ public class ManagedWindow : OverlayPopupHost
 
         ShowSystemMenuCommand = ReactiveCommand.Create(() =>
             {
-                ArgumentNullException.ThrowIfNull(_systemMenuItem, nameof(_systemMenuItem));
-                
-                _systemMenuItem.IsSubMenuOpen = true;
+                if (_systemMenuItem != null)
+                {
+                    _systemMenuItem.IsSubMenuOpen = true;
 
-                //// Optionally, raise a synthetic KeyDown event for Alt or F10
-                //var keyEvent = new KeyEventArgs
-                //{
-                //    RoutedEvent = InputElement.KeyDownEvent,
-                //    Key = Key.F10,
-                //    KeyModifiers = KeyModifiers.None,
-                //    Source = _systemMenuItem
-                //};
-                //_systemMenuItem.RaiseEvent(keyEvent);
+                    //// Optionally, raise a synthetic KeyDown event for Alt or F10
+                    //var keyEvent = new KeyEventArgs
+                    //{
+                    //    RoutedEvent = InputElement.KeyDownEvent,
+                    //    Key = Key.F10,
+                    //    KeyModifiers = KeyModifiers.None,
+                    //    Source = _systemMenuItem
+                    //};
+                    //_systemMenuItem.RaiseEvent(keyEvent);
 
-                // find first enabled child menu and set focus to it.
-                var firstEnabledChild = _systemMenuItem.Items
-                    .OfType<MenuItem>()
-                    .FirstOrDefault(mi => mi.IsEnabled);
-                firstEnabledChild?.Focus();
-
-            }, 
+                    // find first enabled child menu and set focus to it.
+                    var firstEnabledChild = _systemMenuItem.Items
+                        .OfType<MenuItem>()
+                        .FirstOrDefault(mi => mi.IsEnabled);
+                    firstEnabledChild?.Focus();
+                }
+            },
             outputScheduler: AvaloniaScheduler.Instance);
 
         MoveCommand = ReactiveCommand.Create(() =>
@@ -1193,18 +1193,19 @@ public class ManagedWindow : OverlayPopupHost
         }
 
         _systemMenu = e.NameScope.Find<Menu>(PART_SystemMenu);
-        _systemMenuItem = _systemMenu.Items.OfType<MenuItem>().FirstOrDefault();
+        _systemMenuItem = _systemMenu?.Items.OfType<MenuItem>().FirstOrDefault();
 
-
-        ArgumentNullException.ThrowIfNull(_systemMenuItem);
-        _systemMenuItem.PropertyChanged += (sender, e) =>
+        if (_systemMenuItem != null)
         {
-            if (e.Property == MenuItem.IsSubMenuOpenProperty && !_systemMenuItem.IsSubMenuOpen)
+            _systemMenuItem.PropertyChanged += (sender, e) =>
             {
-                // Menu is closing, restore focus
-                _focus?.Focus();
-            }
-        };
+                if (e.Property == MenuItem.IsSubMenuOpenProperty && !_systemMenuItem.IsSubMenuOpen)
+                {
+                    // Menu is closing, restore focus
+                    _focus?.Focus();
+                }
+            };
+        }
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
 
@@ -1396,7 +1397,7 @@ public class ManagedWindow : OverlayPopupHost
                 }
             }
         };
-        
+
         partTitleBar.PointerMoved += (object? sender, PointerEventArgs e) =>
         {
             if (WindowState != WindowState.Maximized)
@@ -1411,7 +1412,7 @@ public class ManagedWindow : OverlayPopupHost
                     start = position;
                     this.Position = this.Position + delta;
                 }
-                
+
                 e.Handled = true;
             }
         };
@@ -1419,9 +1420,9 @@ public class ManagedWindow : OverlayPopupHost
         partTitleBar.PointerCaptureLost += (object? sender, PointerCaptureLostEventArgs e) =>
         {
             SetPsuedoClasses(false);
-            if(start!=null)
+            if (start != null)
                 e.Handled = true;
-            
+
             start = null;
         };
 
