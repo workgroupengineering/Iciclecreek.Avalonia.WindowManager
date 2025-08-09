@@ -119,7 +119,7 @@
 
                 <!--system button-->
                 <Menu Name="PART_SystemMenu"
-                        IsTabStop="True" 
+                        IsTabStop="True"
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
                   <MenuItem Name="PART_SystemMenuItem">
                     <MenuItem.Header>
@@ -132,7 +132,7 @@
                       </console:OnPlatform>
                     </MenuItem.Header>
 
-                    <MenuItem Header="_Restore" Command="{Binding $parent[wm:ManagedWindow].RestoreCommand}" >
+                    <MenuItem Header="_Restore" Command="{Binding $parent[wm:ManagedWindow].RestoreCommand}">
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource RestoreIcon}" />
                       </MenuItem.Icon>

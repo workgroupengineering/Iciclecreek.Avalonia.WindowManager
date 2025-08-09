@@ -210,7 +210,7 @@ public class ManagedWindow : OverlayPopupHost
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
 
         RestoreCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Normal; },
-            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Normal),
+            // canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Normal),
             outputScheduler: AvaloniaScheduler.Instance);
 
         MaximizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Maximized; },
@@ -223,24 +223,24 @@ public class ManagedWindow : OverlayPopupHost
 
         ShowSystemMenuCommand = ReactiveCommand.Create(() =>
         {
-            if (_systemMenu != null)
-                _systemMenu.Focus();
+            _systemMenuItem.IsSubMenuOpen = true;
 
-            if (_systemMenuItem != null)
-            {
-                _systemMenuItem.IsSubMenuOpen = true;
-                _systemMenuItem.Focus();
+            //// Optionally, raise a synthetic KeyDown event for Alt or F10
+            //var keyEvent = new KeyEventArgs
+            //{
+            //    RoutedEvent = InputElement.KeyDownEvent,
+            //    Key = Key.F10,
+            //    KeyModifiers = KeyModifiers.None,
+            //    Source = _systemMenuItem
+            //};
+            //_systemMenuItem.RaiseEvent(keyEvent);
 
-                // Optionally, raise a synthetic KeyDown event for Alt or F10
-                var keyEvent = new KeyEventArgs
-                {
-                    RoutedEvent = InputElement.KeyDownEvent,
-                    Key = Key.F10,
-                    KeyModifiers = KeyModifiers.None,
-                    Source = _systemMenuItem
-                };
-                _systemMenuItem.RaiseEvent(keyEvent);
-            }
+            // find first enabled child menu and set focus to it.
+            var firstEnabledChild = _systemMenuItem.Items
+                .OfType<MenuItem>()
+                .FirstOrDefault(mi => mi.IsEnabled);
+            firstEnabledChild?.Focus();
+
         }, outputScheduler: AvaloniaScheduler.Instance);
 
         MoveCommand = ReactiveCommand.Create(() =>
@@ -248,7 +248,9 @@ public class ManagedWindow : OverlayPopupHost
             _keyboardMoving = true;
             _keyboardSizing = false;
             PseudoClasses.Add(":dragging");
-        }, outputScheduler: AvaloniaScheduler.Instance);
+        },
+        canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state == WindowState.Normal),
+        outputScheduler: AvaloniaScheduler.Instance);
 
         SizeCommand = ReactiveCommand.Create(() =>
         {
@@ -259,7 +261,9 @@ public class ManagedWindow : OverlayPopupHost
                 PseudoClasses.Add(":sizing");
             }
             _focus?.Focus();
-        }, outputScheduler: AvaloniaScheduler.Instance);
+        },
+        canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state == WindowState.Normal),
+        outputScheduler: AvaloniaScheduler.Instance);
     }
 
     public void PreviousWindow()
@@ -651,7 +655,7 @@ public class ManagedWindow : OverlayPopupHost
             _windowBorder.Margin = new Thickness(0);
             _windowBorder.BoxShadow = new BoxShadows();
         }
-        GetDefaultFocus()?.Focus();
+        _focus?.Focus();
     }
 
     protected virtual async void OnFullscreenWindow()
@@ -677,7 +681,7 @@ public class ManagedWindow : OverlayPopupHost
             _windowBorder.Margin = _normalMargin;
             _windowBorder.BoxShadow = _normalBoxShadow;
         }
-        GetDefaultFocus()?.Focus();
+        _focus?.Focus();
     }
 
     protected virtual async void OnMinimizeWindow()
@@ -1185,20 +1189,18 @@ public class ManagedWindow : OverlayPopupHost
         }
 
         _systemMenu = e.NameScope.Find<Menu>(PART_SystemMenu);
+        _systemMenuItem = _systemMenu.Items.OfType<MenuItem>().FirstOrDefault();
 
-        _systemMenuItem = e.NameScope.Find<MenuItem>(PART_SystemMenuItem);
-        if (_systemMenuItem != null)
+
+        ArgumentNullException.ThrowIfNull(_systemMenuItem);
+        _systemMenuItem.PropertyChanged += (sender, e) =>
         {
-            _systemMenuItem.Command = ShowSystemMenuCommand;
-            _systemMenuItem.PropertyChanged += (sender, e) =>
+            if (e.Property == MenuItem.IsSubMenuOpenProperty && !_systemMenuItem.IsSubMenuOpen)
             {
-                if (e.Property == MenuItem.IsSubMenuOpenProperty && !_systemMenuItem.IsSubMenuOpen)
-                {
-                    // Menu is closing, restore focus
-                    _focus?.Focus();
-                }
-            };
-        }
+                // Menu is closing, restore focus
+                _focus?.Focus();
+            }
+        };
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
 
