@@ -102,7 +102,7 @@
                   Background="{TemplateBinding Background}">
               <Grid.KeyBindings>
                 <KeyBinding Gesture="Alt+-"
-                              Command="{Binding $parent[wm:ManagedWindow].ShowSystemMenuCommand}" />
+                            Command="{Binding $parent[wm:ManagedWindow].ShowSystemMenuCommand}" />
                 <KeyBinding Gesture="Ctrl+F4"
                             Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" />
               </Grid.KeyBindings>
@@ -137,6 +137,8 @@
                         <ContentControl ContentTemplate="{StaticResource RestoreIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
+                    <MenuItem Header="_Move" Command="{Binding $parent[wm:ManagedWindow].MoveCommand}" />
+                    <MenuItem Header="_Size" Command="{Binding $parent[wm:ManagedWindow].SizeCommand}" />
                     <MenuItem Header="Mi_nimize" Command="{Binding $parent[wm:ManagedWindow].MinimizeCommand}" >
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource MinimizeIcon}" />
@@ -147,7 +149,8 @@
                         <ContentControl ContentTemplate="{StaticResource MaximizeIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Close" Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" >
+                    <Separator/>
+                    <MenuItem Header="_Close" Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" InputGesture="Ctrl+F4" >
                       <MenuItem.Icon>
                         <ContentControl ContentTemplate="{StaticResource CloseIcon}" />
                       </MenuItem.Icon>

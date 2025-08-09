@@ -17,9 +17,11 @@ using Avalonia.ReactiveUI;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Consolonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -69,13 +71,15 @@ public class ManagedWindow : OverlayPopupHost
     private Control? _focus;
     private Menu? _systemMenu;
     private MenuItem? _systemMenuItem;
+    private bool _keyboardMoving;
+    private bool _keyboardSizing;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
     public ReactiveCommand<Unit, Unit> RestoreCommand { get; }
     public ReactiveCommand<Unit, Unit> MinimizeCommand { get; }
     public ReactiveCommand<Unit, Unit> MaximizeCommand { get; }
-    public ReactiveCommand<Unit, Unit> ResizeCommand { get; }
+    public ReactiveCommand<Unit, Unit> SizeCommand { get; }
     public ReactiveCommand<Unit, Unit> MoveCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowSystemMenuCommand { get; }
 
@@ -237,6 +241,24 @@ public class ManagedWindow : OverlayPopupHost
                 };
                 _systemMenuItem.RaiseEvent(keyEvent);
             }
+        }, outputScheduler: AvaloniaScheduler.Instance);
+
+        MoveCommand = ReactiveCommand.Create(() =>
+        {
+            _keyboardMoving = true;
+            _keyboardSizing = false;
+            PseudoClasses.Add(":dragging");
+        }, outputScheduler: AvaloniaScheduler.Instance);
+
+        SizeCommand = ReactiveCommand.Create(() =>
+        {
+            if (CanResize)
+            {
+                _keyboardSizing = true;
+                _keyboardMoving = false;
+                PseudoClasses.Add(":sizing");
+            }
+            _focus?.Focus();
         }, outputScheduler: AvaloniaScheduler.Instance);
     }
 
@@ -1165,6 +1187,18 @@ public class ManagedWindow : OverlayPopupHost
         _systemMenu = e.NameScope.Find<Menu>(PART_SystemMenu);
 
         _systemMenuItem = e.NameScope.Find<MenuItem>(PART_SystemMenuItem);
+        if (_systemMenuItem != null)
+        {
+            _systemMenuItem.Command = ShowSystemMenuCommand;
+            _systemMenuItem.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == MenuItem.IsSubMenuOpenProperty && !_systemMenuItem.IsSubMenuOpen)
+                {
+                    // Menu is closing, restore focus
+                    _focus?.Focus();
+                }
+            };
+        }
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
 
@@ -1178,6 +1212,71 @@ public class ManagedWindow : OverlayPopupHost
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if (_keyboardMoving || _keyboardSizing)
+        {
+            // TODO: Make this configurable
+            var sizing = IsConsole() ? 1 : 10;
+            switch (e.Key)
+            {
+                case Key.Left:
+                    if (_keyboardMoving)
+                    {
+                        this.Position = new PixelPoint(this.Position.X - sizing, this.Position.Y);
+                    }
+                    else if (_keyboardSizing)
+                    {
+                        if (this.Width > sizing)
+                            this.Width = this.Bounds.Width - sizing;
+                    }
+                    e.Handled = true;
+                    return;
+
+                case Key.Right:
+                    if (_keyboardMoving)
+                    {
+                        this.Position = new PixelPoint(this.Position.X + sizing, this.Position.Y);
+                    }
+                    else if (_keyboardSizing)
+                    {
+                        this.Width = this.Bounds.Width + sizing;
+                    }
+                    e.Handled = true;
+                    return;
+
+                case Key.Up:
+                    if (_keyboardMoving)
+                    {
+                        this.Position = new PixelPoint(this.Position.X, this.Position.Y - sizing);
+                    }
+                    else if (_keyboardSizing)
+                    {
+                        if (this.Height > sizing)
+                            this.Height = this.Bounds.Height - sizing;
+                    }
+                    e.Handled = true;
+                    return;
+
+                case Key.Down:
+                    if (_keyboardMoving)
+                    {
+                        this.Position = new PixelPoint(this.Position.X, this.Position.Y + sizing);
+                    }
+                    else if (_keyboardSizing)
+                    {
+                        this.Height = this.Bounds.Height + sizing;
+                    }
+                    e.Handled = true;
+                    return;
+
+                default:
+                    _keyboardMoving = false;
+                    _keyboardSizing = false;
+                    SetPsuedoClasses();
+                    e.Handled = true;
+                    return;
+            }
+        }
+
         if (e.Key == Key.Escape || e.Key == Key.Enter)
         {
             var buttons = this.GetVisualDescendants().OfType<Button>().ToList();
@@ -1223,7 +1322,7 @@ public class ManagedWindow : OverlayPopupHost
                 e.Handled = true;
                 return;
             }
-            else 
+            else
             {
                 if (s_MRU == null)
                     s_MRU = GetWindows().ToList();
@@ -1671,5 +1770,18 @@ public class ManagedWindow : OverlayPopupHost
         if (OverlayLayer == null)
             return Array.Empty<ManagedWindow>();
         return OverlayLayer.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
+    }
+
+    public bool IsConsole()
+    {
+        if (Application.Current?.ApplicationLifetime != null)
+            return ConsoloniaAttribute.IsDefined(Application.Current.ApplicationLifetime.GetType());
+
+        if (OperatingSystem.IsWindows())
+        {
+            try { return Console.WindowHeight > 0; }
+            catch (IOException) { return false; }
+        }
+        return !(Console.IsInputRedirected && Console.IsOutputRedirected && Console.IsErrorRedirected);
     }
 }
