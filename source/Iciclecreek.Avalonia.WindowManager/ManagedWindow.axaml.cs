@@ -210,21 +210,22 @@ public class ManagedWindow : OverlayPopupHost
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
 
         RestoreCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Normal; },
-            // canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Normal),
+            // NOTE: There appears to be a focus bug in avalonia when the first MenuItem is disabled. So for now we always enable Restore. 
+            canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState, (canResize, windowState) => true), // canResize && windowState != WindowState.Normal),
             outputScheduler: AvaloniaScheduler.Instance);
 
         MaximizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Maximized; },
-            canExecute: this.WhenAnyValue(win => win.CanResize,win => win.WindowState,
-                (canResize, windowState) => canResize && windowState != WindowState.Maximized),
+            canExecute: this.WhenAnyValue(win => win.CanResize,win => win.WindowState, (canResize, windowState) => canResize && windowState != WindowState.Maximized),
             outputScheduler: AvaloniaScheduler.Instance);
 
         MinimizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Minimized; },
-            canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState,
-                (canResize, windowState) => canResize && windowState != WindowState.Minimized),
+            canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState, (canResize, windowState) => canResize && windowState != WindowState.Minimized),
             outputScheduler: AvaloniaScheduler.Instance);
 
         ShowSystemMenuCommand = ReactiveCommand.Create(() =>
             {
+                ArgumentNullException.ThrowIfNull(_systemMenuItem, nameof(_systemMenuItem));
+                
                 _systemMenuItem.IsSubMenuOpen = true;
 
                 //// Optionally, raise a synthetic KeyDown event for Alt or F10
@@ -243,7 +244,8 @@ public class ManagedWindow : OverlayPopupHost
                     .FirstOrDefault(mi => mi.IsEnabled);
                 firstEnabledChild?.Focus();
 
-            }, outputScheduler: AvaloniaScheduler.Instance);
+            }, 
+            outputScheduler: AvaloniaScheduler.Instance);
 
         MoveCommand = ReactiveCommand.Create(() =>
             {
@@ -264,7 +266,7 @@ public class ManagedWindow : OverlayPopupHost
                 }
                 _focus?.Focus();
             },
-            canExecute: this.WhenAnyValue(win => win.CanResize),
+            canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState, (canResize, windowState) => canResize && windowState == WindowState.Normal),
             outputScheduler: AvaloniaScheduler.Instance);
     }
 
