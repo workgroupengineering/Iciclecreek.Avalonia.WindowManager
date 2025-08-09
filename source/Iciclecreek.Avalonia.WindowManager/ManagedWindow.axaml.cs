@@ -214,56 +214,58 @@ public class ManagedWindow : OverlayPopupHost
             outputScheduler: AvaloniaScheduler.Instance);
 
         MaximizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Maximized; },
-            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Maximized),
+            canExecute: this.WhenAnyValue(win => win.CanResize,win => win.WindowState,
+                (canResize, windowState) => canResize && windowState != WindowState.Maximized),
             outputScheduler: AvaloniaScheduler.Instance);
 
         MinimizeCommand = ReactiveCommand.Create(() => { WindowState = WindowState.Minimized; },
-            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state != WindowState.Minimized),
+            canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState,
+                (canResize, windowState) => canResize && windowState != WindowState.Minimized),
             outputScheduler: AvaloniaScheduler.Instance);
 
         ShowSystemMenuCommand = ReactiveCommand.Create(() =>
-        {
-            _systemMenuItem.IsSubMenuOpen = true;
+            {
+                _systemMenuItem.IsSubMenuOpen = true;
 
-            //// Optionally, raise a synthetic KeyDown event for Alt or F10
-            //var keyEvent = new KeyEventArgs
-            //{
-            //    RoutedEvent = InputElement.KeyDownEvent,
-            //    Key = Key.F10,
-            //    KeyModifiers = KeyModifiers.None,
-            //    Source = _systemMenuItem
-            //};
-            //_systemMenuItem.RaiseEvent(keyEvent);
+                //// Optionally, raise a synthetic KeyDown event for Alt or F10
+                //var keyEvent = new KeyEventArgs
+                //{
+                //    RoutedEvent = InputElement.KeyDownEvent,
+                //    Key = Key.F10,
+                //    KeyModifiers = KeyModifiers.None,
+                //    Source = _systemMenuItem
+                //};
+                //_systemMenuItem.RaiseEvent(keyEvent);
 
-            // find first enabled child menu and set focus to it.
-            var firstEnabledChild = _systemMenuItem.Items
-                .OfType<MenuItem>()
-                .FirstOrDefault(mi => mi.IsEnabled);
-            firstEnabledChild?.Focus();
+                // find first enabled child menu and set focus to it.
+                var firstEnabledChild = _systemMenuItem.Items
+                    .OfType<MenuItem>()
+                    .FirstOrDefault(mi => mi.IsEnabled);
+                firstEnabledChild?.Focus();
 
-        }, outputScheduler: AvaloniaScheduler.Instance);
+            }, outputScheduler: AvaloniaScheduler.Instance);
 
         MoveCommand = ReactiveCommand.Create(() =>
-        {
-            _keyboardMoving = true;
-            _keyboardSizing = false;
-            PseudoClasses.Add(":dragging");
-        },
-        canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state == WindowState.Normal),
-        outputScheduler: AvaloniaScheduler.Instance);
+            {
+                _keyboardMoving = true;
+                _keyboardSizing = false;
+                PseudoClasses.Add(":dragging");
+            },
+            canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state == WindowState.Normal),
+            outputScheduler: AvaloniaScheduler.Instance);
 
         SizeCommand = ReactiveCommand.Create(() =>
-        {
-            if (CanResize)
             {
-                _keyboardSizing = true;
-                _keyboardMoving = false;
-                PseudoClasses.Add(":sizing");
-            }
-            _focus?.Focus();
-        },
-        canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state == WindowState.Normal),
-        outputScheduler: AvaloniaScheduler.Instance);
+                if (CanResize)
+                {
+                    _keyboardSizing = true;
+                    _keyboardMoving = false;
+                    PseudoClasses.Add(":sizing");
+                }
+                _focus?.Focus();
+            },
+            canExecute: this.WhenAnyValue(win => win.CanResize),
+            outputScheduler: AvaloniaScheduler.Instance);
     }
 
     public void PreviousWindow()

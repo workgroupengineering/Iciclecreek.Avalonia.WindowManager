@@ -8,6 +8,7 @@
         x:Class="Demo.MyDialog"
         x:DataType="local:MyDialogViewModel"
         ShowActivated="True"
+                  CanResize="False"
         Title="{Binding Title}">
   <StackPanel Spacing="1" Margin="1">
     <StackPanel Orientation="Horizontal"  Spacing="1">
