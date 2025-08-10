@@ -206,7 +206,7 @@ public class ManagedWindow : OverlayPopupHost
         : base(layer)
     {
         OverlayLayer = layer;
-        layer.ZIndex = 10000;
+        layer.ZIndex = 1000000;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
 
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
