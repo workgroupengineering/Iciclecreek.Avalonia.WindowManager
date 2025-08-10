@@ -1203,6 +1203,7 @@ public class ManagedWindow : OverlayPopupHost
         }
 
         _systemMenu = e.NameScope.Find<Menu>(PART_SystemMenu);
+
         _systemMenuItem = _systemMenu?.Items.OfType<MenuItem>().FirstOrDefault();
 
         if (_systemMenuItem != null)
@@ -1494,6 +1495,8 @@ public class ManagedWindow : OverlayPopupHost
         {
             classes.Add(":sizing");
         }
+
+        IsEnabled = _modalDialog == null;
     }
 
 
