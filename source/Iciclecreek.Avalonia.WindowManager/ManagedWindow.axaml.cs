@@ -1508,12 +1508,12 @@ public class ManagedWindow : OverlayPopupHost
         }
 
         var windows = GetWindows().ToList();
-        int i = 1;// - windows.Count();
+        int i = -100;
         foreach (var win in windows.Where(win => win != this && win.WindowState != WindowState.Minimized))
         {
             win.ZIndex = i++;
             if (win.Topmost)
-                win.ZIndex = 0;
+                win.ZIndex = -1;
         }
 
         // bring all parent windows to top with the active one.
