@@ -1306,45 +1306,25 @@ public class ManagedWindow : OverlayPopupHost
                 }
             }
         }
-        else if (e.Key == Key.Tab)
+        else if ((e.Key == Key.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift)) ||
+                 (e.Key == Key.F6 && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift)))
         {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-            {
-                if (s_MRU == null)
-                    s_MRU = GetWindows().ToList();
-                PreviousWindow();
-                e.Handled = true;
-                // return because we don't want to reset the MRU 
-                return;
-            }
-            else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
-            {
-                if (s_MRU == null)
-                    s_MRU = GetWindows().ToList();
-                NextWindow();
-                e.Handled = true;
-                // return because we don't want to reset the MRU 
-                return;
-            }
+            if (s_MRU == null)
+                s_MRU = GetWindows().ToList();
+            NextWindow();
+            e.Handled = true;
+            // return because we don't want to reset the MRU 
+            return;
         }
-        else if (e.Key == Key.F6)
+        else if ((e.Key == Key.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Control)) ||
+                 (e.Key == Key.F6 && e.KeyModifiers.HasFlag(KeyModifiers.Control)))
         {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-            {
-                if (s_MRU == null)
-                    s_MRU = GetWindows().ToList();
-                PreviousWindow();
-                e.Handled = true;
-                return;
-            }
-            else
-            {
-                if (s_MRU == null)
-                    s_MRU = GetWindows().ToList();
-                NextWindow();
-                e.Handled = true;
-                return;
-            }
+            if (s_MRU == null)
+                s_MRU = GetWindows().ToList();
+            PreviousWindow();
+            e.Handled = true;
+            // return because we don't want to reset the MRU 
+            return;
         }
         s_MRU = null;
     }
