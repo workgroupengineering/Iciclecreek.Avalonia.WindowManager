@@ -39,7 +39,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
-[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder", ":notitle")]
+[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder", ":notitle", ":sizing", ":moving")]
 public class ManagedWindow : OverlayPopupHost
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
@@ -52,6 +52,7 @@ public class ManagedWindow : OverlayPopupHost
     public const string PART_RestoreButton = "PART_RestoreButton";
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_WindowBorder = "PART_WindowBorder";
+    public const string PART_ModalOverlay = "PART_ModalOverlay";
 
     // used to track MRU windows globally
     private static List<ManagedWindow> s_MRU = null;
@@ -71,6 +72,7 @@ public class ManagedWindow : OverlayPopupHost
     private Control? _focus;
     private Menu? _systemMenu;
     private MenuItem? _systemMenuItem;
+    private Panel? _modalOverlay;
     private bool _keyboardMoving;
     private bool _keyboardSizing;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
@@ -251,7 +253,7 @@ public class ManagedWindow : OverlayPopupHost
             {
                 _keyboardMoving = true;
                 _keyboardSizing = false;
-                PseudoClasses.Add(":dragging");
+                this.SetPsuedoClasses();
             },
             canExecute: this.WhenAnyValue(win => win.WindowState).Select(state => state == WindowState.Normal),
             outputScheduler: AvaloniaScheduler.Instance);
@@ -262,7 +264,7 @@ public class ManagedWindow : OverlayPopupHost
                 {
                     _keyboardSizing = true;
                     _keyboardMoving = false;
-                    PseudoClasses.Add(":sizing");
+                    this.SetPsuedoClasses();
                 }
                 _focus?.Focus();
             },
@@ -1209,6 +1211,12 @@ public class ManagedWindow : OverlayPopupHost
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
 
+        _modalOverlay = e.NameScope.Find<Panel>(PART_ModalOverlay);
+        if (_modalOverlay != null)
+        {
+            _modalOverlay.PointerPressed += OnModalOverlayClick;
+        }
+
         _windowBorder = e.NameScope.Find<Border>(PART_WindowBorder);
         SetupResize(_windowBorder);
 
@@ -1423,6 +1431,8 @@ public class ManagedWindow : OverlayPopupHost
         classes.Remove(":noborder");
         classes.Remove(":notitle");
         classes.Remove(":noresize");
+        classes.Remove(":moving");
+        classes.Remove(":sizing");
 
         if (isDragging)
             classes.Add(":dragging");
@@ -1466,6 +1476,15 @@ public class ManagedWindow : OverlayPopupHost
             case SystemDecorations.Full:
             default:
                 break;
+        }
+
+        if (_keyboardMoving)
+        {
+            classes.Add(":moving");
+        }
+        if (_keyboardSizing)
+        {
+            classes.Add(":sizing");
         }
     }
 
@@ -1789,4 +1808,12 @@ public class ManagedWindow : OverlayPopupHost
         }
         return !(Console.IsInputRedirected && Console.IsOutputRedirected && Console.IsErrorRedirected);
     }
+
+    private void OnModalOverlayClick(object? sender, PointerPressedEventArgs e)
+    {
+        _keyboardSizing = false;
+        _keyboardMoving = false;
+        SetPsuedoClasses();
+    }
+
 }

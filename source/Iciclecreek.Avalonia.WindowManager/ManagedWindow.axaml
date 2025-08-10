@@ -214,7 +214,7 @@
                                 Content="{TemplateBinding Content}" />
 
               <Panel Name="PART_ModalOverlay"
-                     Grid.RowSpan="2"
+                     Grid.RowSpan="2" 
                      IsVisible="false">
                 <Panel.Background>
                   <console:OnPlatformExtension x:TypeArguments="IBrush"
@@ -256,7 +256,19 @@
       <Setter Property="IsVisible" Value="False"/>
     </Style>
 
-    <!--maximized-->
+    <!-- window is being moved -->
+    <Style Selector="^:moving /template/ Panel#PART_ModalOverlay">
+      <Setter Property="Cursor" Value="SizeAll"/>
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+
+    <!-- window is being sized -->
+    <Style Selector="^:sizing /template/ Panel#PART_ModalOverlay">
+      <Setter Property="Cursor" Value="SizeAll"/>
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+
+  <!--maximized-->
     <Style Selector="^:maximized /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
