@@ -17,13 +17,9 @@ public partial class MyWindow : ManagedWindow
         [
             Brushes.LightBlue,
             Brushes.LightGreen,
-            Brushes.LightCyan,
             Brushes.LightSalmon,
             Brushes.LightSeaGreen,
             Brushes.LightSlateGray,
-            Brushes.LightCoral,
-            Brushes.LightGoldenrodYellow,
-            Brushes.LightPink
         ];
 
     public MyWindow()

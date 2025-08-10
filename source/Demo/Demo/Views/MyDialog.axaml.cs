@@ -14,15 +14,11 @@ public partial class MyDialog : ManagedWindow
     private static int _dialogCount = 0;
     private static IImmutableSolidColorBrush[] brushes =
          [
-             Brushes.LightBlue,
+            Brushes.LightBlue,
             Brushes.LightGreen,
-            Brushes.LightCyan,
             Brushes.LightSalmon,
             Brushes.LightSeaGreen,
             Brushes.LightSlateGray,
-            Brushes.LightCoral,
-            Brushes.LightGoldenrodYellow,
-            Brushes.LightPink
          ];
 
     public MyDialog()

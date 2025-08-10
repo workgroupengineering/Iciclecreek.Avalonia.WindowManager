@@ -206,7 +206,7 @@ public class ManagedWindow : OverlayPopupHost
         : base(layer)
     {
         OverlayLayer = layer;
-        //layer.ZIndex = 10000000;
+        layer.ZIndex = 10000;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
 
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
@@ -312,7 +312,10 @@ public class ManagedWindow : OverlayPopupHost
             }
         }
         ArgumentNullException.ThrowIfNull(visual);
-        return OverlayLayer.GetOverlayLayer(visual);
+        var overlayLayer = OverlayLayer.GetOverlayLayer(visual);
+        if (overlayLayer.Children.Count == 0)
+            overlayLayer.Children.Add(new AdornerLayer() { ZIndex = overlayLayer.ZIndex + 100 });
+        return overlayLayer;
     }
 
     /// <summary>
@@ -783,6 +786,11 @@ public class ManagedWindow : OverlayPopupHost
     public virtual void Show(Visual parent)
     {
         base.Show();
+
+        // make sure adorner is last to render
+        var adorner = this.OverlayLayer.Children.Single(child => child is AdornerLayer) as AdornerLayer;
+        this.OverlayLayer.Children.Remove(adorner);
+        this.OverlayLayer.Children.Add(adorner);
 
         //// Force a layout pass
         //Measure(Size.Infinity);
@@ -1493,11 +1501,11 @@ public class ManagedWindow : OverlayPopupHost
     {
         foreach (var win in GetWindows().Where(win => win != this && win.WindowState == WindowState.Minimized))
         {
-            win.ZIndex = -10000;
+            win.ZIndex = 0;
         }
 
         var windows = GetWindows().ToList();
-        int i = 0 - windows.Count();
+        int i = 1;// - windows.Count();
         foreach (var win in windows.Where(win => win != this && win.WindowState != WindowState.Minimized))
         {
             win.ZIndex = i++;
