@@ -180,7 +180,6 @@ public class ManagedWindow : ContentControl
     public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
         RoutedEvent.Register<ManagedWindow, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
-
     static ManagedWindow()
     {
         AffectsRender<ManagedWindow>(
@@ -217,16 +216,6 @@ public class ManagedWindow : ContentControl
                 if (_systemMenuItem != null)
                 {
                     _systemMenuItem.IsSubMenuOpen = true;
-
-                    //// Optionally, raise a synthetic KeyDown event for Alt or F10
-                    //var keyEvent = new KeyEventArgs
-                    //{
-                    //    RoutedEvent = InputElement.KeyDownEvent,
-                    //    Key = Key.F10,
-                    //    KeyModifiers = KeyModifiers.None,
-                    //    Source = _systemMenuItem
-                    //};
-                    //_systemMenuItem.RaiseEvent(keyEvent);
 
                     // find first enabled child menu and set focus to it.
                     var firstEnabledChild = _systemMenuItem.Items
@@ -511,6 +500,15 @@ public class ManagedWindow : ContentControl
 
             _modalDialog = value;
             SetPsuedoClasses();
+            if (_modalDialog != null)
+            {
+                _modalDialog.Closed += (s, e) =>
+                {
+                    _modalDialog = null;
+                    SetPsuedoClasses();
+                };
+            }
+
         }
     }
 
@@ -784,7 +782,8 @@ public class ManagedWindow : ContentControl
         else
         {
             // try and find the window host as parent of this element.
-            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>();
+            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>() ?? 
+                parent.FindDescendantOfType<WindowsPanel>();
         }
 
         ArgumentNullException.ThrowIfNull(WindowsPanel, nameof(WindowsPanel));
@@ -856,24 +855,28 @@ public class ManagedWindow : ContentControl
         if (ModalDialog != null)
             throw new NotSupportedException("Already showing a modal dialog for this window");
 
-        IInputElement ownerFocus = null;
-        ManagedWindow owner = parent as ManagedWindow;
-        if (owner != null)
-        {
-            // we have an owner
-            var topLevel = TopLevel.GetTopLevel(owner);
-            owner.ModalDialog = this;
-        }
-
         var result = new TaskCompletionSource<TResult>();
+
+        this.Show(parent);
+        // NOTE: Coming out Show we should have WindowsPanel set to the panel and Owner set to the owner window if it exists.
+
+        if (this.Owner != null)
+        {
+            // we have an owner, we need to set the modal dialog on the owner.
+            this.Owner.ModalDialog = this;
+        }
+        else
+        {
+            this.WindowsPanel.ModalDialog = this;
+        }
 
         this.Closed += (sender, e) =>
         {
             // when dialog closes change focus back to owner.
-            if (owner != null)
+            if (this.Owner != null)
             {
-                owner.ModalDialog = null;
-                owner.Activate();
+                this.Owner.ModalDialog = null;
+                this.Owner.Activate();
             }
             else
             {
@@ -882,14 +885,6 @@ public class ManagedWindow : ContentControl
 
             result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
         };
-
-        this.Show(owner);
-
-        if (owner == null)
-        {
-            // this activates the windows panel modal behavior
-            this.WindowsPanel.ModalDialog = this;
-        }
 
         return result.Task;
     }

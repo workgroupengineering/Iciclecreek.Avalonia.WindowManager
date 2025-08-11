@@ -51,7 +51,17 @@ namespace Iciclecreek.Avalonia.WindowManager
                     throw new NotSupportedException("Already showing a modal dialog for this window");
 
                 _modalDialog = value;
-                _modalOverlay.IsVisible = _modalDialog != null;
+                if (_modalDialog != null)
+                {
+                    _modalOverlay.ZIndex = _modalDialog.ZIndex++;
+                    _modalOverlay.IsVisible = true;
+
+                    _modalDialog.Closed += (s, e) =>
+                    {
+                        _modalDialog = null;
+                        _modalOverlay.IsVisible = false;
+                    };
+                }
             }
         }
 
