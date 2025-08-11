@@ -40,7 +40,7 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
 [PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder", ":notitle", ":sizing", ":moving")]
-public class ManagedWindow : OverlayPopupHost
+public class ManagedWindow : ContentControl
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
     public const string PART_TitleBar = "PART_TitleBar";
@@ -75,6 +75,7 @@ public class ManagedWindow : OverlayPopupHost
     private Panel? _modalOverlay;
     private bool _keyboardMoving;
     private bool _keyboardSizing;
+    private ManagedWindow? _modalDialog;
     private readonly List<(ManagedWindow Child, bool IsDialog)> _children = new List<(ManagedWindow, bool)>();
 
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
@@ -193,20 +194,7 @@ public class ManagedWindow : OverlayPopupHost
     }
 
     public ManagedWindow()
-        : this(GetOverlayLayer(null))
     {
-    }
-
-    public ManagedWindow(Visual? visual = null)
-        : this(GetOverlayLayer(visual))
-    {
-    }
-
-    public ManagedWindow(OverlayLayer layer)
-        : base(layer)
-    {
-        OverlayLayer = layer;
-        layer.ZIndex = 1000000;
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
 
         CloseCommand = ReactiveCommand.Create(() => Close(), outputScheduler: AvaloniaScheduler.Instance);
@@ -270,6 +258,24 @@ public class ManagedWindow : OverlayPopupHost
             },
             canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState, (canResize, windowState) => canResize && windowState == WindowState.Normal),
             outputScheduler: AvaloniaScheduler.Instance);
+        this.Loaded += ManagedWindow_Loaded;
+        this.GotFocus += OnGetFocus;
+    }
+
+    private void OnGetFocus(object? sender, GotFocusEventArgs e)
+    {
+        // restore focus
+        _focus = (Control)e.Source;
+    }
+
+    private void ManagedWindow_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (_focus == null)
+        {
+            _focus = _content.GetVisualDescendants().OfType<Control>().FirstOrDefault(c => c.Focusable);
+            if (_focus != null)
+                _focus.Focus();
+        }
     }
 
     public void PreviousWindow()
@@ -296,26 +302,6 @@ public class ManagedWindow : OverlayPopupHost
         {
             s_MRU.First().Activate();
         }
-    }
-
-    private static OverlayLayer GetOverlayLayer(Visual? visual)
-    {
-        if (visual == null)
-        {
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                visual = desktop.MainWindow;
-            }
-            else if (Application.Current.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
-            {
-                visual = singleView.MainView;
-            }
-        }
-        ArgumentNullException.ThrowIfNull(visual);
-        var overlayLayer = OverlayLayer.GetOverlayLayer(visual);
-        if (overlayLayer.Children.Count == 0)
-            overlayLayer.Children.Add(new AdornerLayer() { ZIndex = overlayLayer.ZIndex + 100 });
-        return overlayLayer;
     }
 
     /// <summary>
@@ -507,9 +493,14 @@ public class ManagedWindow : OverlayPopupHost
     /// <inheritdoc />
     public IFocusManager? FocusManager => TopLevel.GetTopLevel(this)!.FocusManager;
 
-    public OverlayLayer OverlayLayer { get; init; }
+    /// <summary>
+    /// The WindowsPanel that this window is hosted in.
+    /// </summary>
+    public WindowsPanel WindowsPanel { get; private set; }
 
-    private ManagedWindow? _modalDialog;
+    /// <summary>
+    /// When a window has a modal dialog, this property will be set to the modal dialog.
+    /// </summary>
     public ManagedWindow? ModalDialog
     {
         get => _modalDialog;
@@ -634,7 +625,7 @@ public class ManagedWindow : OverlayPopupHost
             case WindowState.Maximized:
                 if (_normalRect.Width == 0 && _normalRect.Height == 0)
                 {
-                    _normalRect = new Rect((int)2, (int)2, (int)OverlayLayer.Bounds.Width - 4, (int)OverlayLayer.Bounds.Height - 4);
+                    _normalRect = new Rect((int)2, (int)2, (int)WindowsPanel.Bounds.Width - 4, (int)WindowsPanel.Bounds.Height - 4);
                     if (_windowBorder != null)
                     {
                         _normalBoxShadow = _windowBorder.BoxShadow!;
@@ -654,11 +645,11 @@ public class ManagedWindow : OverlayPopupHost
         SetPsuedoClasses();
 
         await ResizeAnimation(new Rect(this.Position.X, this.Position.Y, this.Bounds.Width, this.Bounds.Height),
-                              new Rect(0, 0, OverlayLayer.Bounds.Width, OverlayLayer.Bounds.Height));
+                              new Rect(0, 0, WindowsPanel.Bounds.Width, WindowsPanel.Bounds.Height));
 
         this.Position = new PixelPoint((ushort)0, (ushort)0);
-        this.Width = OverlayLayer.Bounds.Width;
-        this.Height = OverlayLayer.Bounds.Height;
+        this.Width = WindowsPanel.Bounds.Width;
+        this.Height = WindowsPanel.Bounds.Height;
         if (_windowBorder != null)
         {
             _windowBorder.Margin = new Thickness(0);
@@ -734,20 +725,11 @@ public class ManagedWindow : OverlayPopupHost
             BringToTop();
             SetPsuedoClasses();
 
-            if (_focus == null)
-            {
-                _focus = GetDefaultFocus();
-            }
-            _focus?.Focus();
+            if (_focus != null)
+                _focus.Focus();
         }
     }
 
-    private Control? GetDefaultFocus()
-    {
-        return _content.GetVisualDescendants()
-               .OfType<Control>()
-               .FirstOrDefault(c => c.IsEffectivelyEnabled && c.IsVisible && c.Focusable);
-    }
 
     /// <summary>
     /// Deactivates the window
@@ -756,24 +738,13 @@ public class ManagedWindow : OverlayPopupHost
     {
         if (IsActive)
         {
-            _focus = GetCurrentFocus();
             IsActive = false;
             OnDeactivated();
             SetPsuedoClasses();
         }
     }
 
-    private Control? GetCurrentFocus()
-    {
-        var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
-        var focusedElement = focusManager?.GetFocusedElement();
-        if (focusedElement is Control control && this.IsVisualAncestorOf(control))
-        {
-            // 'control' is the focused control within 'this'
-            return control;
-        }
-        return null;
-    }
+   
 
     public new void Show()
     {
@@ -785,21 +756,43 @@ public class ManagedWindow : OverlayPopupHost
     /// </summary>
     public virtual void Show(Visual parent)
     {
-        base.Show();
+        if (parent == null)
+        {
+            // search from top down
+            if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
+            {
+                parent = singleView.MainView.FindDescendantOfType<WindowsPanel>();
+            }
+            else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                parent = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>();
+            }
+            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
+        }
 
-        // make sure adorner is last to render
-        var adorner = this.OverlayLayer.Children.Single(child => child is AdornerLayer) as AdornerLayer;
-        this.OverlayLayer.Children.Remove(adorner);
-        this.OverlayLayer.Children.Add(adorner);
+        if (parent is WindowsPanel wh)
+        {
+            // parent is a windows panel
+            this.WindowsPanel = wh;
+        }
+        else if (parent is ManagedWindow mw)
+        {
+            // window is a dialog, it shares the same window host and it's owner is the parent window
+            this.WindowsPanel = mw.WindowsPanel;
+            Owner = mw;
+        }
+        else
+        {
+            // try and find the window host as parent of this element.
+            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>();
+        }
+
+        ArgumentNullException.ThrowIfNull(WindowsPanel, nameof(WindowsPanel));
+        WindowsPanel.Children.Add(this);
 
         //// Force a layout pass
         //Measure(Size.Infinity);
         //Arrange(new Rect(DesiredSize));
-        Owner = parent as ManagedWindow;
-        if (Owner == null)
-        {
-            Owner = parent?.GetVisualParent<ManagedWindow>();
-        }
 
         SetWindowStartupLocation();
 
@@ -843,7 +836,7 @@ public class ManagedWindow : OverlayPopupHost
     /// <returns>
     /// A task that can be used to track the lifetime of the dialog.
     /// </returns>
-    public Task ShowDialog(ManagedWindow? owner = null)
+    public Task ShowDialog(Visual? owner = null)
     {
         return ShowDialog<object>(owner);
     }
@@ -858,18 +851,14 @@ public class ManagedWindow : OverlayPopupHost
     /// <returns>.
     /// A task that can be used to retrieve the result of the dialog when it closes.
     /// </returns>
-    public Task<TResult> ShowDialog<TResult>(ManagedWindow? owner = null)
+    public Task<TResult> ShowDialog<TResult>(Visual? parent = null)
     {
         if (ModalDialog != null)
             throw new NotSupportedException("Already showing a modal dialog for this window");
 
-
         IInputElement ownerFocus = null;
-        if (owner == null)
-        {
-            this.OverlayLayer.Classes.Add("hasdialog");
-        }
-        else
+        ManagedWindow owner = parent as ManagedWindow;
+        if (owner != null)
         {
             // we have an owner
             var topLevel = TopLevel.GetTopLevel(owner);
@@ -891,13 +880,19 @@ public class ManagedWindow : OverlayPopupHost
             }
             else
             {
-                this.OverlayLayer.Classes.Remove("hasdialog");
+                this.WindowsPanel.ModalDialog = null;
             }
 
             result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
         };
 
         this.Show(owner);
+
+        if (owner == null)
+        {
+            // this activates the windows panel modal behavior
+            this.WindowsPanel.ModalDialog = this;
+        }
 
         return result.Task;
     }
@@ -959,8 +954,11 @@ public class ManagedWindow : OverlayPopupHost
         Owner = null;
         OnClosed(new EventArgs());
         RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
-        this.Hide();
 
+        if (this.Parent is Panel parentPanel)
+        {
+            parentPanel.Children.Remove(this);
+        }
         if (s_MRU == null)
             s_MRU = GetWindows().ToList();
 
@@ -1219,6 +1217,7 @@ public class ManagedWindow : OverlayPopupHost
         }
 
         _content = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter);
+        ArgumentNullException.ThrowIfNull(_content);
 
         _modalOverlay = e.NameScope.Find<Panel>(PART_ModalOverlay);
         if (_modalOverlay != null)
@@ -1230,7 +1229,6 @@ public class ManagedWindow : OverlayPopupHost
         SetupResize(_windowBorder);
 
         this.Tapped += OnTapped;
-
         _loaded = true;
     }
 
@@ -1508,12 +1506,12 @@ public class ManagedWindow : OverlayPopupHost
         }
 
         var windows = GetWindows().ToList();
-        int i = -100;
+        int i = 0;
         foreach (var win in windows.Where(win => win != this && win.WindowState != WindowState.Minimized))
         {
             win.ZIndex = i++;
             if (win.Topmost)
-                win.ZIndex = -1;
+                win.ZIndex = 0;
         }
 
         // bring all parent windows to top with the active one.
@@ -1737,7 +1735,7 @@ public class ManagedWindow : OverlayPopupHost
     {
         var startupLocation = GetEffectiveWindowStartupLocation();
 
-        var screenSize = new PixelRect(0, 0, (int)OverlayLayer.Bounds.Width, (int)OverlayLayer.Bounds.Height);
+        var screenSize = new PixelRect(0, 0, (int)WindowsPanel.Bounds.Width, (int)WindowsPanel.Bounds.Height);
 
         PixelRect size;
         switch (this.SizeToContent)
@@ -1802,9 +1800,9 @@ public class ManagedWindow : OverlayPopupHost
 
     private IEnumerable<ManagedWindow> GetWindows()
     {
-        if (OverlayLayer == null)
+        if (WindowsPanel == null)
             return Array.Empty<ManagedWindow>();
-        return OverlayLayer.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
+        return WindowsPanel.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
     }
 
     public bool IsConsole()

@@ -29,8 +29,19 @@ App.axaml
 ```
 
 # Usage
-This library defines a single class:
-* **ManagedWindow** - a Window implementation which isn't native but instead 100% avalonia 
+This library defines two controls:
+* **WindowsPanel** - a panel which hosts windows
+* **ManagedWindow** - a Managed Window implementation which is 100% avalonia controls (no system windows).
+
+## WindowsPanel control
+The **WindowsPanel** control creates a region that hosts multiple windows. Simply add it to your main view xaml.
+```xml
+<Grid>
+    <wm:WindowsPanel x:Name="windowsPanel"/>
+    ...
+</Grid>
+```
+
  
 ## ManagedWindow control
 The **ManagedWindow** control is a clone of the **Window** control. It has standard Window properties like **Title**, **WindowState**, **WindowStartupLocation**, **Position**, etc.
@@ -62,7 +73,7 @@ To show a dialog is exactly the same as Avalonia, you instantiate a ManagedWindo
        WindowStartupLocation=WindowStartupLocation.CenterScreen,
        Width=300, Height=300
    };
-    var result = await dialogWindow.ShowDialog<string>(this);
+   var result = await dialogWindow.ShowDialog<string>(parent);
 ```
 
 To close a dialog you call **Close(result)**;
