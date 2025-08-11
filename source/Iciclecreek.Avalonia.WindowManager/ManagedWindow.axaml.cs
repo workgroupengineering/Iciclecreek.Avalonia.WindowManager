@@ -754,14 +754,14 @@ public class ManagedWindow : ContentControl
     /// <summary>
     /// Shows the window.
     /// </summary>
-    public virtual void Show(Visual parent)
+    public virtual void Show(Visual? parent)
     {
         if (parent == null)
         {
             // search from top down
             if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
             {
-                parent = singleView.MainView.FindDescendantOfType<WindowsPanel>();
+                parent = singleView.MainView?.FindDescendantOfType<WindowsPanel>();
             }
             else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -862,7 +862,6 @@ public class ManagedWindow : ContentControl
         {
             // we have an owner
             var topLevel = TopLevel.GetTopLevel(owner);
-            ownerFocus = topLevel.FocusManager!.GetFocusedElement();
             owner.ModalDialog = this;
         }
 
@@ -875,8 +874,6 @@ public class ManagedWindow : ContentControl
             {
                 owner.ModalDialog = null;
                 owner.Activate();
-                if (ownerFocus != null)
-                    ownerFocus.Focus();
             }
             else
             {
@@ -1511,7 +1508,7 @@ public class ManagedWindow : ContentControl
         {
             win.ZIndex = i++;
             if (win.Topmost)
-                win.ZIndex = 0;
+                win.ZIndex = windows.Count();
         }
 
         // bring all parent windows to top with the active one.

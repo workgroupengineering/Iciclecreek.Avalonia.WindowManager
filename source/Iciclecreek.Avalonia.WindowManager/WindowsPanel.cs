@@ -55,8 +55,6 @@ namespace Iciclecreek.Avalonia.WindowManager
             }
         }
 
-        public ManagedWindow? Dialog { get; set; }
-
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -86,10 +84,10 @@ namespace Iciclecreek.Avalonia.WindowManager
         /// <exception cref="NotSupportedException"></exception>
         public Task ShowDialog(ManagedWindow window)
         {
-            if (Dialog != null)
+            if (ModalDialog != null)
                 throw new NotSupportedException("Already showing a dialog for this window");
-            Dialog = window;
-            return window.ShowDialog(this);
+            ModalDialog = window;
+            return ModalDialog.ShowDialog(this);
         }
     }
 }
