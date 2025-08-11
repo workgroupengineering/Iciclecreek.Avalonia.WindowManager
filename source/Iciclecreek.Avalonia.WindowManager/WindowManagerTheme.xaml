@@ -60,14 +60,6 @@
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
   </Style>
-  <Style Selector="OverlayLayer.hasdialog">
-    <Setter Property="Background">
-      <Setter.Value>
-        <console:OnPlatform Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
-                            Console="{DynamicResource ThemeShadeBrush}"/>
-      </Setter.Value>
-    </Setter> 
-  </Style>
   
   <StyleInclude Source="avares://IconPacks.Avalonia.Codicons/Codicons.axaml" />
 

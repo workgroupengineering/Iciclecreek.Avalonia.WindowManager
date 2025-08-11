@@ -6,6 +6,8 @@
                        xmlns:vm="using:Demo.ViewModels"
                        x:Class="Demo.Views.MainView"
                        x:DataType="vm:MainViewModel">
+  <wm:WindowsPanel />
+  
   <StackPanel Spacing="1">
     <StackPanel Orientation="Horizontal" Spacing="1">
       <Label>SizeToContent for new Window</Label>
@@ -41,5 +43,12 @@
       <TextBlock Text="Counter:"  VerticalAlignment="Center" />
       <TextBlock Text="{Binding Counter}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </StackPanel>
+    
+    <StackPanel Orientation="Horizontal" Spacing="1">
+      <Button Click="OnShowDialog" HorizontalAlignment="Left">Show dialog</Button>
+      <TextBlock Text="DialogResult:"/>
+      <TextBlock Text="{Binding Text}"/>
+    </StackPanel>
+
   </StackPanel>
 </Grid>

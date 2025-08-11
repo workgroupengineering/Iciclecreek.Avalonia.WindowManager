@@ -9,5 +9,12 @@ namespace Demo.ViewModels
 
         [ObservableProperty]
         private int _counter;
+
+        [ObservableProperty]
+        private string _text = string.Empty;
+
+        [ObservableProperty]
+        private string _title = "New Window";
+
     }
 }
