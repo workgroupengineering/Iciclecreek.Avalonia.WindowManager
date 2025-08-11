@@ -247,24 +247,35 @@ public class ManagedWindow : ContentControl
             },
             canExecute: this.WhenAnyValue(win => win.CanResize, win => win.WindowState, (canResize, windowState) => canResize && windowState == WindowState.Normal),
             outputScheduler: AvaloniaScheduler.Instance);
-        this.Loaded += ManagedWindow_Loaded;
         this.GotFocus += OnGetFocus;
     }
 
-    private void OnGetFocus(object? sender, GotFocusEventArgs e)
+    protected override void OnLoaded(RoutedEventArgs e)
     {
-        // restore focus
-        _focus = (Control)e.Source;
-    }
+        base.OnLoaded(e);
 
-    private void ManagedWindow_Loaded(object? sender, RoutedEventArgs e)
-    {
         if (_focus == null)
         {
             _focus = _content.GetVisualDescendants().OfType<Control>().FirstOrDefault(c => c.Focusable);
             if (_focus != null)
                 _focus.Focus();
         }
+
+        this.WindowsPanel.SizeChanged += OnWindowsPanelSizeChanged;
+    }
+
+    private void OnWindowsPanelSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            Width = WindowsPanel.Bounds.Width;
+            Height = WindowsPanel.Bounds.Height;
+        }
+    }
+
+    private void OnGetFocus(object? sender, GotFocusEventArgs e)
+    {
+        _focus = (Control)e.Source;
     }
 
     public void PreviousWindow()
@@ -782,8 +793,20 @@ public class ManagedWindow : ContentControl
         else
         {
             // try and find the window host as parent of this element.
-            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>() ?? 
-                parent.FindDescendantOfType<WindowsPanel>();
+            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>(true) ?? 
+                parent.FindDescendantOfType<WindowsPanel>(true);
+            if (this.WindowsPanel == null)
+            {
+                // search from top down
+                if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
+                {
+                    WindowsPanel = singleView.MainView?.FindDescendantOfType<WindowsPanel>(true);
+                }
+                else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    WindowsPanel = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>(true);
+                }
+            }
         }
 
         ArgumentNullException.ThrowIfNull(WindowsPanel, nameof(WindowsPanel));
@@ -828,7 +851,7 @@ public class ManagedWindow : ContentControl
     /// <summary>
     /// Shows the window as a dialog.
     /// </summary>
-    /// <param name="owner">The dialog's owner window.</param>
+    /// <param name="owner">The dialog's owner window. if null this will be global modal</param>
     /// <exception cref="InvalidOperationException">
     /// The window has already been closed.
     /// </exception>
@@ -846,7 +869,7 @@ public class ManagedWindow : ContentControl
     /// <typeparam name="TResult">
     /// The type of the result produced by the dialog.
     /// </typeparam>
-    /// <param name="owner">The dialog's owner window.</param>
+    /// <param name="owner">The dialog's owner window. if null this will be a global modal</param>
     /// <returns>.
     /// A task that can be used to retrieve the result of the dialog when it closes.
     /// </returns>
