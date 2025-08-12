@@ -770,16 +770,14 @@ public class ManagedWindow : ContentControl
             // search from top down
             if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
             {
-                parent = singleView.MainView?.FindDescendantOfType<WindowsPanel>();
+                WindowsPanel = singleView.MainView?.FindDescendantOfType<WindowsPanel>();
             }
             else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                parent = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>();
+                WindowsPanel = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>();
             }
-            ArgumentNullException.ThrowIfNull(parent, nameof(parent));
         }
-
-        if (parent is WindowsPanel wh)
+        else if (parent is WindowsPanel wh)
         {
             // parent is a windows panel
             this.WindowsPanel = wh;
@@ -793,8 +791,8 @@ public class ManagedWindow : ContentControl
         else
         {
             // try and find the window host as parent of this element.
-            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>(true) ?? 
-                parent.FindDescendantOfType<WindowsPanel>(true);
+            this.WindowsPanel = parent.FindAncestorOfType<WindowsPanel>(true) ??
+                                parent.FindDescendantOfType<WindowsPanel>(true);
             if (this.WindowsPanel == null)
             {
                 // search from top down
@@ -809,7 +807,9 @@ public class ManagedWindow : ContentControl
             }
         }
 
-        ArgumentNullException.ThrowIfNull(WindowsPanel, nameof(WindowsPanel));
+        if (WindowsPanel == null)
+            throw new ArgumentNullException(nameof(WindowsPanel), "To show a window you need to add a WindowsPanel to your visual hierachy.");
+        
         WindowsPanel.Children.Add(this);
 
         //// Force a layout pass
