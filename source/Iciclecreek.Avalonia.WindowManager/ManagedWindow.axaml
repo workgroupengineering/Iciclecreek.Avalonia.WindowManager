@@ -223,12 +223,12 @@
     <!-- dialog state styles -->
 
     <!-- window is a dialog -->
-    <Style Selector="^:noresize /template/ Border#PART_WindowBorder">
+    <Style Selector="^:fixedsize /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <!-- window has a dialog -->
-    <Style Selector="^:hasdialog /template/ Panel#PART_ModalOverlay">
+    <Style Selector="^:hasmodal /template/ Panel#PART_ModalOverlay">
       <Setter Property="IsVisible" Value="True"/>
     </Style>
 

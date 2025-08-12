@@ -20,7 +20,6 @@ using Avalonia.VisualTree;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -38,7 +37,19 @@ namespace Iciclecreek.Avalonia.WindowManager;
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_WindowBorder, typeof(Border))]
 [TemplatePart(PART_ContentPresenter, typeof(Control))]
-[PseudoClasses(":minimized", ":maximized", ":normal", ":dragging", ":active", ":hasmodal", ":ismodal", ":noborder", ":notitle", ":sizing", ":moving")]
+[PseudoClasses(
+    CLASS_Minimized, // window is minimized
+    CLASS_Maximized, // window is maximized
+    CLASS_Normal,    // window is normal
+    CLASS_Dragging,  // window is being dragged by mouse
+    CLASS_Active,    // window is active
+    CLASS_HasModal,  // window has a modal dialog open
+    CLASS_IsModal,   // window is a modal dialog
+    CLASS_NoBorder,  // window has no border
+    CLASS_NoTitle,   // window has no title bar
+    CLASS_FixedSize, // window should not be resizable
+    CLASS_Sizing,    // window is being resized by keyboard
+    CLASS_Moving)]   // window is being moved by keyboard
 public class ManagedWindow : ContentControl
 {
     public const string PART_ContentPresenter = "PART_ContentPresenter";
@@ -52,6 +63,19 @@ public class ManagedWindow : ContentControl
     public const string PART_CloseButton = "PART_CloseButton";
     public const string PART_WindowBorder = "PART_WindowBorder";
     public const string PART_ModalOverlay = "PART_ModalOverlay";
+
+    private const string CLASS_Minimized = ":minimized";
+    private const string CLASS_Maximized = ":maximized";
+    private const string CLASS_Normal = ":normal";
+    private const string CLASS_Dragging = ":dragging";
+    private const string CLASS_Active = ":active";
+    private const string CLASS_HasModal = ":hasmodal";
+    private const string CLASS_IsModal = ":ismodal";
+    private const string CLASS_NoBorder = ":noborder";
+    private const string CLASS_NoTitle = ":notitle";
+    private const string CLASS_Sizing = ":sizing";
+    private const string CLASS_Moving = ":moving";
+    private const string CLASS_FixedSize = ":fixedsize";
 
     // used to track MRU windows globally
     private static List<ManagedWindow> s_MRU = null;
@@ -910,7 +934,7 @@ public class ManagedWindow : ContentControl
 
             result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
         };
-
+        SetPsuedoClasses();
         return result.Task;
     }
 
@@ -1441,58 +1465,63 @@ public class ManagedWindow : ContentControl
     private void SetPsuedoClasses(bool isDragging = false)
     {
         var classes = ((IPseudoClasses)this.Classes);
-        classes.Remove(":active");
-        classes.Remove(":dragging");
-
-        classes.Remove(":minimized");
-        classes.Remove(":normal");
-        classes.Remove(":maximized");
-
-        classes.Remove(":hasdialog");
-        classes.Remove(":noborder");
-        classes.Remove(":notitle");
-        classes.Remove(":noresize");
-        classes.Remove(":moving");
-        classes.Remove(":sizing");
+        classes.Remove(CLASS_Minimized);
+        classes.Remove(CLASS_Maximized);
+        classes.Remove(CLASS_Normal);
+        classes.Remove(CLASS_Dragging);
+        classes.Remove(CLASS_Active);
+        classes.Remove(CLASS_HasModal);
+        classes.Remove(CLASS_IsModal);
+        classes.Remove(CLASS_NoBorder);
+        classes.Remove(CLASS_NoTitle);
+        classes.Remove(CLASS_Sizing);
+        classes.Remove(CLASS_Moving);
+        classes.Remove(CLASS_FixedSize);
 
         if (isDragging)
-            classes.Add(":dragging");
+            classes.Add(CLASS_Dragging);
 
         if (IsActive)
-            classes.Add(":active");
+            classes.Add(CLASS_Active);
 
         if (ModalDialog != null)
-            classes.Add(":hasdialog");
+        {
+            classes.Add(CLASS_HasModal);
+        }
+        IsEnabled = ModalDialog == null;
+
+        if (Owner != null)
+            classes.Add(CLASS_IsModal);
 
         if (!CanResize)
-            classes.Add(":noresize");
+            classes.Add(CLASS_FixedSize);
 
         switch (WindowState)
         {
             case WindowState.Minimized:
-                classes.Add(":minimized");
+                classes.Add(CLASS_Minimized);
                 break;
             case WindowState.Maximized:
-                classes.Add(":maximized");
+                classes.Add(CLASS_Maximized);
                 break;
             case WindowState.Normal:
-                classes.Add(":normal");
+                classes.Add(CLASS_Normal);
                 break;
             case WindowState.FullScreen:
-                classes.Add(":maximized");
-                classes.Add(":noborder");
-                classes.Add(":notitle");
+                classes.Add(CLASS_Maximized);
+                classes.Add(CLASS_NoBorder);
+                classes.Add(CLASS_NoTitle);
                 break;
         }
 
         switch (SystemDecorations)
         {
             case SystemDecorations.None:
-                classes.Add(":noborder");
-                classes.Add(":notitle");
+                classes.Add(CLASS_NoBorder);
+                classes.Add(CLASS_NoTitle);
                 break;
             case SystemDecorations.BorderOnly:
-                classes.Add(":notitle");
+                classes.Add(CLASS_NoTitle);
                 break;
             case SystemDecorations.Full:
             default:
@@ -1501,14 +1530,13 @@ public class ManagedWindow : ContentControl
 
         if (_keyboardMoving)
         {
-            classes.Add(":moving");
+            classes.Add(CLASS_Moving);
         }
         if (_keyboardSizing)
         {
-            classes.Add(":sizing");
+            classes.Add(CLASS_Sizing);
         }
 
-        IsEnabled = _modalDialog == null;
     }
 
 
