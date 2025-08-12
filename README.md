@@ -22,7 +22,6 @@ App.axaml
              x:Class="Demo.App"
              RequestedThemeVariant="Default">
   <Application.Styles>
-    <FluentTheme />
     <wm:WindowManagerTheme/>
   </Application.Styles>
 </Application>
@@ -36,10 +35,7 @@ This library defines two controls:
 ## WindowsPanel control
 The **WindowsPanel** control creates a region that hosts multiple windows. Simply add it to your main view xaml.
 ```xml
-<Grid>
-    <wm:WindowsPanel/>
-    ...
-</Grid>
+    <wm:WindowsPanel x:Name="Windows"/>
 ```
 
 ## ManagedWindow control
@@ -58,10 +54,10 @@ And code behind
        WindowStartupLocation=WindowStartupLocation.CenterScreen,
        Width=300, Height=300
    };
-   window.Show()
+   Windows.Show(window);
 ```
 
-To close a window you simple call **Close()**.
+To close a window you simple call **window.Close()**.
 
 ### Showing a Dialog
 To show a dialog is exactly the same as Avalonia, you instantiate a ManagedWindow and call **.ShowDialog() **passing in the parent window.
