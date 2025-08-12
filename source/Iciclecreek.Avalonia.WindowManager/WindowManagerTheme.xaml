@@ -53,6 +53,7 @@
       <Thickness x:Key='ManagedWindow_BorderThickness'>4</Thickness>
       <x:Double x:Key="ManagedWindow_SystemIconSize">12</x:Double>
       <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+
     </ResourceDictionary>
   </Styles.Resources>
 
@@ -60,7 +61,28 @@
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
   </Style>
-  
+
+  <!-- set default style for the WindowsPanel type -->
+  <Style Selector=":is(wm|WindowsPanel)">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <ContentPresenter Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+          <Canvas x:Name="PART_Windows" ZIndex="10000"/>
+          <Panel x:Name="PART_ModalOverlay" ZIndex="9999" IsVisible="False">
+            <Panel.Background>
+              <console:OnPlatformExtension x:TypeArguments="IBrush"
+                                             Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                                             Console="{DynamicResource ThemeShadeBrush}"/>
+            </Panel.Background>
+          </Panel>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
   <StyleInclude Source="avares://IconPacks.Avalonia.Codicons/Codicons.axaml" />
 
 </Styles>

@@ -1,11 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Demo.ViewModels;
+using Iciclecreek.Avalonia.WindowManager;
 using System;
 
 namespace Demo.Views
 {
-    public partial class MainView : Grid
+    public partial class MainView : WindowsPanel
     {
         public MainView()
         {

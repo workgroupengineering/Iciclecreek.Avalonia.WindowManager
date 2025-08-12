@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
+        xmlns:console="https://github.com/jinek/consolonia">
+
+  <ControlTheme x:Key="{x:Type wm:WindowsPanel}"
+                TargetType="wm:WindowsPanel">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid>
+            <Canvas x:Name="PART_Windows" />
+            <ContentControl x:Name="PART_Content"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+            <Panel x:Name="PART_ModalOverlay"
+                   IsVisible="False">
+              <Panel.Background>
+                <console:OnPlatformExtension x:TypeArguments="IBrush"
+                                               Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
+                                               Console="{DynamicResource ThemeShadeBrush}"/>
+              </Panel.Background>
+            </Panel>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+
+</ResourceDictionary>

@@ -753,7 +753,7 @@ public class ManagedWindow : ContentControl
         }
     }
 
-   
+
 
     public new void Show()
     {
@@ -770,11 +770,11 @@ public class ManagedWindow : ContentControl
             // search from top down
             if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
             {
-                WindowsPanel = singleView.MainView?.FindDescendantOfType<WindowsPanel>();
+                WindowsPanel = singleView.MainView?.FindDescendantOfType<WindowsPanel>(true);
             }
             else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                WindowsPanel = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>();
+                WindowsPanel = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>(true);
             }
         }
         else if (parent is WindowsPanel wh)
@@ -809,8 +809,8 @@ public class ManagedWindow : ContentControl
 
         if (WindowsPanel == null)
             throw new ArgumentNullException(nameof(WindowsPanel), "To show a window you need to add a WindowsPanel to your visual hierachy.");
-        
-        WindowsPanel.Children.Add(this);
+
+        WindowsPanel.Windows.Add(this);
 
         //// Force a layout pass
         //Measure(Size.Infinity);
@@ -847,7 +847,6 @@ public class ManagedWindow : ContentControl
         }
     }
 
-
     /// <summary>
     /// Shows the window as a dialog.
     /// </summary>
@@ -881,6 +880,7 @@ public class ManagedWindow : ContentControl
         var result = new TaskCompletionSource<TResult>();
 
         this.Show(parent);
+
         // NOTE: Coming out Show we should have WindowsPanel set to the panel and Owner set to the owner window if it exists.
 
         if (this.Owner != null)
@@ -970,10 +970,7 @@ public class ManagedWindow : ContentControl
         OnClosed(new EventArgs());
         RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
-        if (this.Parent is Panel parentPanel)
-        {
-            parentPanel.Children.Remove(this);
-        }
+        this.WindowsPanel.Windows.Remove(this);
         if (s_MRU == null)
             s_MRU = GetWindows().ToList();
 
@@ -1521,7 +1518,7 @@ public class ManagedWindow : ContentControl
         }
 
         var windows = GetWindows().ToList();
-        int i = 0;
+        int i = 1;
         foreach (var win in windows.Where(win => win != this && win.WindowState != WindowState.Minimized))
         {
             win.ZIndex = i++;
@@ -1817,7 +1814,7 @@ public class ManagedWindow : ContentControl
     {
         if (WindowsPanel == null)
             return Array.Empty<ManagedWindow>();
-        return WindowsPanel.Children.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
+        return WindowsPanel.Windows.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
     }
 
     public bool IsConsole()

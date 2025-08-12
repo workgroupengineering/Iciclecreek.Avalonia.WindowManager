@@ -1,10 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Media;
-using Avalonia.Styling;
+using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Iciclecreek.Avalonia.WindowManager
@@ -12,35 +10,21 @@ namespace Iciclecreek.Avalonia.WindowManager
     /// <summary>
     /// This hosts a collection of windows 
     /// </summary>
-    public partial class WindowsPanel : Canvas
+    [TemplatePart(PART_Windows, typeof(Canvas))]
+    [TemplatePart(PART_ModalOverlay, typeof(Panel))]
+    public partial class WindowsPanel : ContentControl
     {
-        private Panel _modalOverlay;
+        public const string PART_Windows = "PART_Windows";
+        public const string PART_ModalOverlay = "PART_ModalOverlay";
+
+        private Canvas? _canvas;
+        private Panel? _modalOverlay;
+        private ManagedWindow? _modalDialog;
 
         public WindowsPanel()
         {
-            this.ZIndex = 100000;
-            _modalOverlay = new Panel()
-            {
-                IsVisible = false,
-            };
-
-            if (Application.Current.ApplicationLifetime.GetType().Name.Contains("Consolonia"))
-            {
-                _modalOverlay.Bind(Panel.BackgroundProperty, Resources.GetResourceObservable("ThemeShadeBrush"));
-            }
-            else
-            {
-                _modalOverlay.Bind(Panel.BackgroundProperty, Resources.GetResourceObservable("ManagedWindow_ModalBackgroundBrush"));
-            }
-
-            // Set initial size
-            _modalOverlay.Width = this.Bounds.Width;
-            _modalOverlay.Height = this.Bounds.Height;
-
-            this.Children.Add(_modalOverlay);
         }
 
-        private ManagedWindow? _modalDialog;
 
         public ManagedWindow? ModalDialog
         {
@@ -51,7 +35,7 @@ namespace Iciclecreek.Avalonia.WindowManager
                     throw new NotSupportedException("Already showing a modal dialog for this window");
 
                 _modalDialog = value;
-                if (_modalDialog != null)
+                if (_modalDialog != null && _modalOverlay != null)
                 {
                     _modalOverlay.ZIndex = _modalDialog.ZIndex++;
                     _modalOverlay.IsVisible = true;
@@ -59,22 +43,21 @@ namespace Iciclecreek.Avalonia.WindowManager
                     _modalDialog.Closed += (s, e) =>
                     {
                         _modalDialog = null;
-                        _modalOverlay.IsVisible = false;
+                        if (_modalOverlay != null)
+                            _modalOverlay.IsVisible = false;
                     };
                 }
             }
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
+        public Controls Windows => _canvas.Children;
 
-            if (change.Property == BoundsProperty)
-            {
-                var bounds = (Rect)change.NewValue!;
-                _modalOverlay.Width = bounds.Width;
-                _modalOverlay.Height = bounds.Height;
-            }
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _canvas = e.NameScope.Find<Canvas>(PART_Windows) ?? throw new ArgumentNullException(PART_Windows);
+            _modalOverlay = e.NameScope.Find<Panel>(PART_ModalOverlay) ?? throw new ArgumentNullException(PART_ModalOverlay);
         }
 
         /// <summary>
