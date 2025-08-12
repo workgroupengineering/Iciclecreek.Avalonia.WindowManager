@@ -17,7 +17,6 @@ using Avalonia.ReactiveUI;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Consolonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -61,7 +60,7 @@ public class ManagedWindow : ContentControl
     private Rect _normalRect;
     private BoxShadows _normalBoxShadow;
     private Thickness _normalMargin;
-    private ContentPresenter? _content;
+    private ContentPresenter _content;
     private Border? _windowBorder;
     private ManagedWindow? _owner;
     private bool _loaded;
@@ -192,7 +191,9 @@ public class ManagedWindow : ContentControl
         //Control.ThemeProperty.OverrideDefaultValue<ManagedWindow>(theme);
     }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public ManagedWindow()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         SetValue(KeyboardNavigation.TabNavigationProperty, KeyboardNavigationMode.Cycle);
 
@@ -669,6 +670,7 @@ public class ManagedWindow : ContentControl
 
     protected virtual async void OnFullscreenWindow()
     {
+        await Task.CompletedTask;
         OnMaximizeWindow();
     }
 
@@ -755,7 +757,7 @@ public class ManagedWindow : ContentControl
 
 
 
-    public new void Show()
+    public void Show()
     {
         Show(null);
     }
@@ -1249,7 +1251,7 @@ public class ManagedWindow : ContentControl
         if (_keyboardMoving || _keyboardSizing)
         {
             // TODO: Make this configurable
-            var sizing = IsConsole() ? 1 : 10;
+            var sizing = (Int32)this.FindResource("ManagedWindow_SizingVector");
             switch (e.Key)
             {
                 case Key.Left:
@@ -1815,19 +1817,6 @@ public class ManagedWindow : ContentControl
         if (WindowsPanel == null)
             return Array.Empty<ManagedWindow>();
         return WindowsPanel.Windows.Where(child => child is ManagedWindow).Cast<ManagedWindow>().OrderBy(win => win.ZIndex);
-    }
-
-    public bool IsConsole()
-    {
-        if (Application.Current?.ApplicationLifetime != null)
-            return ConsoloniaAttribute.IsDefined(Application.Current.ApplicationLifetime.GetType());
-
-        if (OperatingSystem.IsWindows())
-        {
-            try { return Console.WindowHeight > 0; }
-            catch (IOException) { return false; }
-        }
-        return !(Console.IsInputRedirected && Console.IsOutputRedirected && Console.IsErrorRedirected);
     }
 
     private void OnModalOverlayClick(object? sender, PointerPressedEventArgs e)

@@ -20,12 +20,14 @@ namespace Iciclecreek.Avalonia.WindowManager
         public const string PART_ModalOverlay = "PART_ModalOverlay";
         public const string PART_ContentPresenter = "PART_ContentPresenter";
 
-        private Canvas? _canvas;
-        private Panel? _modalOverlay;
-        private ContentPresenter? _contentPresenter;
+        private Canvas _canvas;
+        private Panel _modalOverlay;
+        private ContentPresenter _contentPresenter;
         private ManagedWindow? _modalDialog;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public WindowsPanel()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         {
         }
 

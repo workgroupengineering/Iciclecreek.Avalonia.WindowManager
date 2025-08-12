@@ -1,71 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
-        xmlns:console="https://github.com/jinek/consolonia"
         xmlns:wm="using:Iciclecreek.Avalonia.WindowManager"
         x:DataType="wm:ManagedWindow">
-
-  <!--console extra resources-->
-  <BoxShadows x:Key="NullBoxShadows" >none</BoxShadows>
-  <Thickness x:Key="NoThickness">0</Thickness>
-  <Thickness x:Key="SingleThickness">1</Thickness>
-  <x:Double x:Key="NoOpacity">1</x:Double>
-  <console:LineBrush x:Key="EdgeLineBrush"
-                     Brush="{DynamicResource ManagedWindow_BorderBrush}"
-                     LineStyle="Edge"/>
-  <console:LineBrush x:Key="ManagedWindow_Active_EdgeLineBrush"
-                  Brush="{DynamicResource ManagedWindow_Active_BorderBrush}"
-                  LineStyle="Edge"/>
-
-  <DataTemplate x:Key="MinimizeIcon">
-    <ContentControl>
-      <console:OnPlatform Console="🗕" >
-        <console:OnPlatform.Default>
-          <iconPacks:Codicons Kind="ChromeMinimize"
-                              Width="{StaticResource ManagedWindow_SystemIconSize}"
-                              Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-        </console:OnPlatform.Default>
-      </console:OnPlatform>
-    </ContentControl>
-  </DataTemplate>
-
-  <DataTemplate x:Key="MaximizeIcon">
-    <ContentControl>
-      <console:OnPlatform Console="🗖">
-        <console:OnPlatform.Default>
-          <iconPacks:Codicons Kind="ChromeMaximize"
-                          Width="{StaticResource ManagedWindow_SystemIconSize}"
-                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-        </console:OnPlatform.Default>
-      </console:OnPlatform>
-    </ContentControl>
-  </DataTemplate>
-
-  <DataTemplate x:Key="RestoreIcon">
-    <ContentControl>
-      <console:OnPlatform Console="🗗">
-        <console:OnPlatform.Default>
-          <iconPacks:Codicons Kind="ChromeRestore"
-                          Width="{StaticResource ManagedWindow_SystemIconSize}"
-                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-        </console:OnPlatform.Default>
-      </console:OnPlatform>
-    </ContentControl>
-  </DataTemplate>
-
-  <DataTemplate x:Key="CloseIcon">
-    <ContentControl>
-      <console:OnPlatform Console="🗙">
-        <console:OnPlatform.Default>
-          <iconPacks:Codicons Kind="ChromeClose"
-                          Width="{StaticResource ManagedWindow_SystemIconSize}"
-                          Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-        </console:OnPlatform.Default>
-      </console:OnPlatform>
-    </ContentControl>
-  </DataTemplate>
-
-  <!--console resources-->
 
   <ControlTheme x:Key="{x:Type wm:ManagedWindow}"
                 TargetType="wm:ManagedWindow">
@@ -73,22 +10,14 @@
             Value="{DynamicResource ManagedWindow_BackgroundBrush}" />
     <Setter Property="Foreground"
             Value="{DynamicResource ManagedWindow_ForegroundBrush}" />
-    <Setter Property="BorderBrush">
-      <console:OnPlatform Default="{DynamicResource ManagedWindow_BorderBrush}"
-                            Console="{StaticResource EdgeLineBrush}"/>
-    </Setter>
-
-    <Setter Property="BorderThickness">
-      <console:OnPlatform Default="{DynamicResource ManagedWindow_BorderThickness}"
-                            Console="{StaticResource SingleThickness}"/>
-    </Setter>
-    <Setter Property="BoxShadow">
-      <console:OnPlatform Default="{DynamicResource ManagedWindow_BoxShadows}"
-                            Console="{StaticResource NullBoxShadows}"/>
-    </Setter>
+    <Setter Property="BorderBrush" 
+            Value="{DynamicResource ManagedWindow_BorderBrush}"/>
+    <Setter Property="BorderThickness" 
+            Value="{DynamicResource ManagedWindow_BorderThickness}"/>
+    <Setter Property="BoxShadow" 
+            Value="{DynamicResource ManagedWindow_BoxShadows}"/>
     <Setter Property="Padding" Value="0" />
-    <Setter Property="SystemDecorations"
-            Value="Full"/>
+    <Setter Property="SystemDecorations" Value="Full"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -123,36 +52,29 @@
                         Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}">
                   <MenuItem Name="PART_SystemMenuItem">
                     <MenuItem.Header>
-                      <console:OnPlatform Console="☰">
-                        <console:OnPlatform.Default>
-                          <iconPacks:Codicons Kind="Menu"
-                                              Width="{StaticResource ManagedWindow_SystemIconSize}"
-                                              Height="{StaticResource ManagedWindow_SystemIconSize}"/>
-                        </console:OnPlatform.Default>
-                      </console:OnPlatform>
+                      <ContentControl ContentTemplate="{DynamicResource ManagedWindow_SystemMenuIcon}" />
                     </MenuItem.Header>
-
                     <MenuItem Header="_Restore" Command="{Binding $parent[wm:ManagedWindow].RestoreCommand}">
                       <MenuItem.Icon>
-                        <ContentControl ContentTemplate="{StaticResource RestoreIcon}" />
+                        <ContentControl ContentTemplate="{DynamicResource ManagedWindow_RestoreIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="_Move" Command="{Binding $parent[wm:ManagedWindow].MoveCommand}" />
                     <MenuItem Header="_Size" Command="{Binding $parent[wm:ManagedWindow].SizeCommand}" />
                     <MenuItem Header="Mi_nimize" Command="{Binding $parent[wm:ManagedWindow].MinimizeCommand}" >
                       <MenuItem.Icon>
-                        <ContentControl ContentTemplate="{StaticResource MinimizeIcon}" />
+                        <ContentControl ContentTemplate="{DynamicResource ManagedWindow_MinimizeIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="Ma_ximize" Command="{Binding $parent[wm:ManagedWindow].MaximizeCommand}" >
                       <MenuItem.Icon>
-                        <ContentControl ContentTemplate="{StaticResource MaximizeIcon}" />
+                        <ContentControl ContentTemplate="{DynamicResource ManagedWindow_MaximizeIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
                     <Separator/>
                     <MenuItem Header="_Close" Command="{Binding $parent[wm:ManagedWindow].CloseCommand}" InputGesture="Ctrl+F4" >
                       <MenuItem.Icon>
-                        <ContentControl ContentTemplate="{StaticResource CloseIcon}" />
+                        <ContentControl ContentTemplate="{DynamicResource ManagedWindow_CloseIcon}" />
                       </MenuItem.Icon>
                     </MenuItem>
                   </MenuItem>
@@ -178,28 +100,26 @@
                 <StackPanel Grid.Column="3"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
-                            HorizontalAlignment="Right">
-                  <StackPanel.Spacing>
-                    <console:OnPlatformExtension x:TypeArguments="x:Double" Default="8" Console="0" />
-                  </StackPanel.Spacing>
+                            HorizontalAlignment="Right"
+                            Spacing="{DynamicResource ManagedWindow_SystemIconSpacing}">
                   <Button Name="PART_MinimizeButton"
                           IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                          ContentTemplate="{StaticResource MinimizeIcon}" />
+                          ContentTemplate="{DynamicResource ManagedWindow_MinimizeIcon}" />
                   <Button Name="PART_MaximizeButton"
                           IsVisible="False"
                           IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                          ContentTemplate="{StaticResource MaximizeIcon}" />
+                          ContentTemplate="{DynamicResource ManagedWindow_MaximizeIcon}" />
                   <Button Name="PART_RestoreButton"
                           IsVisible="False"
                           IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                          ContentTemplate="{StaticResource RestoreIcon}" />
+                          ContentTemplate="{DynamicResource ManagedWindow_RestoreIcon}" />
                   <Button Name="PART_CloseButton"
                           IsTabStop="True"
                           Foreground="{DynamicResource ManagedWindow_TitleBarForegroundBrush}"
-                          ContentTemplate="{StaticResource CloseIcon}" />
+                          ContentTemplate="{DynamicResource ManagedWindow_CloseIcon}" />
                 </StackPanel>
               </Grid>
 
@@ -214,13 +134,9 @@
                                 Content="{TemplateBinding Content}" />
 
               <Panel Name="PART_ModalOverlay"
-                     Grid.RowSpan="2" 
-                     IsVisible="false">
-                <Panel.Background>
-                  <console:OnPlatformExtension x:TypeArguments="IBrush"
-                                                 Default="{DynamicResource ManagedWindow_ModalBackgroundBrush}"
-                                                 Console="{DynamicResource ThemeShadeBrush}"/>
-                </Panel.Background>
+                     Grid.RowSpan="2"
+                     IsVisible="false"
+                     Background="{DynamicResource ManagedWindow_ModalBackgroundBrush}">
               </Panel>
             </Grid>
           </Border>
@@ -231,13 +147,7 @@
     </Setter>
 
     <Style Selector="^ /template/ TextBlock#PART_Title">
-      <Setter Property="Margin" >
-        <Setter.Value>
-          <console:OnPlatformExtension x:TypeArguments="Thickness"
-                                         Default="8 0 0 0"
-                                         Console="1 0 0 0"/>
-        </Setter.Value>
-      </Setter>
+      <Setter Property="Margin" Value="{DynamicResource ManagedWindow_TitleMargin}"/>
     </Style>
 
     <!-- window state styles -->
@@ -268,7 +178,7 @@
       <Setter Property="IsVisible" Value="True"/>
     </Style>
 
-  <!--maximized-->
+    <!--maximized-->
     <Style Selector="^:maximized /template/ Border#PART_WindowBorder">
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="BoxShadow" Value="0 0 0 Transparent"/>
@@ -285,10 +195,7 @@
 
     <!-- activated -->
     <Style Selector="^:active">
-      <Setter Property="BorderBrush">
-        <console:OnPlatform Default="{DynamicResource ManagedWindow_Active_BorderBrush}"
-                              Console="{DynamicResource ManagedWindow_Active_EdgeLineBrush}"/>
-      </Setter>
+      <Setter Property="BorderBrush" Value="{DynamicResource ManagedWindow_Active_BorderBrush}"/>
     </Style>
 
     <Style Selector="^:active /template/ Grid#PART_TitleBar">
@@ -305,7 +212,7 @@
 
     <!--no border -->
     <Style Selector="^:noborder /template/ Border#PART_WindowBorder">
-      <Setter Property="BorderThickness" Value="{StaticResource NoThickness}"/>
+      <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <!--no titlebar -->
