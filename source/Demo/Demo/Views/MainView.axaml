@@ -34,10 +34,10 @@
       </ComboBox>
     </StackPanel>
     
-    <Button Content="Add a window" Click="OnAddWindowClick" HorizontalAlignment="Left"/>
+    <Button Content="_Add a window" Click="OnAddWindowClick" HorizontalAlignment="Left"/>
     
     <StackPanel Orientation="Horizontal" >
-      <Button HorizontalAlignment="Left" Click="OnClick" Content="Increment"/>
+      <Button HorizontalAlignment="Left" Click="OnClick" Content="_Increment"/>
       <TextBlock Text="Counter:"  VerticalAlignment="Center" />
       <TextBlock Text="{Binding Counter}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </StackPanel>

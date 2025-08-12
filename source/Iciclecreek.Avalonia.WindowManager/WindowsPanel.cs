@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using System;
 using System.Threading.Tasks;
@@ -12,13 +13,16 @@ namespace Iciclecreek.Avalonia.WindowManager
     /// </summary>
     [TemplatePart(PART_Windows, typeof(Canvas))]
     [TemplatePart(PART_ModalOverlay, typeof(Panel))]
+    [TemplatePart(PART_ContentPresenter, typeof(ContentPresenter))]
     public partial class WindowsPanel : ContentControl
     {
         public const string PART_Windows = "PART_Windows";
         public const string PART_ModalOverlay = "PART_ModalOverlay";
+        public const string PART_ContentPresenter = "PART_ContentPresenter";
 
         private Canvas? _canvas;
         private Panel? _modalOverlay;
+        private ContentPresenter? _contentPresenter;
         private ManagedWindow? _modalDialog;
 
         public WindowsPanel()
@@ -39,12 +43,14 @@ namespace Iciclecreek.Avalonia.WindowManager
                 {
                     _modalOverlay.ZIndex = _modalDialog.ZIndex++;
                     _modalOverlay.IsVisible = true;
+                    _contentPresenter.IsEnabled = false;
 
                     _modalDialog.Closed += (s, e) =>
                     {
                         _modalDialog = null;
                         if (_modalOverlay != null)
                             _modalOverlay.IsVisible = false;
+                        _contentPresenter.IsEnabled = true;
                     };
                 }
             }
@@ -58,6 +64,7 @@ namespace Iciclecreek.Avalonia.WindowManager
 
             _canvas = e.NameScope.Find<Canvas>(PART_Windows) ?? throw new ArgumentNullException(PART_Windows);
             _modalOverlay = e.NameScope.Find<Panel>(PART_ModalOverlay) ?? throw new ArgumentNullException(PART_ModalOverlay);
+            _contentPresenter = e.NameScope.Find<ContentPresenter>(PART_ContentPresenter) ?? throw new ArgumentNullException(PART_ContentPresenter);
         }
 
         /// <summary>

@@ -67,7 +67,8 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Panel>
-          <ContentPresenter Content="{TemplateBinding Content}"
+          <ContentPresenter x:Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
 
           <Canvas x:Name="PART_Windows" ZIndex="10000"/>
