@@ -1,7 +1,4 @@
-using Avalonia.Animation.Easings;
-using Avalonia.Animation;
 using Avalonia.Media;
-using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Iciclecreek.Avalonia.WindowManager;
 using System;
