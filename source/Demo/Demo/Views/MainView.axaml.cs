@@ -23,9 +23,17 @@ namespace Demo.Views
                 SizeToContent = Enum.Parse<SizeToContent>(((ComboBoxItem)SizeToContentCombo.SelectedItem).Tag.ToString()),
                 WindowState = Enum.Parse<WindowState>(((ComboBoxItem)WindowStateCombo.SelectedItem).Tag.ToString()),    
             };
+
             window.SizeToBounds(this.Bounds);
 
-            window.Show();
+            if (window.WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            {
+                window.Show();
+            }
+            else 
+            {
+                this.Show(window);
+            }
         }
 
         private void OnClick(object? sender, RoutedEventArgs args)

@@ -113,7 +113,7 @@
   <Style Selector=":is(wm|WindowsPanel)">
     <Setter Property="Template">
       <ControlTemplate>
-        <Panel>
+        <Panel Background="{TemplateBinding Background}">
           <ContentPresenter x:Name="PART_ContentPresenter"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}" />

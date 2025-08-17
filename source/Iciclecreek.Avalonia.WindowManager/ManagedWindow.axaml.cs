@@ -793,15 +793,7 @@ public class ManagedWindow : ContentControl
     {
         if (parent == null)
         {
-            // search from top down
-            if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
-            {
-                WindowsPanel = singleView.MainView?.FindDescendantOfType<WindowsPanel>(true);
-            }
-            else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                WindowsPanel = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>(true);
-            }
+            WindowsPanel = FindTopWindowsPanel();
         }
         else if (parent is WindowsPanel wh)
         {
@@ -821,25 +813,22 @@ public class ManagedWindow : ContentControl
                                 parent.FindDescendantOfType<WindowsPanel>(true);
             if (this.WindowsPanel == null)
             {
-                // search from top down
-                if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
-                {
-                    WindowsPanel = singleView.MainView?.FindDescendantOfType<WindowsPanel>(true);
-                }
-                else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    WindowsPanel = desktop.MainWindow?.FindDescendantOfType<WindowsPanel>(true);
-                }
+                WindowsPanel = FindTopWindowsPanel();
             }
         }
 
         if (WindowsPanel == null)
             throw new ArgumentNullException(nameof(WindowsPanel), "To show a window you need to add a WindowsPanel to your visual hierachy.");
 
+        if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+        {
+            this.WindowsPanel = FindTopWindowsPanel();
+        }
+
         WindowsPanel.Windows.Add(this);
 
         //// Force a layout pass
-        //Measure(Size.Infinity);
+        Measure(Size.Infinity);
         //Arrange(new Rect(DesiredSize));
 
         SetWindowStartupLocation();
@@ -871,6 +860,20 @@ public class ManagedWindow : ContentControl
         {
             Activate();
         }
+    }
+
+    private WindowsPanel FindTopWindowsPanel()
+    {
+        // search from top down
+        if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
+        {
+            return singleView.MainView?.FindDescendantOfType<WindowsPanel>(true);
+        }
+        else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            return desktop.MainWindow?.FindDescendantOfType<WindowsPanel>(true);
+        }
+        return null;
     }
 
     /// <summary>
@@ -1775,10 +1778,6 @@ public class ManagedWindow : ContentControl
 
     private void SetWindowStartupLocation()
     {
-        var startupLocation = GetEffectiveWindowStartupLocation();
-
-        var screenSize = new PixelRect(0, 0, (int)WindowsPanel.Bounds.Width, (int)WindowsPanel.Bounds.Height);
-
         PixelRect size;
         switch (this.SizeToContent)
         {
@@ -1801,44 +1800,38 @@ public class ManagedWindow : ContentControl
                 throw new NotImplementedException();
         }
 
-        if (startupLocation == WindowStartupLocation.CenterOwner)
+        if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
         {
             if (this.Owner != null)
             {
-                var ownerRect = new PixelRect(
+                var targetRect = new PixelRect(
                     this.Owner.Position,
                     new PixelSize((int)this.Owner.Bounds.Width, (int)this.Owner.Bounds.Height));
-                var childRect = ownerRect.CenterRect(size);
+                var childRect = targetRect.CenterRect(size);
                 this.Position = childRect.Position;
-                return;
             }
-            else
+            else 
             {
-                var childRect = screenSize.CenterRect(size);
+                var targetRect = new PixelRect(
+                    new PixelPoint(0,0),
+                    new PixelSize((int)this.WindowsPanel.Bounds.Width, (int)this.WindowsPanel.Bounds.Height));
+                var childRect = targetRect.CenterRect(size);
                 this.Position = childRect.Position;
             }
         }
-        else if (startupLocation == WindowStartupLocation.CenterScreen)
+        else if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
         {
+            var classic = Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+            var single = Application.Current.ApplicationLifetime as ISingleViewApplicationLifetime;
+            var screenBounds = classic?.MainWindow.Bounds ?? single?.MainView?.Bounds ?? throw new ArgumentNullException("Screen");
+            var screenSize = new PixelRect(0, 0, (int)screenBounds.Width, (int)screenBounds.Height);
+
             var childRect = screenSize.CenterRect(size);
             this.Position = childRect.Position;
         }
-
     }
 
-    private WindowStartupLocation GetEffectiveWindowStartupLocation()
-    {
-        if (this.WindowStartupLocation == WindowStartupLocation.CenterOwner &&
-            (this.Owner is null ||
-             (this.Owner != null && this.Owner.WindowState == WindowState.Minimized)))
-        {
-            // If startup location is CenterOwner, but owner is null or minimized then fall back
-            // to CenterScreen. This behavior is consistent with WPF.
-            return WindowStartupLocation.CenterScreen;
-        }
-
-        return this.WindowStartupLocation;
-    }
+    
 
     private IEnumerable<ManagedWindow> GetWindows()
     {

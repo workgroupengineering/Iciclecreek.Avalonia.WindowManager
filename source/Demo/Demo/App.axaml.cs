@@ -27,14 +27,7 @@ namespace Demo
                     DataContext = new MainViewModel()
                 };
             }
-            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-            {
-                singleViewPlatform.MainView = new MainView
-                {
-                    DataContext = new MainViewModel()
-                };
-            }
-
+            
             base.OnFrameworkInitializationCompleted();
         }
 
