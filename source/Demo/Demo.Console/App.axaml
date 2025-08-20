@@ -37,6 +37,8 @@
       <ContentControl Content="☰"/>
     </DataTemplate>
 
+    <Thickness x:Key="SubPanelMargin">5</Thickness>
+
   </Application.Resources>
 
   <Application.Styles>

@@ -12,9 +12,11 @@
   <wm:WindowsPanel x:Name="Screen">
     <Grid RowDefinitions="Auto *">
       <views:MainView />
-      <wm:WindowsPanel x:Name="SubPanel" Background="Gray" Grid.Row="1"
-            Margin="50">
-        <StackPanel Orientation="Vertical" Spacing="10">
+      <wm:WindowsPanel x:Name="SubPanel"
+                       Grid.Row="1"
+                       Background="Gray"
+                       Margin="{StaticResource SubPanelMargin}">
+        <StackPanel Orientation="Vertical" >
           <TextBlock Text="Child WindowsPanel - Windows created here will be scoped to here" Foreground="White"/>
           <views:MainView />
         </StackPanel>
