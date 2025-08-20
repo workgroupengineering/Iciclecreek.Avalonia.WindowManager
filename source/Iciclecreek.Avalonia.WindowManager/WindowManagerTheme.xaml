@@ -119,7 +119,7 @@
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
 
           <Canvas x:Name="PART_Windows"
-                  ZIndex="10000"/>
+                  />
 
           <Panel x:Name="PART_ModalOverlay"
                  ZIndex="9999"

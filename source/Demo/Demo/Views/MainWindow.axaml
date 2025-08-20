@@ -10,8 +10,15 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="Demo">
   <wm:WindowsPanel x:Name="Screen">
-    <Border BorderBrush="Gray" BorderThickness="1" Margin="10 10 0 0" >
-      <views:MainView Background="Gray"/>
-    </Border>
+    <Grid RowDefinitions="Auto *">
+      <views:MainView />
+      <wm:WindowsPanel x:Name="SubPanel" Background="Gray" Grid.Row="1"
+            Margin="50">
+        <StackPanel Orientation="Vertical" Spacing="10">
+          <TextBlock Text="Child WindowsPanel - Windows created here will be scoped to here" Foreground="White"/>
+          <views:MainView />
+        </StackPanel>
+      </wm:WindowsPanel>
+    </Grid>
   </wm:WindowsPanel>
 </Window>

@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C7616A29-4D56-4C56-AE72-903793A198E1}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\BuildAndRunTests.yml = ..\.github\workflows\BuildAndRunTests.yml
+		Demo\Directory.Packages.props = Demo\Directory.Packages.props
 		..\.github\workflows\PublishIncrementalNuget.yml = ..\.github\workflows\PublishIncrementalNuget.yml
 		..\.github\workflows\PublishNuget.yml = ..\.github\workflows\PublishNuget.yml
 		..\README.md = ..\README.md

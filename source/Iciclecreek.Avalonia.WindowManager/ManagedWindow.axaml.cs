@@ -820,10 +820,10 @@ public class ManagedWindow : ContentControl
         if (WindowsPanel == null)
             throw new ArgumentNullException(nameof(WindowsPanel), "To show a window you need to add a WindowsPanel to your visual hierachy.");
 
-        if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
-        {
-            this.WindowsPanel = FindTopWindowsPanel();
-        }
+        //if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+        //{
+        //    this.WindowsPanel = FindTopWindowsPanel();
+        //}
 
         WindowsPanel.Windows.Add(this);
 
@@ -1800,7 +1800,8 @@ public class ManagedWindow : ContentControl
                 throw new NotImplementedException();
         }
 
-        if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+        if (WindowStartupLocation == WindowStartupLocation.CenterOwner ||
+            WindowStartupLocation == WindowStartupLocation.CenterScreen)
         {
             if (this.Owner != null)
             {
@@ -1819,16 +1820,16 @@ public class ManagedWindow : ContentControl
                 this.Position = childRect.Position;
             }
         }
-        else if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
-        {
-            var classic = Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-            var single = Application.Current.ApplicationLifetime as ISingleViewApplicationLifetime;
-            var screenBounds = classic?.MainWindow.Bounds ?? single?.MainView?.Bounds ?? throw new ArgumentNullException("Screen");
-            var screenSize = new PixelRect(0, 0, (int)screenBounds.Width, (int)screenBounds.Height);
+    //    else if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+    //    {
+    //        var classic = Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+    //        var single = Application.Current.ApplicationLifetime as ISingleViewApplicationLifetime;
+    //        var screenBounds = classic?.MainWindow.Bounds ?? single?.MainView?.Bounds ?? throw new ArgumentNullException("Screen");
+    //        var screenSize = new PixelRect(0, 0, (int)screenBounds.Width, (int)screenBounds.Height);
 
-            var childRect = screenSize.CenterRect(size);
-            this.Position = childRect.Position;
-        }
+    //        var childRect = screenSize.CenterRect(size);
+    //        this.Position = childRect.Position;
+    //    }
     }
 
     

@@ -6,7 +6,7 @@ using System;
 
 namespace Demo.Views
 {
-    public partial class MainView : WindowsPanel
+    public partial class MainView : Panel
     {
         public MainView()
         {
@@ -26,14 +26,7 @@ namespace Demo.Views
 
             window.SizeToBounds(this.Bounds);
 
-            if (window.WindowStartupLocation == WindowStartupLocation.CenterScreen)
-            {
-                window.Show();
-            }
-            else 
-            {
-                this.Show(window);
-            }
+                window.Show(this);
         }
 
         private void OnClick(object? sender, RoutedEventArgs args)

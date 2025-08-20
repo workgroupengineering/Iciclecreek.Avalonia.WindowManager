@@ -35,9 +35,9 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.2.5" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.5" />
-    <PackageReference Include="IconPacks.Avalonia.Codicons" Version="1.0.0" />
+    <PackageReference Include="Avalonia" Version="11.3.4" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.4" />
+    <PackageReference Include="IconPacks.Avalonia.Codicons" Version="1.*" />
   </ItemGroup>
 
   <ItemGroup>
