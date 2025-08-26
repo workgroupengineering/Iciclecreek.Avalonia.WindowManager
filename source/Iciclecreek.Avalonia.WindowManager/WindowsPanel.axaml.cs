@@ -14,11 +14,15 @@ namespace Iciclecreek.Avalonia.WindowManager
     [TemplatePart(PART_Windows, typeof(Canvas))]
     [TemplatePart(PART_ModalOverlay, typeof(Panel))]
     [TemplatePart(PART_ContentPresenter, typeof(ContentPresenter))]
+    [PseudoClasses(CLASS_HasModal)]   
+
     public partial class WindowsPanel : ContentControl
     {
         public const string PART_Windows = "PART_Windows";
         public const string PART_ModalOverlay = "PART_ModalOverlay";
         public const string PART_ContentPresenter = "PART_ContentPresenter";
+        private const string CLASS_HasModal = ":hasmodal";
+
 
         private Canvas _canvas;
         private Panel _modalOverlay;
@@ -43,16 +47,11 @@ namespace Iciclecreek.Avalonia.WindowManager
                 _modalDialog = value;
                 if (_modalDialog != null && _modalOverlay != null)
                 {
-                    _modalOverlay.ZIndex = _modalDialog.ZIndex++;
-                    _modalOverlay.IsVisible = true;
-                    _contentPresenter.IsEnabled = false;
-
+                    PseudoClasses.Add(CLASS_HasModal);
                     _modalDialog.Closed += (s, e) =>
                     {
                         _modalDialog = null;
-                        if (_modalOverlay != null)
-                            _modalOverlay.IsVisible = false;
-                        _contentPresenter.IsEnabled = true;
+                        PseudoClasses.Remove(CLASS_HasModal);
                     };
                 }
             }

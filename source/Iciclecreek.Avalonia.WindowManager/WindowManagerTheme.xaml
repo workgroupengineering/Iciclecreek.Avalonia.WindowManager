@@ -11,6 +11,7 @@
       <!-- control styles -->
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/ManagedWindow.axaml" />
+        <ResourceInclude Source="avares://Iciclecreek.Avalonia.WindowManager/WindowsPanel.axaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <!-- themed resources -->
@@ -107,27 +108,6 @@
   <!-- set default style for the ManagedWindow type -->
   <Style Selector=":is(wm|ManagedWindow)">
     <Setter Property="Theme" Value="{StaticResource {x:Type wm:ManagedWindow}}"/>
-  </Style>
-
-  <!-- set default style for the WindowsPanel type -->
-  <Style Selector=":is(wm|WindowsPanel)">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Panel Background="{TemplateBinding Background}">
-          <ContentPresenter x:Name="PART_ContentPresenter"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-          <Canvas x:Name="PART_Windows"
-                  />
-
-          <Panel x:Name="PART_ModalOverlay"
-                 ZIndex="9999"
-                 IsVisible="False"
-                 Background="{DynamicResource ManagedWindow_ModalBackgroundBrush}"/>
-        </Panel>
-      </ControlTemplate>
-    </Setter>
   </Style>
 
   <StyleInclude Source="avares://IconPacks.Avalonia.Codicons/Codicons.axaml" />

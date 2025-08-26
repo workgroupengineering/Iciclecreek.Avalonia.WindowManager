@@ -1488,10 +1488,7 @@ public class ManagedWindow : ContentControl
             classes.Add(CLASS_Active);
 
         if (ModalDialog != null)
-        {
             classes.Add(CLASS_HasModal);
-        }
-        IsEnabled = ModalDialog == null;
 
         if (Owner != null)
             classes.Add(CLASS_IsModal);
