@@ -38,6 +38,7 @@
 
               <!--Title Bar-->
               <Grid Name="PART_TitleBar"
+                    Cursor="Arrow"
                     ColumnDefinitions="Auto Auto * Auto"
                     Background="{DynamicResource ManagedWindow_TitleBarBackgroundBrush}">
                 <Grid.Styles>
