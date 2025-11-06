@@ -20,6 +20,7 @@
           <BoxShadows x:Key='ManagedWindow_BoxShadows'>5 5 10 2 #80CCCCCC</BoxShadows >
 
           <SolidColorBrush x:Key='ManagedWindow_BackgroundBrush' Color='#FFFFFF'/>
+          <SolidColorBrush x:Key='ManagedWindow_ForegroundBrush' Color='#000000'/>
 
           <SolidColorBrush x:Key='ManagedWindow_TitleBarBackgroundBrush' Color='#CCCCCC'/>
           <SolidColorBrush x:Key='ManagedWindow_TitleBarForegroundBrush' Color='#282828'/>
@@ -36,6 +37,7 @@
           <BoxShadows x:Key='ManagedWindow_BoxShadows'>5 5 10 2 #80333333</BoxShadows>
 
           <SolidColorBrush x:Key='ManagedWindow_BackgroundBrush' Color='#000000'/>
+          <SolidColorBrush x:Key='ManagedWindow_ForegroundBrush' Color='#FFFFFF'/>
 
           <SolidColorBrush x:Key='ManagedWindow_TitleBarBackgroundBrush' Color='#111111'/>
           <SolidColorBrush x:Key='ManagedWindow_TitleBarForegroundBrush' Color='#D7D7D7'/>
